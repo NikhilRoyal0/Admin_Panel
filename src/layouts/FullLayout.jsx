@@ -1,30 +1,34 @@
 import React, { useState } from "react";
+import { Box, Flex } from "@chakra-ui/react";
 import Sidebar from "./Sidebar/Sidebar";
 import Footer from "./Footer/Footer";
-import Header from "./Header/Header"; 
 import { Outlet } from "react-router-dom";
-import { Box } from "@chakra-ui/react";
+import Header from "./Header/Header";
 
 const FullLayout = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
   return (
-    <Box display="flex" flexDirection="column" minHeight="100vh">
-      <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen}/> 
-      <Box display="flex" flex="1">
-        <Sidebar isSidebarOpen={isSidebarOpen} />
-        <Box flex="1" marginTop="100px" marginLeft={isSidebarOpen ? "250px" : "0"}>
-          <Box minHeight="calc(100vh - 100px - 60px)">
+    <Flex flexDirection="column" minHeight="100vh">
+      <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} closeSidebar={closeSidebar}  />
+      <Flex flex="1">
+        <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
+        <Box ml={{ base: 0, md: 72 }} p="0" flex="1" mt={{ base: "150px", md: "100px" }}>
+          <Box minHeight="calc(100vh - 100px)">
             <Outlet />
           </Box>
+          <Footer />
         </Box>
-      </Box>
-      <Footer />
-    </Box>
+      </Flex>
+    </Flex>
   );
 };
 

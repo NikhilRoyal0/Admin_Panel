@@ -1,150 +1,177 @@
-import React, { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { Box, Flex, Text, Divider, Icon, IconButton } from "@chakra-ui/react";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa"; 
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { Box, Flex, CloseButton, Text, Drawer, DrawerContent,List,ListItem,HStack,Icon ,IconButton, Divider   } from "@chakra-ui/react";
 import { fetchLinkItems } from "../../app/Slices/menuSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
+import { NavLink } from "react-router-dom";
 
-const Sidebar = ({ isSidebarOpen }) => {
+const SidebarContent = ({ onClose, ...rest }) => {
   const dispatch = useDispatch();
-  const menuItems = useSelector((state) => state.menuSlice.LinkItems);
-  const [expandedItems, setExpandedItems] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null); 
+  const { pathname } = useLocation();
+  const pathDirect = pathname;
 
-  useEffect(() => {
-    dispatch(fetchLinkItems());
-  }, [dispatch]);
+  const [open, setOpen] = useState(null);
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
 
-  const toggleExpansion = (itemId) => {
-    if (expandedItems.includes(itemId)) {
-      setExpandedItems(expandedItems.filter((id) => id !== itemId));
+  const handleClick = (index, hasSubItems) => {
+    if (hasSubItems) {
+      setOpen(open === index ? null : index);
     } else {
-      setExpandedItems([...expandedItems, itemId]);
+      if (isSmallScreen) {
+        onClose();
+      }
     }
   };
 
-  const handleItemClick = (itemId) => {
-    setSelectedItem(itemId);
-  };
+  useEffect(() => {
+    dispatch(fetchLinkItems());
+    const handleResize = () => {
+      setIsSmallScreen(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [dispatch]);
 
-  const renderMenuItem = (item) => (
-    <a
-      key={item.id}
-      href={item.href}
-      style={{ textDecoration: "none" }}
-      onClick={() => handleItemClick(item.id)}
-    >
-      <Box
-        p="2"
-        borderRadius="md"
-        mb="2"
-        width="100%"
-        alignItems="center"
-        justifyContent="center"
-        color={selectedItem === item.id ? "blue" : "black"}
-      >
-        <Flex alignItems="center">
-          <Icon as={item.icon} mr="2" />
-          <Text fontSize="md" fontWeight="bold" flex="1">
-            {item.title}
-          </Text>
-        </Flex>
-      </Box>
-    </a>
-  );
-
-  const renderMenuItemWithSubitems = (item) => (
-    <Box key={item.id} mb="2">
-      <Box
-        color="black"
-        borderRadius="md"
-        width="100%"
-        cursor="pointer"
-        onClick={() => {
-          toggleExpansion(item.id);
-          handleItemClick(item.id);
-        }}
-      >
-        <Flex alignItems="center" ml={2}>
-          <Icon
-            as={item.icon}
-            mr="2"
-            color={selectedItem === item.id ? "blue" : "black"}
-          />
-          <Text fontSize="md" fontWeight="bold" flex="1">
-            {item.title}
-          </Text>
-          <IconButton
-            icon={
-              expandedItems.includes(item.id) ? <FaChevronUp /> : <FaChevronDown />
-            }
-            onClick={() => toggleExpansion(item.id)}
-            variant="ghost"
-            color="black"
-            fontSize="16px"
-            mr={1}
-            ml={15}
-          />
-        </Flex>
-      </Box>
-      {expandedItems.includes(item.id) && (
-        <Box ml="4">
-          {item.subItems.map((subItem) => (
-            <a
-              key={subItem.id}
-              href={subItem.href}
-              style={{ color: "blue" }}
-              onClick={() => handleItemClick(subItem.id)}
-            >
-              <Box
-                color="black"
-                alignItems="center"
-                borderRadius="md"
-                mt="2"
-                width="calc(100% - 20px)"
-              >
-                <Flex alignItems="center" p={1}>
-                  <Icon as={subItem.icon} mr="2"  />
-                  <Text fontSize="md" fontWeight="bold">{subItem.title}</Text>
-                </Flex>
-              </Box>
-            </a>
-          ))}
-        </Box>
-      )}
-    </Box>
-  );
+  const LinkItems = useSelector((state) => state.menu.LinkItems);
 
   return (
-    <Flex
-      as="nav"
-      width={isSidebarOpen ? "250px" : "0"}
+    <Box
+      transition="3s ease"
       bg="white"
-      color="black"
-      flexDirection="column"
-      p={isSidebarOpen ? "4" : "0"}
-      borderRadius="lg"
-      height="100vh"
-      overflowY="auto"
-      position="fixed"
-      left="0"
-      top="0"
-      zIndex="1"
+      borderRight="1px"
+      borderRightColor="gray.200"
+      w={{ base: "full", md: "72" }}
+      pos="fixed"
+      h="full"
+      {...rest}
+      css={{
+        "&::-webkit-scrollbar": {
+          width: "4px",
+        },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "#4A5568",
+          borderRadius: "4px",
+        },
+        "-ms-overflow-style": "none",
+        "scrollbar-width": "thin",
+      }}
+      overflow="auto"
     >
-      <Box mb="5" mt="5">
-        <Text fontSize="22px" fontWeight="bold" align={"center"}>
-          Admin Chakra
+      <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
+        <Text as="a" href="/" fontSize="3xl" fontWeight="bold">
+          Admin Panel
         </Text>
-    
-      </Box>
-      <Divider mb="5" />
-      <Box ml={4}>
-        {menuItems.map((menuItem) =>
-          menuItem.subItems
-            ? renderMenuItemWithSubitems(menuItem)
-            : renderMenuItem(menuItem)
-        )}
-      </Box>
-    </Flex>
+      </Flex>
+        <Divider m={5}/>
+      <br />
+      {LinkItems.map((item, index) => (
+        <React.Fragment key={index}>
+          <List styleType="none">
+            <ListItem
+              key={index}
+              onClick={() => handleClick(index, !!item.subItems)}
+              as={NavLink}
+              to={item.href}
+              selected={pathDirect === item.href}
+              sx={{
+                mb: 1,
+                ...(pathDirect === item.href && {
+                  color: "blue.500",
+                  backgroundColor: "lightblue",
+                  fontWeight: "bold",
+                }),
+              }}
+            >
+              <Flex
+                justifyContent="space-between"
+                alignItems="center"
+                pl={10}
+                pb={5}
+              >
+                <HStack spacing="4">
+                  <Icon as={item.icon} fontSize="1.4rem" />
+                  <Text fontSize="md" fontWeight="bold">
+                    {item.title}
+                  </Text>
+                </HStack>
+                {item.subItems && (
+                  <IconButton
+                    onClick={() => handleClick(index, !!item.subItems)}
+                    icon={
+                      open === index ? <ChevronUpIcon /> : <ChevronDownIcon />
+                    }
+                    variant="hidden"
+                    aria-label={open === index ? "Close" : "Open"}
+                    size="sm"
+                    pr={20}
+                    fontSize={23}
+                  />
+                )}
+              </Flex>
+            </ListItem>
+          </List>
+
+          {item.subItems && open === index && (
+            <List styleType="none" pl={20} pb={2}>
+              {item.subItems.map((subItem, subIndex) => (
+                <ListItem
+                  key={subIndex}
+                  onClick={() => handleClick(index, false)}
+                  as={NavLink}
+                  to={subItem.href}
+                  selected={pathDirect === subItem.href}
+                  sx={{
+                    mb: 1,
+                    ...(pathDirect === subItem.href && {
+                      color: "blue.500",
+                      backgroundColor: "lightblue",
+                      fontWeight: "bold",
+                    }),
+                  }}
+                >
+                  <Flex
+                    justifyContent="space-between"
+                    alignItems="center"
+                    pb={5}
+                  >
+                    <HStack spacing="3">
+                      <Icon as={subItem.icon} fontSize="1.2rem" />
+                      <Text fontSize="md" fontWeight="bold">
+                        {subItem.title}
+                      </Text>
+                    </HStack>
+                  </Flex>
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </React.Fragment>
+      ))}
+    </Box>
+  );
+};
+
+const Sidebar = ({ isOpen, onClose }) => {
+  return (
+    <Box bg="gray.100">
+      <SidebarContent
+        onClose={onClose}
+        display={{ base: "none", md: "block" }}
+      />
+      <Drawer
+        isOpen={isOpen}
+        placement="left"
+        onClose={onClose}
+        returnFocusOnClose={false}
+        onOverlayClick={onClose}
+        size="xs"
+      >
+        <DrawerContent>
+          <SidebarContent onClose={onClose} />
+        </DrawerContent>
+      </Drawer>
+    </Box>
   );
 };
 

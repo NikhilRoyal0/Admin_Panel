@@ -24,11 +24,17 @@ import Media_Content from "../components/Media/Media_Content";
 import Documents from "../components/Docx/Documents";
 import Enquiry from "../components/Enquiry/Enquiry";
 import Attendence from "../components/Attendence/Attendence";
+import Login from "../components/Login_Logout/Login";
+import Logout from "../components/Login_Logout/Logout";
+
 
 
 const routes = createBrowserRouter(
   createRoutesFromElements(
     <>
+    <Route path="/login" element={<Login/>}/>
+    <Route path="/logout" element={<Logout/>}/>
+
       <Route path="/" element={<FullLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />

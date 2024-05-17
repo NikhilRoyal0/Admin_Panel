@@ -11,14 +11,13 @@ import {
 } from "@chakra-ui/react";
 import { useLocation } from "react-router-dom";
 import {
-  SearchIcon,
   BellIcon,
   MoonIcon,
   SunIcon,
   HamburgerIcon,
 } from "@chakra-ui/icons";
 
-const Header = ({ toggleSidebar, isSidebarOpen }) => {
+const Header = ({ toggleSidebar, isSidebarOpen, closeSidebar }) => {
   const { colorMode, toggleColorMode } = useColorMode();
   const location = useLocation();
 
@@ -42,14 +41,14 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
     }
   };
 
-  const isSmallScreen = useBreakpointValue({ base: true, lg: false });
+  const isSmallScreen = useBreakpointValue({ base: true, md: false });
 
   return (
     <Flex
       position="fixed"
       top="5"
-      right="7"
-      width={isSidebarOpen ? "calc(100% - 300px)" : "calc(100% - 50px)"}
+      left={isSidebarOpen ? "330px" : "10px"} // Adjusted values based on the sidebar width
+      width={isSidebarOpen ? "calc(100% - 370px)" : "calc(100% - 30px)"} // Adjusted values based on the sidebar width
       minHeight={{ base: "100px", md: "70px" }}
       bg="rgba(173, 216, 230, 0.2)"
       backdropFilter="blur(10px)"
@@ -60,7 +59,9 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
       display={{ md: "grid" }}
       gridTemplateColumns="auto 1fr"
       gridColumnGap="20px"
+      ml={2}
     >
+
       <Box flex="1">
         <Text fontSize="lg" fontWeight="bold">Home / Dashboard</Text>
         <Text> {renderContent()}</Text>
@@ -74,7 +75,8 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
         gridColumn={{ base: "auto", md: "3" }}
         mt={{ base: "4", md: "4" }}
         mb={4}
-      >
+        maxW="fit-content"   
+          >
         <Input
           borderRadius={50}
           variant="filled"
