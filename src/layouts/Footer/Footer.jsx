@@ -9,8 +9,7 @@ import {
   chakra,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { FaTwitter, FaYoutube, FaInstagram } from "react-icons/fa";
-
+import { FaTwitter, FaYoutube, FaGithub } from "react-icons/fa";
 
 
 const SocialButton = ({ children, label, href }) => {
@@ -57,7 +56,7 @@ export default function LargeWithAppLinksAndSocial() {
           justify={{ md: "space-between" }}
           align={{ md: "center" }}
         >
-          <Text>© 2022 Chakra Templates. All rights reserved</Text>
+          <Text>© 2022 Teppl . All rights reserved</Text>
           <Stack direction={"row"} spacing={6}>
             <SocialButton label={"Twitter"} href={"#"}>
               <FaTwitter />
@@ -66,7 +65,7 @@ export default function LargeWithAppLinksAndSocial() {
               <FaYoutube />
             </SocialButton>
             <SocialButton label={"Instagram"} href={"#"}>
-              <FaInstagram />
+              <FaGithub />
             </SocialButton>
           </Stack>
         </Container>

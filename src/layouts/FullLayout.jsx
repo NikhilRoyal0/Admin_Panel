@@ -17,12 +17,24 @@ const FullLayout = () => {
   };
 
   return (
-    <Flex flexDirection="column" minHeight="100vh">
-      <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} closeSidebar={closeSidebar}  />
-      <Flex flex="1">
+    <Flex flexDirection="column" minHeight="100vh" overflowX="hidden">
+      <Header
+        flexShrink={0}
+        toggleSidebar={toggleSidebar}
+        isSidebarOpen={isSidebarOpen}
+        closeSidebar={closeSidebar}
+      />
+      <Flex flex="1" overflowX="hidden">
         <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
-        <Box ml={{ base: 0, md: 72 }} p="0" flex="1" mt={{ base: "150px", md: "100px" }}>
-          <Box minHeight="calc(100vh - 100px)">
+        <Box
+          ml={{ base: isSidebarOpen ? "240px" : "0", md: "72" }}
+          p="0"
+          flex="1"
+          mt={{ base: "150px", md: "90px" }}
+          transition="margin-left 0.3s"
+          overflowX="hidden"
+        >
+          <Box minHeight="calc(100vh - 155px)" overflow="hidden">
             <Outlet />
           </Box>
           <Footer />

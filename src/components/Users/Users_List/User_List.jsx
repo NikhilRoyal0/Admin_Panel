@@ -100,8 +100,8 @@ export default function UserList() {
   }
 
   return (
-    <Box p="1" overflowX="auto">
-      <Flex align="center" justify="space-between" mb="6" mt={5} overflow="auto">
+    <Box p="1">
+      <Flex align="center" justify="space-between" mb="6" mt={5} >
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
           User List
         </Text>
@@ -122,7 +122,7 @@ export default function UserList() {
           </Button>
         </Flex>
       </Flex>
-      <Box bg="gray.100" p="6" borderRadius="lg">
+      <Box bg="gray.100" p="6" borderRadius="lg" overflowX="auto">
         {filteredUsers.length === 0 ? (
           <Text textAlign="center" fontSize="lg">
             No users available

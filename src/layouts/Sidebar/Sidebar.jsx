@@ -13,6 +13,7 @@ const SidebarContent = ({ onClose, ...rest }) => {
 
   const [open, setOpen] = useState(null);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
+  
 
   const handleClick = (index, hasSubItems) => {
     if (hasSubItems) {
@@ -59,11 +60,11 @@ const SidebarContent = ({ onClose, ...rest }) => {
       overflow="auto"
     >
       <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-        <Text as="a" href="/" fontSize="3xl" fontWeight="bold">
+        <Text as="a" href="/" fontSize="3xl" fontWeight="bold" ml={4} mt={5}>
           Admin Panel
         </Text>
       </Flex>
-        <Divider m={5}/>
+        <Divider mt={5}/>
       <br />
       {LinkItems.map((item, index) => (
         <React.Fragment key={index}>
@@ -165,7 +166,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         onClose={onClose}
         returnFocusOnClose={false}
         onOverlayClick={onClose}
-        size="xs"
+        size="md"
       >
         <DrawerContent>
           <SidebarContent onClose={onClose} />

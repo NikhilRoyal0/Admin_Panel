@@ -10,61 +10,45 @@ import {
   useBreakpointValue,
 } from "@chakra-ui/react";
 import { useLocation } from "react-router-dom";
+
 import {
   BellIcon,
   MoonIcon,
   SunIcon,
   HamburgerIcon,
 } from "@chakra-ui/icons";
+import renderContent from "./renderContent";
 
 const Header = ({ toggleSidebar, isSidebarOpen, closeSidebar }) => {
   const { colorMode, toggleColorMode } = useColorMode();
   const location = useLocation();
-
-  const renderContent = () => {
-    const path = location.pathname;
-    switch (path) {
-      case "/dashboard":
-        return (
-          <Text fontSize="xl" fontWeight="bold">
-            Dashboard
-          </Text>
-        );
-      case "/user/user-list":
-        return (
-          <Text fontSize="xl" fontWeight="bold">
-            Users
-          </Text>
-        );
-      default:
-        return null;
-    }
-  };
+  const path = location.pathname;
 
   const isSmallScreen = useBreakpointValue({ base: true, md: false });
+  const isLargeScreen = useBreakpointValue({ base: false, md: true });
 
   return (
     <Flex
       position="fixed"
       top="5"
-      left={isSidebarOpen ? "330px" : "10px"} // Adjusted values based on the sidebar width
-      width={isSidebarOpen ? "calc(100% - 370px)" : "calc(100% - 30px)"} // Adjusted values based on the sidebar width
+      left={isLargeScreen || isSidebarOpen ? "300px" : "20px"} 
       minHeight={{ base: "100px", md: "70px" }}
+      width={{ base: "calc(100% - 40px)", md: isLargeScreen || isSidebarOpen ? "calc(100% - 310px)" : "calc(100% - 20px)" }}
       bg="rgba(173, 216, 230, 0.2)"
       backdropFilter="blur(10px)"
       alignItems="center"
       px="4"
       zIndex="1"
       borderRadius="10px 10px 10px 10px"
-      display={{ md: "grid" }}
+      display={{ sm: "grid" }}
       gridTemplateColumns="auto 1fr"
       gridColumnGap="20px"
-      ml={2}
+      pl={5}
     >
 
       <Box flex="1">
         <Text fontSize="lg" fontWeight="bold">Home / Dashboard</Text>
-        <Text> {renderContent()}</Text>
+        <Text>{renderContent(path)}</Text> 
       </Box>
       <Box
         bg="white"
@@ -75,8 +59,8 @@ const Header = ({ toggleSidebar, isSidebarOpen, closeSidebar }) => {
         gridColumn={{ base: "auto", md: "3" }}
         mt={{ base: "4", md: "4" }}
         mb={4}
-        maxW="fit-content"   
-          >
+        maxW="fit-content"
+      >
         <Input
           borderRadius={50}
           variant="filled"
@@ -108,7 +92,7 @@ const Header = ({ toggleSidebar, isSidebarOpen, closeSidebar }) => {
           variant="ghost"
           size="sm"
           ml="2"
-          onClick={toggleColorMode}
+          // onClick={toggleColorMode}
         />
         <Avatar ml="2" size="sm" name="User" src="https://bit.ly/dan-abramov" />
       </Box>
