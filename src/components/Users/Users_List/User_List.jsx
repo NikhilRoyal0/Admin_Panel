@@ -11,7 +11,6 @@ import {
   Td,
   Flex,
   Spinner,
-  Badge,
   Button,
   Modal,
   ModalOverlay,
@@ -20,7 +19,6 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
-  Select,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -30,6 +28,7 @@ import {
   selectUsersError,
   AddUserData,
 } from "../../../app/Slices/usersSlice";
+import NetworkError from "../../NotFound/networkError";
 
 export default function UserList() {
   const [searchValue, setSearchValue] = useState("");
@@ -41,8 +40,11 @@ export default function UserList() {
     primaryPhone: "",
     deviceId: "",
     password: "abc#123",
-    role:"",
+    role: "",
   });
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage, setUsersPerPage] = useState(10);
 
   const usersData = useSelector(selectUsersData);
   const isLoading = useSelector(selectUsersLoading);
@@ -72,8 +74,8 @@ export default function UserList() {
           email: "",
           primaryPhone: "",
           password: "",
-          deviceId:"",
-          role:"",
+          deviceId: "",
+          role: "",
         });
         setIsAddUserModalOpen(false);
       })
@@ -82,7 +84,6 @@ export default function UserList() {
         console.error("Error:", error);
       });
   };
-
   if (isLoading) {
     return (
       <Flex justify="center" align="center" h="100vh">
@@ -93,15 +94,48 @@ export default function UserList() {
 
   if (error) {
     return (
-      <Flex justify="center" align="center" h="100vh">
-        <Text color="red">Error: {error}</Text>
-      </Flex>
+      <NetworkError />
     );
   }
 
+  // Pagination
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+
+  const paginate = (pageNumber) => {
+    if (pageNumber < 1) {
+      setCurrentPage(1);
+    } else if (pageNumber > totalPages) {
+      setCurrentPage(totalPages);
+    } else {
+      setCurrentPage(pageNumber);
+    }
+  };
+
+  const renderPagination = () => {
+    const pageButtons = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pageButtons.push(
+        <Button
+          key={i}
+          onClick={() => paginate(i)}
+          variant={currentPage === i ? "solid" : "outline"}
+          mr={2}
+        >
+          {i}
+        </Button>
+      );
+    }
+    return pageButtons;
+  };
+
+  // Calculate index of first and last user for current page
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+
   return (
     <Box p="1">
-      <Flex align="center" justify="space-between" mb="6" mt={5} >
+      <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
           User List
         </Text>
@@ -113,7 +147,7 @@ export default function UserList() {
             onChange={(e) => setSearchValue(e.target.value)}
           />
           <Button
-          mr={5}
+            mr={5}
             ml="4"
             colorScheme="teal"
             onClick={() => setIsAddUserModalOpen(true)}
@@ -128,58 +162,57 @@ export default function UserList() {
             No users available
           </Text>
         ) : (
-          <Table variant="simple" minWidth="100%">
-            <Thead>
-              <Tr>
-                <Th>First Name</Th>
-                <Th>Last Name</Th>
-                <Th>Email</Th>
-                <Th>Primary Phone</Th>
-                <Th>Device Id </Th>
-                <Th>Role</Th>
-                <Th>Edit/Delete</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {filteredUsers.map((user, index) => (
-                <Tr key={index}>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {user.firstName}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {user.lastName}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {user.email}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {user.primaryPhone}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {user.deviceId}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {user.role}
-                  </Td>
-                 
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    <Flex>
+          <>
+            <Table variant="simple" minWidth="100%">
+              <Thead>
+                <Tr>
+                  <Th>First Name</Th>
+                  <Th>Last Name</Th>
+                  <Th>Email</Th>
+                  <Th>Primary Phone</Th>
+                  <Th>Device Id</Th>
+                  <Th>Role</Th>
+                  <Th>Edit/Delete</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {currentUsers.map((user, index) => (
+                  <Tr key={index}>
+                    <Td>{user.firstName}</Td>
+                    <Td>{user.lastName}</Td>
+                    <Td>{user.email}</Td>
+                    <Td>{user.primaryPhone}</Td>
+                    <Td>{user.deviceId}</Td>
+                    <Td>{user.role}</Td>
+                    <Td>
                       <Button
-                        size="xs"
+                        size="sm"
                         colorScheme="teal"
-                        mr="1"
-                        onClick={() =>
-                          console.log("Edit user with ID:", user.user_id)
-                        }
+                        mr="2"
+                        onClick={() => handleEdit(user.id)}
                       >
                         Edit
                       </Button>
-                    </Flex>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
+                      <Button
+                        size="sm"
+                        colorScheme="red"
+                        onClick={() => handleDelete(user.id)}
+                      >
+                        Delete
+                      </Button>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+            <Flex justify="center" mt="4">
+              <Button onClick={() => paginate(1)} mr={2}>&lt;&lt;</Button>
+              <Button onClick={() => paginate(currentPage - 1)} mr={2}>&lt;</Button>
+              {renderPagination()}
+              <Button onClick={() => paginate(currentPage + 1)} ml={2}>&gt;</Button>
+              <Button onClick={() => paginate(totalPages)} ml={2}>&gt;&gt;</Button>
+            </Flex>
+          </>
         )}
       </Box>
 
@@ -202,7 +235,7 @@ export default function UserList() {
                 onChange={(e) =>
                   setNewUserData({ ...newUserData, firstName: e.target.value })
                 }
-                isRequired 
+                isRequired
               />
               <Input
                 mb="3"
@@ -211,7 +244,7 @@ export default function UserList() {
                 onChange={(e) =>
                   setNewUserData({ ...newUserData, lastName: e.target.value })
                 }
-                isRequired 
+                isRequired
               />
               <Input
                 mb="3"
@@ -220,7 +253,7 @@ export default function UserList() {
                 onChange={(e) =>
                   setNewUserData({ ...newUserData, email: e.target.value })
                 }
-                isRequired 
+                isRequired
               />
               <Input
                 mb="3"
@@ -232,7 +265,7 @@ export default function UserList() {
                     primaryPhone: e.target.value,
                   })
                 }
-                isRequired 
+                isRequired
               />
               <Input
                 mb="3"
@@ -244,7 +277,7 @@ export default function UserList() {
                     password: e.target.value,
                   })
                 }
-                isRequired 
+                isRequired
               />
               <Input
                 mb="3"
@@ -256,7 +289,7 @@ export default function UserList() {
                     deviceId: e.target.value,
                   })
                 }
-                isRequired 
+                isRequired
               />
               <Input
                 mb="3"
@@ -268,9 +301,9 @@ export default function UserList() {
                     role: e.target.value,
                   })
                 }
-                isRequired 
+                isRequired
               />
-             
+
             </ModalBody>
             <ModalFooter>
               <Button type="submit" colorScheme="teal">

@@ -14,6 +14,8 @@ import {
 import loginimg from "../../assets/images/login-bg.png";
 import { useNavigate } from "react-router-dom";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
+import { login, isAuthenticated } from "../../utils/auth";
+
 
 export default function Login() {
   const [email, setemail] = useState("");
@@ -21,11 +23,31 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
+
   const navigate = useNavigate();
 
-  const handleSubmit = () => {
-    navigate("/dashboard");
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/dashboard");
+    }
+  }, []);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+       await login(email, password);
+      if (isAuthenticated()) {
+        window.location.replace("/dashboard");
+
+      } else {
+        setError("Authentication failed. Please check your credentials.");
+      }
+    } catch (error) {
+      setError("An error occurred. Please try again later.");
+      console.error("Login Error:", error);
+    }
   };
+
 
   return (
     <Box
@@ -40,14 +62,14 @@ export default function Login() {
           width={{ base: "100%", md: "100%" }}
           backgroundColor="white"
           color="black"
-          borderRadius="md"
+          borderRadius="xl"
           overflowX="auto"
           overflowY="auto"
           display="flex"
           p="5"
         >
           <form onSubmit={handleSubmit}>
-            <Heading as="h1" size="lg" mb="4" mt="10">
+            <Heading as="h1" size="lg" mb="4" mt="8">
               Welcome Back!
             </Heading>
             <Text color="gray.600" mb="4">

@@ -34,6 +34,7 @@ import {
   deleteBranchData,
   updateBranchData,
 } from "../../../app/Slices/branchSlice";
+import NetworkError from "../../NotFound/networkError";
 
 export default function Branch_List() {
   const [searchValue, setSearchValue] = useState("");
@@ -61,7 +62,9 @@ export default function Branch_List() {
   const dispatch = useDispatch();
   const Toast = useToast();
 
-  var currentDate = new Date();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [BranchPerPage, setBranchPerPage] = useState(10);
+
 
   useEffect(() => {
     dispatch(fetchBranchData());
@@ -207,11 +210,44 @@ export default function Branch_List() {
 
   if (error) {
     return (
-      <Flex justify="center" align="center" h="100vh">
-        <Text color="red">Error: {error}</Text>
-      </Flex>
+      <NetworkError />
     );
   }
+
+  const totalPages = Math.ceil(BranchData.length / BranchPerPage);
+
+  const paginate = (pageNumber) => {
+    if (pageNumber < 1) {
+      setCurrentPage(1);
+    } else if (pageNumber > totalPages) {
+      setCurrentPage(totalPages);
+    } else {
+      setCurrentPage(pageNumber);
+    }
+  };
+  const renderPagination = () => {
+    const pageButtons = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pageButtons.push(
+        <Button
+          key={i}
+          onClick={() => paginate(i)}
+          variant={currentPage === i ? "solid" : "outline"}
+          mr={2}
+        >
+          {i}
+        </Button>
+      );
+    }
+    return pageButtons;
+  };
+
+  // Calculate index of first and last Branch for current page
+  const indexOfLastBranch = currentPage * BranchPerPage;
+  const indexOfFirstBranch = indexOfLastBranch - BranchPerPage;
+  const currentBranch = BranchData.slice(indexOfFirstBranch, indexOfLastBranch);
+
+
 
   return (
     <Box p="1" >
@@ -231,7 +267,7 @@ export default function Branch_List() {
         </Flex>
       </Flex>
       <Box bg="gray.100" p="6" borderRadius="lg" overflowX="auto">
-        {BranchData.length === 0 ? (
+        {currentBranch.length === 0 ? (
           <Text textAlign="center" fontSize="lg">
             No Branch available
           </Text>
@@ -250,7 +286,7 @@ export default function Branch_List() {
               </Tr>
             </Thead>
             <Tbody>
-              {BranchData.map((Branch, index) => (
+              {currentBranch.map((Branch, index) => (
                 <Tr key={index}>
                   <Td borderBottom="1px" borderColor="gray.200">
                     {Branch.branchId}
@@ -301,6 +337,13 @@ export default function Branch_List() {
           </Table>
         )}
       </Box>
+      <Flex justify="center" mt="4">
+        <Button onClick={() => paginate(1)} mr={2}>&lt;&lt;</Button>
+        <Button onClick={() => paginate(currentPage - 1)} mr={2}>&lt;</Button>
+        {renderPagination()}
+        <Button onClick={() => paginate(currentPage + 1)} ml={2}>&gt;</Button>
+        <Button onClick={() => paginate(totalPages)} ml={2}>&gt;&gt;</Button>
+      </Flex>
 
       {/* Add Branch Modal */}
       <Modal

@@ -31,7 +31,7 @@ const Header = ({ toggleSidebar, isSidebarOpen, closeSidebar }) => {
     <Flex
       position="fixed"
       top="5"
-      left={isLargeScreen || isSidebarOpen ? "300px" : "20px"} 
+      left={isLargeScreen || isSidebarOpen ? "300px" : "20px"}
       minHeight={{ base: "100px", md: "70px" }}
       width={{ base: "calc(100% - 40px)", md: isLargeScreen || isSidebarOpen ? "calc(100% - 310px)" : "calc(100% - 20px)" }}
       bg="rgba(173, 216, 230, 0.2)"
@@ -46,10 +46,9 @@ const Header = ({ toggleSidebar, isSidebarOpen, closeSidebar }) => {
       pl={5}
     >
 
-      <Box flex="1">
-        <Text fontSize="lg" fontWeight="bold">Home / Dashboard</Text>
-        <Text>{renderContent(path)}</Text> 
-      </Box>
+      <Text fontSize="lg" fontWeight="bold">
+      {renderContent(path)}
+      </Text>
       <Box
         bg="white"
         display="flex"
@@ -92,7 +91,7 @@ const Header = ({ toggleSidebar, isSidebarOpen, closeSidebar }) => {
           variant="ghost"
           size="sm"
           ml="2"
-          // onClick={toggleColorMode}
+        // onClick={toggleColorMode}
         />
         <Avatar ml="2" size="sm" name="User" src="https://bit.ly/dan-abramov" />
       </Box>

@@ -10,13 +10,22 @@ import {
 } from "@chakra-ui/react";
 import { CheckCircleIcon } from "@chakra-ui/icons";
 import { useNavigate } from "react-router-dom";
+import { logout } from '../../utils/auth';
+
 
 export default function Logout() {
   const navigate = useNavigate();
 
   const handleGoToLogin = () => {
-    navigate("/login");
+    navigate('/login');
   };
+
+  useEffect(() => {
+    if (location.pathname === "/logout") {
+      logout(); 
+    }
+  }, [location.pathname]);
+
 
 
   return (

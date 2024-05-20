@@ -1,122 +1,160 @@
 import React from 'react';
 import { Text } from '@chakra-ui/react';
-
+import { Link } from 'react-router-dom'; // assuming you are using React Router
 
 const renderContent = (path) => {
     switch (path) {
       case "/dashboard":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Dashboard
-          </Text>
+          <Link to="/dashboard">
+            <Text fontSize="xl" fontWeight="bold">
+              Dashboard
+            </Text>
+          </Link>
         );
       case "/user/user-list":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Users Lists
-          </Text>
+          <Link to="/user/user-list">
+            <Text fontSize="xl" fontWeight="bold">
+              User / User List
+            </Text>
+          </Link>
         );
       case "/user/roles":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            User Roles
-          </Text>
+          <Link to="/user/roles">
+            <Text fontSize="xl" fontWeight="bold">
+              User / User Roles
+            </Text>
+          </Link>
         );
       case "/branch/branch-list":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Branch List
-          </Text>
+          <Link to="/branch/branch-list">
+            <Text fontSize="xl" fontWeight="bold">
+              Branch / Branch List
+            </Text>
+          </Link>
         );
       case "/branch/branch-planner":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Branch Planner
-          </Text>
+          <Link to="/branch/branch-planner">
+            <Text fontSize="xl" fontWeight="bold">
+              Branch / Branch Planner
+            </Text>
+          </Link>
         );
       case "/student/student-list":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Student List
-          </Text>
+          <Link to="/student/student-list">
+            <Text fontSize="xl" fontWeight="bold">
+              Student / Student List
+            </Text>
+          </Link>
         );
       case "/student/qualifications":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Student Qualifications
-          </Text>
+          <Link to="/student/qualifications">
+            <Text fontSize="xl" fontWeight="bold">
+              Student / Student Qualifications
+            </Text>
+          </Link>
         );
       case "/student/certificate-templete":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Certificate Templates
-          </Text>
+          <Link to="/student/certificate-template">
+            <Text fontSize="xl" fontWeight="bold">
+              Student / Certificate Templates
+            </Text>
+          </Link>
         );
       case "/student/certificate":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Student Certificate
-          </Text>
+          <Link to="/student/certificate">
+            <Text fontSize="xl" fontWeight="bold">
+              Student / Student Certificate
+            </Text>
+          </Link>
         );
       case "/student/fee-option":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Fee Options
-          </Text>
+          <Link to="/student/fee-option">
+            <Text fontSize="xl" fontWeight="bold">
+              Student / Fee Options
+            </Text>
+          </Link>
         );
       case "/courseStuff/course-list":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Course List
-          </Text>
+          <Link to="/courseStuff/course-list">
+            <Text fontSize="xl" fontWeight="bold">
+              Course Stuff / Course List
+            </Text>
+          </Link>
         );
       case "/courseStuff/course-category":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Course Categories
-          </Text>
+          <Link to="/courseStuff/course-category">
+            <Text fontSize="xl" fontWeight="bold">
+              Course Stuff / Course Categories
+            </Text>
+          </Link>
         );
       case "/courseStuff/course-content":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Course Content
-          </Text>
+          <Link to="/courseStuff/course-content">
+            <Text fontSize="xl" fontWeight="bold">
+              Course Stuff / Course Content
+            </Text>
+          </Link>
         );
       case "/courseStuff/course-purchase-history":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Course Purchase History
-          </Text>
+          <Link to="/courseStuff/course-purchase-history">
+            <Text fontSize="xl" fontWeight="bold">
+              Course Stuff / Course Purchase History
+            </Text>
+          </Link>
         );
       case "/media-content":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Media Content
-          </Text>
+          <Link to="/media-content">
+            <Text fontSize="xl" fontWeight="bold">
+              Media Content
+            </Text>
+          </Link>
         );
       case "/staff-attendence":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Staff Attendance
-          </Text>
+          <Link to="/staff-attendance">
+            <Text fontSize="xl" fontWeight="bold">
+              Staff / Staff Attendance
+            </Text>
+          </Link>
         );
       case "/documents":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Documents
-          </Text>
+          <Link to="/documents">
+            <Text fontSize="xl" fontWeight="bold">
+              Documents
+            </Text>
+          </Link>
         );
       case "/enquiry":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Enquiry
-          </Text>
+          <Link to="/enquiry">
+            <Text fontSize="xl" fontWeight="bold">
+              Enquiry
+            </Text>
+          </Link>
         );
       case "/logout":
         return (
-          <Text fontSize="xl" fontWeight="bold">
-            Logout
-          </Text>
+          <Link to="/logout">
+            <Text fontSize="xl" fontWeight="bold">
+              Logout
+            </Text>
+          </Link>
         );
       default:
         return null;
