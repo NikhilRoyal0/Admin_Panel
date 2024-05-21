@@ -1,4 +1,8 @@
-import axios from "axios"
+import axios from "axios";
+
+// Import the API_TOKEN from your environment or wherever it's defined
+const API_TOKEN = "123";
+
 export const isAuthenticated = () => {
     const authToken = sessionStorage.getItem("authToken");
     return authToken !== null;
@@ -12,6 +16,7 @@ export const login = async (email, password) => {
             {
                 headers: {
                     "Content-Type": "application/json",
+                    "api-token": API_TOKEN, // Manually set the api-token header
                 },
             }
         );
@@ -22,6 +27,7 @@ export const login = async (email, password) => {
             const userId = getUserIdFromToken(authToken);
             sessionStorage.setItem("authToken", authToken);
             sessionStorage.setItem("userId", userId);
+            sessionStorage.setItem("api-token", API_TOKEN);
             return true;
         } else {
             console.error("Token verification failed");

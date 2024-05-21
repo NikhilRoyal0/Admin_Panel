@@ -119,6 +119,7 @@ export default function UserList() {
           key={i}
           onClick={() => paginate(i)}
           variant={currentPage === i ? "solid" : "outline"}
+          colorScheme={currentPage === i ? "blue" : undefined} 
           mr={2}
         >
           {i}

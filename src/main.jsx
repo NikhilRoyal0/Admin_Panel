@@ -7,11 +7,9 @@ import Store from "./app/Store/Store";
 import { Provider } from "react-redux";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
     <Provider store={Store}>
       <ChakraProvider>
         <RouterProvider router={routes}></RouterProvider>
       </ChakraProvider>
     </Provider>
-  </React.StrictMode>
 );

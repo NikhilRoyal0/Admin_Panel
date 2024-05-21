@@ -44,9 +44,16 @@ export const { setBranchData, setBranchLoading, setBranchError, updateBranch, de
 
 export const fetchBranchData = () => async (dispatch) => {
   try {
+    const apiToken = sessionStorage.getItem("api-token");
+
     dispatch(setBranchLoading());
     const response = await axios.get(
-      import.meta.env.VITE_BASE_URL + "branches/all/getAllBranches"
+      import.meta.env.VITE_BASE_URL + "branches/all/getAllBranches",
+      {
+        headers: {
+          "api-token": apiToken,
+        },
+      }
     );
     dispatch(setBranchData(response.data));
   } catch (error) {
@@ -57,12 +64,15 @@ export const fetchBranchData = () => async (dispatch) => {
 
 export const AddBranchData = (formData) => async (dispatch) => {
   try {
+    const apiToken = sessionStorage.getItem("api-token");
+
     const response = await axios.post(
       import.meta.env.VITE_BASE_URL + "branches/create",
       formData,
       {
         headers: {
           "Content-Type": "application/json",
+          "api-token": apiToken,
         },
       }
     );
@@ -75,12 +85,15 @@ export const AddBranchData = (formData) => async (dispatch) => {
 
 export const updateBranchData = (branchId, formData) => async (dispatch) => {
   try {
+    const apiToken = sessionStorage.getItem("api-token");
+
     const response = await axios.put(
       import.meta.env.VITE_BASE_URL + `branches/update/${branchId}`,
       formData,
       {
         headers: {
           "Content-Type": "application/json",
+          "api-token": apiToken,
         },
       }
     );
@@ -95,8 +108,15 @@ export const updateBranchData = (branchId, formData) => async (dispatch) => {
 
 export const deleteBranchData = (branchId) => async (dispatch) => {
   try {
+    const apiToken = sessionStorage.getItem("api-token");
+
     await axios.delete(
-      import.meta.env.VITE_BASE_URL + `branches/delete/${branchId}`
+      import.meta.env.VITE_BASE_URL + `branches/delete/${branchId}`,
+      {
+        headers: {
+          "api-token": apiToken,
+        },
+      }
     );
 
     dispatch(deleteBranch(deleteBranchData));

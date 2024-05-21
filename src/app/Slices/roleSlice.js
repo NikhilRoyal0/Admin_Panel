@@ -23,12 +23,15 @@ const rolesSlice = createSlice({
       state.error = action.payload;
     },
     updateroles: (state, action) => {
-      const updatedroles = action.payload;
-      state.data.map((roles) => roles.rolesId === updatedroles.rolesId);
+      const updatedRole = action.payload;
+      const index = state.data.findIndex(role => role.roleId === updatedRole.roleId);
+      if (index !== -1) {
+        state.data[index] = updatedRole;
+      }
     },
     deleteroles: (state, action) => {
-      const rolesIdToDelete = action.payload;
-      state.data = state.data.filter((roles) => roles.rolesId !== rolesIdToDelete);
+      const roleIdToDelete = action.payload;
+      state.data = state.data.filter(role => role.roleId !== roleIdToDelete);
       state.isLoading = false;
       state.error = null;
     },
@@ -45,9 +48,15 @@ export const {
 
 export const fetchrolesData = () => async (dispatch) => {
   try {
+    const apiToken = sessionStorage.getItem("api-token");
+
     dispatch(setrolesLoading());
-    const response = await axios.get(import.meta.env.VITE_BASE_URL + "feature/roles");
-    dispatch(setrolesData(response.data));
+    const response = await axios.get(import.meta.env.VITE_BASE_URL + "roles/all/getAllRoles", {
+      headers: {
+        "api-token": apiToken,
+      },
+    });
+    dispatch(setrolesData({ data: response.data }));
   } catch (error) {
     dispatch(setrolesError(error.message));
   }
@@ -55,10 +64,13 @@ export const fetchrolesData = () => async (dispatch) => {
 
 export const AddData = (form) => async () => {
   try {
-    const response = await axios.post(import.meta.env.VITE_BASE_URL + 'feature/insertroles', form, {
+    const apiToken = sessionStorage.getItem("api-token");
+
+    const response = await axios.post(import.meta.env.VITE_BASE_URL + 'roles/addRole', form, {
       headers: {
         'Content-Type': 'multipart/form-data',
-      }
+        "api-token": apiToken,
+      },
     });
     console.log('Response:', response.data);
   } catch (error) {
@@ -66,51 +78,45 @@ export const AddData = (form) => async () => {
   }
 }
 
-export const updaterolesData = (rolesId, data) => async (dispatch) => {
+export const updaterolesData = (roleId, roleName, permissions) => async (dispatch) => {
   try {
+    const apiToken = sessionStorage.getItem("api-token");
 
     const response = await axios.put(
-      import.meta.env.VITE_BASE_URL + `feature/updateroles/${rolesId}`,
-      data,
+      import.meta.env.VITE_BASE_URL + `roles/updateRole/${roleId}`,
+      { roleName, permissions },
       {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/json',
+          "api-token": apiToken,
         },
       }
     );
+    console.log('Response:', response.data);
 
-    const updatedrolesData = response.data;
+    const updatedRoleData = response.data;
 
-    dispatch(updateroles(updatedrolesData));
-
+    dispatch(updateroles(updatedRoleData));
   } catch (error) {
     console.error('Error:', error);
   }
 }
 
-export const deleterolesData = (rolesId, data) => async (dispatch) => {
+export const deleterolesData = (roleId) => async (dispatch) => {
   try {
+    const apiToken = sessionStorage.getItem("api-token");
 
-    const response = await axios.delete(
-      import.meta.env.VITE_BASE_URL + `feature/deleteroles/${rolesId}`,
-      data,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
+    await axios.delete(import.meta.env.VITE_BASE_URL + `roles/deleteRole/${roleId}`, {
+      headers: {
+        "api-token": apiToken,
+      },
+    });
 
-    const deleterolesData = response.data;
-
-    dispatch(deleteroles(deleterolesData));
-
+    dispatch(deleteroles(roleId));
   } catch (error) {
     console.error('Error:', error);
   }
 };
-
-
 
 export const selectrolesData = (state) => state.roles.data;
 export const selectrolesLoading = (state) => state.roles.isLoading;

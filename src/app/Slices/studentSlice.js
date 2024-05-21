@@ -24,63 +24,79 @@ const StudentSlice = createSlice({
     },
     updateStudent: (state, action) => {
       const updatedStudent = action.payload;
-      state.data = state.data.map((Student) =>
-        Student.student_id === updatedStudent.student_id ? updatedStudent : Student
+      state.data = state.data.map((student) =>
+        student.student_id === updatedStudent.student_id ? updatedStudent : student
       );
     },
     deleteStudent: (state, action) => {
-      const selectedstudent_id = action.payload;
-      state.data = state.data.filter(
-        (Student) => Student.selectedstudent_id !== selectedstudent_id
-      );
+      const deletedStudentId = action.payload;
+      state.data = state.data.filter((student) => student.student_id !== deletedStudentId);
       state.isLoading = false;
       state.error = null;
     },
   },
 });
 
-export const { setStudentData, setStudentLoading, setStudentError, updateStudent, deleteStudent } =
-  StudentSlice.actions;
+export const {
+  setStudentData,
+  setStudentLoading,
+  setStudentError,
+  updateStudent,
+  deleteStudent,
+} = StudentSlice.actions;
 
 export const fetchStudentData = () => async (dispatch) => {
   try {
     dispatch(setStudentLoading());
+    const apiToken = sessionStorage.getItem("api-token");
+
     const response = await axios.get(
-      import.meta.env.VITE_BASE_URL + "students/all/getAllStudents"
+      import.meta.env.VITE_BASE_URL + "students/all/getAllStudents",
+      {
+        headers: {
+          "api-token": apiToken,
+        },
+      }
     );
     dispatch(setStudentData(response.data));
   } catch (error) {
     dispatch(setStudentError(error.message));
-    console.error("Error fetching Student  data:", error);
+    console.error("Error fetching student data:", error);
   }
 };
 
 export const AddStudentData = (formData) => async (dispatch) => {
   try {
+    const apiToken = sessionStorage.getItem("api-token");
+
     const response = await axios.post(
       import.meta.env.VITE_BASE_URL + "students/register",
       formData,
       {
         headers: {
           "Content-Type": "application/json",
+          "api-token": apiToken,
         },
       }
     );
     console.log("Response:", response.data);
     dispatch(fetchStudentData());
   } catch (error) {
-    console.error("Error adding Student :", error);
+    console.error("Error adding student:", error);
   }
 };
 
 export const updateStudentData = (student_id, formData) => async (dispatch) => {
   try {
+    const apiToken = sessionStorage.getItem("api-token");
+
     const response = await axios.put(
       import.meta.env.VITE_BASE_URL + `students/update/${student_id}`,
       formData,
       {
         headers: {
           "Content-Type": "application/json",
+          "api-token": apiToken,
         },
       }
     );
@@ -89,19 +105,26 @@ export const updateStudentData = (student_id, formData) => async (dispatch) => {
 
     dispatch(updateStudent(updatedStudentData));
   } catch (error) {
-    console.error("Error updating Student :", error);
+    console.error("Error updating student:", error);
   }
 };
 
 export const deleteStudentData = (student_id) => async (dispatch) => {
   try {
+    const apiToken = sessionStorage.getItem("api-token");
+
     await axios.delete(
-      import.meta.env.VITE_BASE_URL + `students/delete/${student_id}`
+      import.meta.env.VITE_BASE_URL + `students/delete/${student_id}`,
+      {
+        headers: {
+          "api-token": apiToken,
+        },
+      }
     );
 
-    dispatch(deleteStudent(deleteStudentData));
+    dispatch(deleteStudent(student_id));
   } catch (error) {
-    console.error("Error deleting Student :", error);
+    console.error("Error deleting student:", error);
   }
 };
 

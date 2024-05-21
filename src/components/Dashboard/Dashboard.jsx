@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import MiniCalendar from "./Items/Calendar";
 import BarChart from "./Items/Medium/Chart";
 import Small1 from "./Items/Small/Small1";
@@ -12,18 +13,35 @@ import Large1 from "./Items/Large/Large1";
 import Large2 from "./Items/Large/Large2";
 import Large3 from "./Items/Large/Large3";
 import Large4 from "./Items/Large/Large4";
+import { selectCountData, setCountError, setCountLoading, fetchCountData } from "../../app/Slices/countSlice";
 
 export default function Dashboard() {
+  const dispatch = useDispatch();
+  const CountData = useSelector(selectCountData);
+
+  useEffect(() => {
+    dispatch(fetchCountData());
+  }, [dispatch]);
+
+  if (!CountData) {
+
+    dispatch(setCountLoading());
+
+    dispatch(setCountError("Count data not available"));
+
+    return null;
+  }
+
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "20px", margin: "20px" }}>
       {/* Row 1 */}
       <GridContainer>
-        <BoxCard title={<Small1 totalBranches={23} />} height="80px" />
-        <BoxCard title={<Small2 totalStudents={890} />} height="80px" />
-        <BoxCard title={<Small3 totalCourses={19} />} height="80px" />
-        <BoxCard title={<Small4 totalCertificates={9194} />} height="80px" />
-        <BoxCard title={<Small5 totalStudents={80} />} height="80px" />
-        <BoxCard title={<Small6 totalStudents={89} />} height="80px" />
+        <BoxCard title={<Small1 totalBranches={CountData.branchCount} />} height="80px" />
+        <BoxCard title={<Small2 totalStudents={CountData.studentCount} />} height="80px" />
+        <BoxCard title={<Small3 totalCourses={CountData.courseCount} />} height="80px" />
+        <BoxCard title={<Small4 totalCertificates={CountData.certificatesCount} />} height="80px" />
+        <BoxCard title={<Small5 totalStudents={CountData.studentCount} />} height="80px" />
+        <BoxCard title={<Small6 totalStudents={CountData.studentCount} />} height="80px" />
       </GridContainer>
 
       {/* Row 2 */}

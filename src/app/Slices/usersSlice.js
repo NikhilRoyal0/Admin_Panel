@@ -27,11 +27,20 @@ const UsersSlice = createSlice({
 
 export const { setUsersData, setUsersLoading, setUsersError } =
   UsersSlice.actions;
+
 export const fetchUsersData = () => async (dispatch) => {
   try {
     dispatch(setUsersLoading());
+    
+    const apiToken = sessionStorage.getItem("api-token");
+
     const response = await axios.get(
-      import.meta.env.VITE_BASE_URL+"users/all/getAllUsers"
+      import.meta.env.VITE_BASE_URL + "users/all/getAllUsers",
+      {
+        headers: {
+          "api-token": apiToken, 
+        },
+      }
     );
     dispatch(setUsersData(response.data));
   } catch (error) {
@@ -39,14 +48,18 @@ export const fetchUsersData = () => async (dispatch) => {
   }
 };
 
+// Add user data thunk action
 export const AddUserData = (newUserData) => async (dispatch) => {
   try {
+    const apiToken = sessionStorage.getItem("api-token");
+
     const response = await axios.post(
       import.meta.env.VITE_BASE_URL + "users/register",
       newUserData,
       {
         headers: {
           "Content-Type": "application/json",
+          "api-token": apiToken, // Include API token in headers
         },
       }
     );
