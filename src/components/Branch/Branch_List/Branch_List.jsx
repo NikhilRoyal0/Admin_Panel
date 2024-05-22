@@ -233,7 +233,7 @@ export default function Branch_List() {
           key={i}
           onClick={() => paginate(i)}
           variant={currentPage === i ? "solid" : "outline"}
-          colorScheme={currentPage === i ? "blue" : undefined} 
+          colorScheme={currentPage === i ? "blue" : undefined}
           mr={2}
         >
           {i}
@@ -243,7 +243,6 @@ export default function Branch_List() {
     return pageButtons;
   };
 
-  // Calculate index of first and last Branch for current page
   const indexOfLastBranch = currentPage * BranchPerPage;
   const indexOfFirstBranch = indexOfLastBranch - BranchPerPage;
   const currentBranch = BranchData.slice(indexOfFirstBranch, indexOfLastBranch);
@@ -251,7 +250,7 @@ export default function Branch_List() {
 
 
   return (
-    <Box p="1" >
+    <Box p="3" >
       <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
           Branch List
@@ -267,7 +266,20 @@ export default function Branch_List() {
           </Button>
         </Flex>
       </Flex>
-      <Box bg="gray.100" p="6" borderRadius="lg" overflowX="auto">
+      <Box bg="gray.100" p="6" borderRadius="lg" overflowX="auto" css={{
+        '&::-webkit-scrollbar': {
+          width: '8px',
+          height: '8px',
+          backgroundColor: 'transparent',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: '#cbd5e0',
+          borderRadius: '10px',
+        },
+        '&::-webkit-scrollbar-thumb:hover': {
+          backgroundColor: '#a0aec0',
+        },
+      }}>
         {currentBranch.length === 0 ? (
           <Text textAlign="center" fontSize="lg">
             No Branch available

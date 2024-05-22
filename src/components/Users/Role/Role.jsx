@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchrolesData, selectrolesData, selectrolesLoading, selectrolesError, updaterolesData } from "../../../app/Slices/roleSlice";
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Checkbox, Button } from '@chakra-ui/react';
+import { Box, Table, Thead, Tbody, Tr, Th, Td, Checkbox, Flex, Spinner, Button } from '@chakra-ui/react';
+import NetworkError from "../../NotFound/networkError";
 
 export default function Role() {
   const dispatch = useDispatch();
@@ -9,42 +10,64 @@ export default function Role() {
   const rolesData = useSelector(selectrolesData);
   const rolesLoading = useSelector(selectrolesLoading);
   const rolesError = useSelector(selectrolesError);
-  
+
   useEffect(() => {
     dispatch(fetchrolesData());
   }, [dispatch]);
-  
+
   const [rolePermissions, setRolePermissions] = useState([]);
+  const [isChanged, setIsChanged] = useState(false);
+  const [changedRows, setChangedRows] = useState([]);
+  const [Loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (rolesData && rolesData.data && rolesData.data.length > 0) {
-      const initialPermissions = rolesData.data.map(role => ({
-        roleId: role.roleId,
-        roleName: role.roleName,
-        permissions: {
-          create: role.permissions.create,
-          read: role.permissions.read,
-          update: role.permissions.update,
-          delete: role.permissions.delete,
-        },
-      }));
+      const initialPermissions = rolesData.data.map(role => {
+        const permissions = JSON.parse(role.permissions);
+        return {
+          roleId: role.roleId,
+          roleName: role.roleName,
+          permissions: {
+            create: permissions.create,
+            read: permissions.read,
+            update: permissions.update,
+            delete: permissions.delete,
+          },
+        };
+      });
       setRolePermissions(initialPermissions);
     }
   }, [rolesData]);
 
+  useEffect(() => {
+    const changedRowsIds = rolePermissions.reduce((acc, role) => {
+      const originalRole = rolesData.data.find(original => original.roleId === role.roleId);
+      if (JSON.stringify(role.permissions) !== originalRole.permissions) {
+        acc.push(role.roleId);
+      }
+      return acc;
+    }, []);
+    setChangedRows(changedRowsIds);
+    setIsChanged(changedRowsIds.length > 0);
+  }, [rolesData, rolePermissions]);
+
   if (rolesLoading) {
-    return <div>Loading...</div>;
+    return (
+      <Flex justify="center" align="center" h="100vh">
+        <Spinner size="xl" />
+      </Flex>
+    );
   }
 
   if (rolesError) {
-    return <div>Error: {rolesError}</div>;
+    return <NetworkError />;
   }
 
-  const handleSelectPermission = (roleId, permissions) => {
+  const handleSelectPermission = (roleId, permissionType) => {
     setRolePermissions(prevState => {
       const updatedPermissions = prevState.map(role => {
         if (role.roleId === roleId) {
-          const updatedRole = { ...role, permissions: { ...role.permissions, [permissions]: !role.permissions[permissions] } };
+          const updatedRole = { ...role, permissions: { ...role.permissions, [permissionType]: !role.permissions[permissionType] } };
           return updatedRole;
         }
         return role;
@@ -55,18 +78,42 @@ export default function Role() {
 
   const handleSaveChanges = (roleId) => {
     const role = rolePermissions.find(role => role.roleId === roleId);
-    if (role && role.permissions) {
-      const updatedPermissions = Object.keys(role.permissions).reduce((acc, key) => {
-        acc[key] = role.permissions[key] || false;
-        return acc;
-      }, {});
-      dispatch(updaterolesData(role.roleId, { roleName: role.roleName, permissions: JSON.stringify(updatedPermissions) }));
+    if (role) {
+      const { roleId: id, ...roleDataWithoutId } = role;
+      const roleDataWithStringPermissions = {
+        roleId: id,
+        ...roleDataWithoutId,
+        permissions: JSON.stringify(roleDataWithoutId.permissions),
+      };
+      setLoading(true);
+      dispatch(updaterolesData(roleDataWithStringPermissions))
+        .then(() => {
+          dispatch(fetchrolesData());
+          setLoading(false);
+          setIsChanged(false);
+        })
+        .catch((error) => {
+          console.error("Error updating role:", error);
+        });
     }
   };
 
   return (
-    <Box mt={10} ml="5%" mr="5%" bg="white" p={4} borderRadius="md" overflow="auto">
-      <Table variant="simple" >
+    <Box mt={10} ml="5%" mr="5%" bg="white" p={4} borderRadius="md" overflow="auto" css={{
+      '&::-webkit-scrollbar': {
+        width: '8px',
+        height: '8px',
+        backgroundColor: 'transparent',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        backgroundColor: '#cbd5e0',
+        borderRadius: '10px',
+      },
+      '&::-webkit-scrollbar-thumb:hover': {
+        backgroundColor: '#a0aec0',
+      },
+    }}>
+      <Table variant="simple">
         <Thead>
           <Tr>
             <Th>Role</Th>
@@ -94,7 +141,15 @@ export default function Role() {
                 <Checkbox isChecked={rolePermissions.find(item => item.roleId === role.roleId)?.permissions.delete} onChange={() => handleSelectPermission(role.roleId, 'delete')} colorScheme="blue" />
               </Td>
               <Td>
-                <Button colorScheme="blue" onClick={() => handleSaveChanges(role.roleId)}>Save</Button>
+                <Button
+                  isLoading={Loading}
+                  colorScheme="blue"
+                  onClick={() => { role.roleId && handleSaveChanges(role.roleId); }}
+                  disabled={!changedRows.includes(role.roleId)}
+                  style={{ backgroundColor: changedRows.includes(role.roleId) ? 'blue' : 'grey' }}
+                >
+                  Save
+                </Button>
               </Td>
             </Tr>
           ))}

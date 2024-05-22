@@ -1,6 +1,5 @@
 import axios from "axios";
 
-// Import the API_TOKEN from your environment or wherever it's defined
 const API_TOKEN = "123";
 
 export const isAuthenticated = () => {
@@ -43,6 +42,7 @@ export const login = async (email, password) => {
 export const logout = () => {
     sessionStorage.removeItem("authToken");
     sessionStorage.removeItem("userId");
+    sessionStorage.removeItem("api-token");
 };
 
 export const getUserIdFromToken = (authToken) => {

@@ -16,13 +16,12 @@ import { useNavigate } from "react-router-dom";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { login, isAuthenticated } from "../../utils/auth";
 
-
 export default function Login() {
-  const [email, setemail] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-
+  const [showImage, setShowImage] = useState(true);
 
   const navigate = useNavigate();
 
@@ -30,15 +29,14 @@ export default function Login() {
     if (isAuthenticated()) {
       navigate("/dashboard");
     }
-  }, []);
+  }, [navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-       await login(email, password);
+      await login(email, password);
       if (isAuthenticated()) {
         window.location.replace("/dashboard");
-
       } else {
         setError("Authentication failed. Please check your credentials.");
       }
@@ -48,7 +46,6 @@ export default function Login() {
     }
   };
 
-
   return (
     <Box
       display="flex"
@@ -57,17 +54,16 @@ export default function Login() {
       backgroundColor="#f0f0f0"
       minHeight="100vh"
     >
-      <Stack direction={{ base: "column", md: "row" }} spacing="20px">
-        <Box
-          width={{ base: "100%", md: "100%" }}
-          backgroundColor="white"
-          color="black"
-          borderRadius="xl"
-          overflowX="auto"
-          overflowY="auto"
-          display="flex"
-          p="5"
-        >
+      <Box
+        width={{ base: "40%", md: "40%" }}
+        backgroundColor="white"
+        color="black"
+        borderRadius="xl"
+        overflow="hidden"
+        display="flex"
+        flexDirection={{ base: "column", md: "row" }}
+      >
+        <Box p="5" flex="1">
           <form onSubmit={handleSubmit}>
             <Heading as="h1" size="lg" mb="4" mt="8">
               Welcome Back!
@@ -82,7 +78,7 @@ export default function Login() {
                 placeholder="Enter your email address"
                 size="sm"
                 value={email}
-                onChange={(e) => setemail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </FormControl>
 
@@ -103,6 +99,7 @@ export default function Login() {
                 position="absolute"
                 right="0.1rem"
                 size="sm"
+                variant="ghost"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <ViewOffIcon /> : <ViewIcon />}
@@ -132,18 +129,24 @@ export default function Login() {
               Sign in
             </Button>
           </form>
-          <Box width={{ base: "100%", md: "50%" }} ml={20}>
+        </Box>
+        {showImage && (
+          <Box
+            display={{ base: "none", lg: "block" }}
+            flex="1"
+            overflow="hidden"
+          >
             <Image
               src={loginimg}
-              alt="Portrait"
+              alt="Login Background"
               maxWidth="100%"
               maxHeight="100%"
-              height="450px"
-              objectFit=""
+              height="100%"
+              objectFit="cover"
             />
           </Box>
-        </Box>
-      </Stack>
+        )}
+      </Box>
     </Box>
   );
 }

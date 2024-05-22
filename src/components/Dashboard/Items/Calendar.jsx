@@ -31,6 +31,7 @@ export default function Calendar() {
   const renderCalendar = () => {
     const calendar = [];
     let day = 1;
+    const todayDate = today.getDate(); // Get the day of the month for today
 
     // Render days of the week with color
     const days = daysOfWeek.map((day, index) => (
@@ -52,8 +53,18 @@ export default function Calendar() {
         if (i === 0 && j < firstDay) {
           week.push(<Box key={`empty-${j}`} flex="1" />);
         } else if (day <= totalDays) {
+          const isToday = day === todayDate && currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear();
           week.push(
-            <Box key={day} flex="1" p={2} textAlign="center" color="black">
+            <Box
+              key={day}
+              flex="1"
+              p={2}
+              textAlign="center"
+              color={isToday ? "blue.500" : "black"}
+              fontWeight={isToday ? "bold" : "normal"}
+              bgColor={isToday ? "blue.100" : ""}
+              borderRadius={isToday ? "10px" : ""}
+            >
               {day}
             </Box>
           );
@@ -71,6 +82,7 @@ export default function Calendar() {
 
     return calendar;
   };
+
 
   const handlePrevMonth = () => {
     const prevMonth = new Date(

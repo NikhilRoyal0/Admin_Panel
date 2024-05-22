@@ -24,10 +24,9 @@ const rolesSlice = createSlice({
     },
     updateroles: (state, action) => {
       const updatedRole = action.payload;
-      const index = state.data.findIndex(role => role.roleId === updatedRole.roleId);
-      if (index !== -1) {
-        state.data[index] = updatedRole;
-      }
+      state.data = state.data.map((role) =>
+        role.roleId === updatedRole.roleId ? updatedRole : role
+      );
     },
     deleteroles: (state, action) => {
       const roleIdToDelete = action.payload;
@@ -78,12 +77,12 @@ export const AddData = (form) => async () => {
   }
 }
 
-export const updaterolesData = (roleId, roleName, permissions) => async (dispatch) => {
+export const updaterolesData = ({ roleId, roleName, permissions }) => async (dispatch) => {
   try {
+
     const apiToken = sessionStorage.getItem("api-token");
 
-    const response = await axios.put(
-      import.meta.env.VITE_BASE_URL + `roles/updateRole/${roleId}`,
+    const response = await axios.put(import.meta.env.VITE_BASE_URL + `roles/updateRole/${roleId}`,
       { roleName, permissions },
       {
         headers: {
@@ -92,7 +91,6 @@ export const updaterolesData = (roleId, roleName, permissions) => async (dispatc
         },
       }
     );
-    console.log('Response:', response.data);
 
     const updatedRoleData = response.data;
 
@@ -101,6 +99,7 @@ export const updaterolesData = (roleId, roleName, permissions) => async (dispatc
     console.error('Error:', error);
   }
 }
+
 
 export const deleterolesData = (roleId) => async (dispatch) => {
   try {

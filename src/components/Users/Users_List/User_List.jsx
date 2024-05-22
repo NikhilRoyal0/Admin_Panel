@@ -119,7 +119,7 @@ export default function UserList() {
           key={i}
           onClick={() => paginate(i)}
           variant={currentPage === i ? "solid" : "outline"}
-          colorScheme={currentPage === i ? "blue" : undefined} 
+          colorScheme={currentPage === i ? "blue" : undefined}
           mr={2}
         >
           {i}
@@ -129,13 +129,12 @@ export default function UserList() {
     return pageButtons;
   };
 
-  // Calculate index of first and last user for current page
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
 
   return (
-    <Box p="1">
+    <Box p="3" >
       <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
           User List
@@ -157,7 +156,20 @@ export default function UserList() {
           </Button>
         </Flex>
       </Flex>
-      <Box bg="gray.100" p="6" borderRadius="lg" overflowX="auto">
+      <Box bg="gray.100" p="6" borderRadius="lg" overflowX="auto" css={{
+        '&::-webkit-scrollbar': {
+          width: '8px',
+          height: '8px',
+          backgroundColor: 'transparent',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: '#cbd5e0',
+          borderRadius: '10px',
+        },
+        '&::-webkit-scrollbar-thumb:hover': {
+          backgroundColor: '#a0aec0',
+        },
+      }}>
         {filteredUsers.length === 0 ? (
           <Text textAlign="center" fontSize="lg">
             No users available

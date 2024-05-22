@@ -1,9 +1,17 @@
 import React from 'react';
 import { Text } from '@chakra-ui/react';
-import { Link } from 'react-router-dom'; // assuming you are using React Router
+import { Link } from 'react-router-dom';
 
 const renderContent = (path) => {
     switch (path) {
+      case "/":
+        return (
+          <Link to="/">
+            <Text fontSize="xl" fontWeight="bold">
+              Dashboard
+            </Text>
+          </Link>
+        );
       case "/dashboard":
         return (
           <Link to="/dashboard">
@@ -24,7 +32,7 @@ const renderContent = (path) => {
         return (
           <Link to="/user/roles">
             <Text fontSize="xl" fontWeight="bold">
-              User / User Roles
+              User / Roles
             </Text>
           </Link>
         );

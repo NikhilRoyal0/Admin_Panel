@@ -3,6 +3,7 @@ import {
   createBrowserRouter,
   createRoutesFromElements,
   Route,
+  Navigate,
 } from "react-router-dom";
 import FullLayout from "../layouts/FullLayout";
 import Dashboard from "../components/Dashboard/Dashboard";
@@ -32,10 +33,19 @@ import Logout from "../components/Login_Logout/Logout";
 const routes = createBrowserRouter(
   createRoutesFromElements(
     <>
-    <Route path="/login" element={<Login/>}/>
-    <Route path="/logout" element={<Logout/>}/>
+      <Route path="/login" element={<Login />} />
+      <Route path="/logout" element={<Logout />} />
 
-      <Route path="/" element={<FullLayout />}>
+      <Route
+        path="/"
+        element={
+          sessionStorage.getItem("api-token") == "123" ? (
+            <FullLayout />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      >
         <Route index element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/user/user-list" element={<User_List />} />

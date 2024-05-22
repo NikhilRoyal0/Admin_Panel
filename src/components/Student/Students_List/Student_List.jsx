@@ -246,7 +246,7 @@ export default function Student_List() {
           key={i}
           onClick={() => paginate(i)}
           variant={currentPage === i ? "solid" : "outline"}
-          colorScheme={currentPage === i ? "blue" : undefined} 
+          colorScheme={currentPage === i ? "blue" : undefined}
           mr={2}
         >
           {i}
@@ -256,14 +256,13 @@ export default function Student_List() {
     return pageButtons;
   };
 
-  // Calculate index of first and last Student for current page
   const indexOfLastStudent = currentPage * StudentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - StudentsPerPage;
   const currentStudents = StudentData.slice(indexOfFirstStudent, indexOfLastStudent);
 
 
   return (
-    <Box p="1" >
+    <Box p="3" >
       <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
           Student List
@@ -279,7 +278,20 @@ export default function Student_List() {
           </Button>
         </Flex>
       </Flex>
-      <Box bg="gray.100" p="6" borderRadius="lg" overflowX="auto">
+      <Box bg="gray.100" p="6" borderRadius="lg" overflow="auto" css={{
+        '&::-webkit-scrollbar': {
+          width: '8px',
+          height: '8px',
+          backgroundColor: 'transparent',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: '#cbd5e0',
+          borderRadius: '10px',
+        },
+        '&::-webkit-scrollbar-thumb:hover': {
+          backgroundColor: '#a0aec0',
+        },
+      }}>
         {currentStudents.length === 0 ? (
           <Text textAlign="center" fontSize="lg">
             No Student available
