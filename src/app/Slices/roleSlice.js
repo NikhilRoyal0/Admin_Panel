@@ -55,25 +55,30 @@ export const fetchrolesData = () => async (dispatch) => {
         "api-token": apiToken,
       },
     });
-    dispatch(setrolesData({ data: response.data }));
+    dispatch(setrolesData(response.data));
   } catch (error) {
     dispatch(setrolesError(error.message));
   }
 };
 
-export const AddData = (form) => async () => {
+export const addrolesData = ({ roleName, permissions,createdBy }) => async () => {
   try {
     const apiToken = sessionStorage.getItem("api-token");
 
-    const response = await axios.post(import.meta.env.VITE_BASE_URL + 'roles/addRole', form, {
+    const response = await axios.post(import.meta.env.VITE_BASE_URL + 'roles/addRole', {
+      roleName,
+      permissions,
+      createdBy,
+    }, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'application/json', 
         "api-token": apiToken,
       },
     });
     console.log('Response:', response.data);
   } catch (error) {
     console.error('Error:', error);
+    throw error; 
   }
 }
 

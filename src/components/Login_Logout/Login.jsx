@@ -6,12 +6,10 @@ import {
   FormControl,
   FormLabel,
   Heading,
-  Image,
   Input,
   Stack,
   Text,
 } from "@chakra-ui/react";
-import loginimg from "../../assets/images/login-bg.png";
 import { useNavigate } from "react-router-dom";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { login, isAuthenticated } from "../../utils/auth";
@@ -21,7 +19,6 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [showImage, setShowImage] = useState(true);
 
   const navigate = useNavigate();
 
@@ -55,13 +52,13 @@ export default function Login() {
       minHeight="100vh"
     >
       <Box
-        width={{ base: "40%", md: "40%" }}
+        width="-moz-fit-content"
         backgroundColor="white"
         color="black"
         borderRadius="xl"
         overflow="hidden"
         display="flex"
-        flexDirection={{ base: "column", md: "row" }}
+        flexDirection="column"
       >
         <Box p="5" flex="1">
           <form onSubmit={handleSubmit}>
@@ -130,22 +127,6 @@ export default function Login() {
             </Button>
           </form>
         </Box>
-        {showImage && (
-          <Box
-            display={{ base: "none", lg: "block" }}
-            flex="1"
-            overflow="hidden"
-          >
-            <Image
-              src={loginimg}
-              alt="Login Background"
-              maxWidth="100%"
-              maxHeight="100%"
-              height="100%"
-              objectFit="cover"
-            />
-          </Box>
-        )}
       </Box>
     </Box>
   );
