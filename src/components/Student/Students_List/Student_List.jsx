@@ -64,8 +64,9 @@ export default function Student_List() {
   const isLoading = useSelector(selectStudentLoading);
   const error = useSelector(selectStudentError);
   const dispatch = useDispatch();
-  const Toast = useToast();
-
+  const Toast = useToast({
+    position: "top-right",
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [StudentsPerPage, setStudentsPerPage] = useState(10);
 

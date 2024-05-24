@@ -56,7 +56,7 @@ export default function LargeWithAppLinksAndSocial() {
           justify={{ md: "space-between" }}
           align={{ md: "center" }}
         >
-          <Text>© 2022 Teppl . All rights reserved</Text>
+          <Text fontWeight="bold">© 2024 Teppl... All rights reserved.</Text>
           <Stack direction={"row"} spacing={6}>
             <SocialButton label={"Twitter"} href={"#"}>
               <FaTwitter />

@@ -60,8 +60,9 @@ export default function Branch_List() {
   const isLoading = useSelector(selectBranchLoading);
   const error = useSelector(selectBranchError);
   const dispatch = useDispatch();
-  const Toast = useToast();
-
+  const Toast = useToast({
+    position: "top-right",
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [BranchPerPage, setBranchPerPage] = useState(10);
 

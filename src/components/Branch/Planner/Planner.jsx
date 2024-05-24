@@ -58,8 +58,9 @@ export default function Planner() {
   const isLoading = useSelector(selectbranchPlannerLoading);
   const error = useSelector(selectbranchPlannerError);
   const dispatch = useDispatch();
-  const Toast = useToast();
-
+  const Toast = useToast({
+    position: "top-right",
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [branchPlannerPerPage, setbranchPlannerPerPage] = useState(10);
 

@@ -28,7 +28,7 @@ import Attendence from "../components/Attendence/Attendence";
 import Login from "../components/Login_Logout/Login";
 import Logout from "../components/Login_Logout/Logout";
 import EditRoles from "../components/Users/Role/EditRoles";
-
+import { useParams } from "react-router-dom";
 
 
 const routes = createBrowserRouter(
@@ -51,7 +51,7 @@ const routes = createBrowserRouter(
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/user/user-list" element={<User_List />} />
         <Route path="/user/roles" element={<Role />} />
-        <Route path="/user/roles/edit/:roleId" element={<EditRoles />} />
+        <Route path="/user/roles/edit/:roleId" element={<EditRolesWithPermissionCheck />} />
         <Route path="/branch/branch-list" element={<Branch_List />} />
         <Route path="/branch/branch-planner" element={<Planner />} />
         <Route path="/student/student-list" element={<Student_List />} />
@@ -67,12 +67,19 @@ const routes = createBrowserRouter(
         <Route path="/staff-attendence" element={<Attendence />} />
         <Route path="/documents" element={<Documents />} />
         <Route path="/enquiry" element={<Enquiry />} />
-
       </Route>
       <Route path="*" element={<NotFound />} />
-
     </>
   )
 );
 
 export default routes;
+
+function EditRolesWithPermissionCheck() {
+  const { roleId } = useParams();
+  if (roleId === "1") {
+    return <Navigate to="*" />;
+  } else {
+    return <EditRoles />;
+  }
+}

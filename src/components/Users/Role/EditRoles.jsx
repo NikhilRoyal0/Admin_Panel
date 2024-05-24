@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Checkbox, Divider, Heading, Table, Tbody, Td, Th, Thead, Tr, Button, Flex, Spinner, FormControl, FormLabel, Input } from '@chakra-ui/react';
+import { Box, Checkbox, Divider, Heading, Table, Tbody, Td, Th, Thead, Tr, Button, Flex, Spinner } from '@chakra-ui/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { fetchrolesData, selectrolesData, updaterolesData, selectrolesError, selectrolesLoading } from '../../../app/Slices/roleSlice';
@@ -14,7 +14,7 @@ export default function EditRoles() {
 
     const [role, setRole] = useState(null);
     const [roleName, setRoleName] = useState('');
-    const [isActive, setIsActive] = useState(false);
+    const [permissions, setPermissions] = useState([]);
 
     useEffect(() => {
         dispatch(fetchrolesData());
@@ -26,24 +26,56 @@ export default function EditRoles() {
             setRole(selectedRole);
             if (selectedRole) {
                 setRoleName(selectedRole.roleName);
-                setIsActive(selectedRole.isActive);
+
+                const permissionsData = JSON.parse(selectedRole.permissions);
+
+                const permissionsArray = permissionsData.map(permission => ({
+                    module: permission.module,
+                    pageRoute: permission.pageRoute,
+                    permissionsList: permission.permissionsList
+                }));
+                setPermissions(permissionsArray);
             }
         }
     }, [roleData, roleId]);
 
-    const toggleCheckbox = () => {
-        setIsActive(!isActive);
+    const togglePermission = (moduleIndex, crudIndex) => {
+        setPermissions(prevPermissions => {
+            const updatedPermissions = [...prevPermissions];
+            updatedPermissions[moduleIndex] = {
+                ...updatedPermissions[moduleIndex],
+                permissionsList: {
+                    ...updatedPermissions[moduleIndex].permissionsList,
+                    [Object.keys(updatedPermissions[moduleIndex].permissionsList)[crudIndex]]: !updatedPermissions[moduleIndex].permissionsList[Object.keys(updatedPermissions[moduleIndex].permissionsList)[crudIndex]]
+                }
+            };
+            return updatedPermissions;
+        });
     };
 
-    const onSave = () => {
+    const onSave = async () => {
         if (role) {
+            const updatedPermissions = permissions.map(({ module, pageRoute, permissionsList }) => ({
+                module,
+                pageRoute,
+                permissionsList: {
+                    read: permissionsList.read === true,
+                    create: permissionsList.create === true,
+                    update: permissionsList.update === true,
+                    delete: permissionsList.delete === true
+                }
+            }));
+
+
             const updatedRoleData = {
                 ...role,
                 roleName: roleName,
-                isActive: isActive
+                permissions: JSON.stringify(updatedPermissions)
             };
 
-            dispatch(updaterolesData(updatedRoleData));
+            await dispatch(updaterolesData(updatedRoleData));
+
+            dispatch(fetchrolesData());
         }
     };
 
@@ -64,18 +96,49 @@ export default function EditRoles() {
     }
 
     return (
-        <Box p="4" ml={4} mr={4} mt={4} bg="white" overflow="auto">
+        <Box p="4" ml={4} mr={4} mt={4} bg="white" overflow="auto" css={{
+            '&::-webkit-scrollbar': {
+                width: '8px',
+                height: '8px',
+                backgroundColor: 'transparent',
+            },
+            '&::-webkit-scrollbar-thumb': {
+                backgroundColor: '#cbd5e0',
+                borderRadius: '10px',
+            },
+            '&::-webkit-scrollbar-thumb:hover': {
+                backgroundColor: '#a0aec0',
+            },
+        }}>
             <Heading mb="4">{roleName}</Heading>
             <Divider mb={5} borderWidth="1px" borderColor="black" />
-            <FormControl mb={5}>
-                <FormLabel>Role Name</FormLabel>
-                <Input 
-                    value={roleName} 
-                    onChange={(e) => setRoleName(e.target.value)} 
-                    placeholder="Enter role name"
-                />
-            </FormControl>
-            <Flex justify="flex-end" mt={4}>
+            <Table variant="striped" colorScheme="gray" >
+                <Thead>
+                    <Tr>
+                        <Th>Module</Th>
+                        <Th>Read</Th>
+                        <Th>Create</Th>
+                        <Th>Update</Th>
+                        <Th>Delete</Th>
+                    </Tr>
+                </Thead>
+                <Tbody>
+                    {permissions.map(({ module, permissionsList }, moduleIndex) => (
+                        <Tr key={moduleIndex}>
+                            <Td>{module}</Td>
+                            {Object.values(permissionsList).map((crud, crudIndex) => (
+                                <Td key={crudIndex}>
+                                    <Checkbox
+                                        isChecked={crud}
+                                        onChange={() => togglePermission(moduleIndex, crudIndex)}
+                                    />
+                                </Td>
+                            ))}
+                        </Tr>
+                    ))}
+                </Tbody>
+            </Table>
+            <Flex justify="flex-end" mt={4} mr={2}>
                 <Button colorScheme="blue" onClick={onSave}>Save</Button>
             </Flex>
         </Box>

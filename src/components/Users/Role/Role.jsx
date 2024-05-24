@@ -1,15 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { fetchrolesData, selectrolesData, selectrolesLoading, selectrolesError, addrolesData, deleterolesData } from "../../../app/Slices/roleSlice";
-import { Box, Spinner, Table, Text, FormControl, FormLabel, Divider, Thead, Tbody, Tr, Th, Td, Flex, IconButton, Input, Button, Card, CardHeader, CardBody, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@chakra-ui/react';
+import {
+  fetchrolesData, selectrolesData, selectrolesLoading, selectrolesError,
+  addrolesData, deleterolesData
+} from "../../../app/Slices/roleSlice";
+import {
+  Box, Spinner, Table, Text, FormControl, FormLabel, Divider, Thead, Tbody, Tr, Th, Td, Flex, IconButton,
+  Input, Button, Card, CardHeader, CardBody, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody,
+  ModalFooter, useToast
+} from '@chakra-ui/react';
 import { EditIcon, DeleteIcon } from '@chakra-ui/icons';
 import NetworkError from "../../NotFound/networkError";
 
 export default function Role() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
+  const toast = useToast({
+    position: "top-right",
+  });
   const rolesData = useSelector(selectrolesData);
   const isLoading = useSelector(selectrolesLoading);
   const error = useSelector(selectrolesError);
@@ -18,18 +27,24 @@ export default function Role() {
   const [newRoleName, setNewRoleName] = useState('');
   const [selectedRole, setSelectedRole] = useState(null);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
 
   useEffect(() => {
     dispatch(fetchrolesData());
   }, [dispatch]);
 
   const handleEditRole = (roleId) => {
-    navigate(`/user/roles/edit/${roleId}`);
+    if (roleId !== 1) {
+      navigate(`/user/roles/edit/${roleId}`);
+    }
   };
 
   const handleDeleteRole = (role) => {
-    setSelectedRole(role);
-    setDeleteModalOpen(true);
+    if (role.roleId !== 1) {
+      setSelectedRole(role);
+      setDeleteModalOpen(true);
+    }
   };
 
   const confirmDeleteRole = () => {
@@ -37,10 +52,25 @@ export default function Role() {
       dispatch(deleterolesData(selectedRole.roleId))
         .then(() => {
           setDeleteModalOpen(false);
+          setSelectedRole(null);
           dispatch(fetchrolesData());
+          toast({
+            title: "Role deleted.",
+            description: "The role has been deleted successfully.",
+            status: "success",
+            duration: 5000,
+            isClosable: true,
+          });
         })
         .catch((error) => {
           console.error("Error deleting role:", error);
+          toast({
+            title: "Error deleting role.",
+            description: "There was an error deleting the role.",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
         });
     }
   };
@@ -50,17 +80,40 @@ export default function Role() {
     setSelectedRole(null);
   };
 
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+  };
+
   const handleAddRole = () => {
     if (newRoleName.trim()) {
       const createdBy = userId;
-      const permissions = {};
+      const permissions = "[{\"module\":\"Branch\",\"pageRoute\":\"/branch\",\"permissionsList\":{\"create\":false,\"update\":false,\"read\":false,\"delete\":false}},{\"module\":\"Users\",\"pageRoute\":\"/users\",\"permissionsList\":{\"create\":false,\"update\":false,\"read\":false,\"delete\":false}},{\"module\":\"Branch Planner\",\"pageRoute\":\"/branch/plan\",\"permissionsList\":{\"create\":false,\"update\":false,\"read\":false,\"delete\":false}},{\"module\":\"Staff Attendance\",\"pageRoute\":\"/staff/attendance\",\"permissionsList\":{\"create\":false,\"update\":false,\"read\":false,\"delete\":false}},{\"module\":\"Users\",\"pageRoute\":\"/studentDashBoard\",\"permissionsList\":{\"create\":false,\"update\":false,\"read\":false,\"delete\":false}},{\"module\":\"Roles\",\"pageRoute\":\"/role\",\"permissionsList\":{\"create\":false,\"update\":false,\"read\":false,\"delete\":false}},{\"module\":\"Courses\",\"pageRoute\":\"/student\",\"permissionsList\":{\"create\":false,\"update\":false,\"read\":false,\"delete\":false}},{\"module\":\"Course Category\",\"pageRoute\":\"/courses/categories\",\"permissionsList\":{\"create\":false,\"update\":false,\"read\":false,\"delete\":false}},{\"module\":\"Course Content\",\"pageRoute\":\"/course/contents\",\"permissionsList\":{\"create\":false,\"update\":false,\"read\":false,\"delete\":false}},{\"module\":\"Course Purchase History\",\"pageRoute\":\"/course/purchase/history\",\"permissionsList\":{\"create\":false,\"update\":false,\"read\":false,\"delete\":false}},{\"module\":\"Benefits\",\"pageRoute\":\"/benefits\",\"permissionsList\":{\"create\":false,\"update\":false,\"read\":false,\"delete\":false}},{\"module\":\"Certificates\",\"pageRoute\":\"/certificates\",\"permissionsList\":{\"create\":false,\"update\":false,\"read\":false,\"delete\":false}},{\"module\":\"Certificate Template\",\"pageRoute\":\"/certificate/template\",\"permissionsList\":{\"create\":false,\"update\":false,\"read\":false,\"delete\":false}},{\"module\":\"Inquiry\",\"pageRoute\":\"/inquiry\",\"permissionsList\":{\"create\":false,\"update\":false,\"read\":false,\"delete\":false}},{\"module\":\"Student Attendance\",\"pageRoute\":\"/student/attendance\",\"permissionsList\":{\"create\":false,\"update\":false,\"read\":false,\"delete\":false}}]";
       dispatch(addrolesData({ roleName: newRoleName.trim(), permissions, createdBy }))
         .then(() => {
           setNewRoleName('');
           dispatch(fetchrolesData());
+          toast({
+            title: "Role added.",
+            description: "The new role has been added successfully.",
+            status: "success",
+            duration: 5000,
+            isClosable: true,
+          });
         })
         .catch((error) => {
           console.error("Error adding role:", error);
+          toast({
+            title: "Error adding role.",
+            description: "There was an error adding the role.",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
         });
     }
   };
@@ -121,7 +174,7 @@ export default function Role() {
             <Thead>
               <Tr>
                 <Th>Role</Th>
-                <Th>Actions</Th>
+                <Th textAlign="center">Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -131,20 +184,32 @@ export default function Role() {
                   <Tr key={role.roleId} _hover={{ boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)" }}>
                     <Td>{role.roleName}</Td>
                     <Td>
-                      <Flex justify="flex-end">
-                        <IconButton
-                          aria-label="Edit role"
-                          icon={<EditIcon />}
-                          onClick={() => handleEditRole(role.roleId)}
-                          mr={2}
-                          colorScheme="blue"
-                        />
-                        <IconButton
-                          aria-label="Delete role"
-                          icon={<DeleteIcon />}
-                          onClick={() => handleDeleteRole(role)}
-                          colorScheme="red"
-                        />
+                      <Flex justify="center">
+                        {role.roleId !== 1 && (
+                          <>
+                            <IconButton
+                              aria-label="Edit role"
+                              icon={<EditIcon />}
+                              onClick={() => handleEditRole(role.roleId)}
+                              mr={2}
+                              colorScheme="blue"
+                              onMouseEnter={() => setIsHovered(`edit_${role.roleId}`)}
+                              onMouseLeave={() => setIsHovered(null)}
+                              fontSize={isHovered === `edit_${role.roleId}` ? '24px' : '16px'}
+                              transition="font-size 0.3s ease"
+                            />
+                            <IconButton
+                              aria-label="Delete role"
+                              icon={<DeleteIcon />}
+                              onClick={() => handleDeleteRole(role)}
+                              colorScheme="red"
+                              onMouseEnter={() => setIsHovered(`delete_${role.roleId}`)}
+                              onMouseLeave={() => setIsHovered(null)}
+                              fontSize={isHovered === `delete_${role.roleId}` ? '24px' : '16px'}
+                              transition="font-size 0.3s ease"
+                            />
+                          </>
+                        )}
                       </Flex>
                     </Td>
                   </Tr>
