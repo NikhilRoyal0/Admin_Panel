@@ -8,7 +8,7 @@ import {
 import {
   Box, Spinner, Table, Text, FormControl, FormLabel, Divider, Thead, Tbody, Tr, Th, Td, Flex, IconButton,
   Input, Button, Card, CardHeader, CardBody, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody,
-  ModalFooter, useToast
+  ModalFooter, useToast, Grid, GridItem
 } from '@chakra-ui/react';
 import { EditIcon, DeleteIcon } from '@chakra-ui/icons';
 import NetworkError from "../../NotFound/networkError";
@@ -28,7 +28,6 @@ export default function Role() {
   const [selectedRole, setSelectedRole] = useState(null);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-
 
   useEffect(() => {
     dispatch(fetchrolesData());
@@ -79,7 +78,6 @@ export default function Role() {
     setDeleteModalOpen(false);
     setSelectedRole(null);
   };
-
 
   const handleMouseEnter = () => {
     setIsHovered(true);
@@ -132,92 +130,99 @@ export default function Role() {
 
   return (
     <Flex mt={10} ml="5%" mr="5%" p={4} borderRadius="md" overflow="auto" wrap="wrap" gap={4}>
-      <Card width="100%" maxW="300px" p={4} borderRadius="md" height="250px">
-        <CardHeader>
-          <Box fontSize="lg" fontWeight="bold">Role</Box>
-        </CardHeader>
-        <Divider />
-        <CardBody>
-          <FormControl isRequired>
-            <FormLabel>Name <Box as="span" color="red"></Box></FormLabel>
-            <Input
-              placeholder="New role name"
-              value={newRoleName}
-              onChange={(e) => setNewRoleName(e.target.value)}
-              mb={3}
-            />
-          </FormControl>
-          <Flex justify="flex-end">
-            <Button size="sm" onClick={handleAddRole} colorScheme="blue">Save</Button>
-          </Flex>
-        </CardBody>
-      </Card>
-      <Card flex="1" p={4} bg="white" borderRadius="md" overflow="auto" css={{
-        '&::-webkit-scrollbar': {
-          width: '8px',
-          height: '8px',
-          backgroundColor: 'transparent',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: '#cbd5e0',
-          borderRadius: '10px',
-        },
-        '&::-webkit-scrollbar-thumb:hover': {
-          backgroundColor: '#a0aec0',
-        },
-      }}>
-        <CardHeader>
-          <Box fontSize="lg" fontWeight="bold">Roles List</Box>
-        </CardHeader>
-        <CardBody>
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th>Role</Th>
-                <Th textAlign="center">Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {rolesData
-                .filter(role => role.status === 'Active')
-                .map((role) => (
-                  <Tr key={role.roleId} _hover={{ boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)" }}>
-                    <Td>{role.roleName}</Td>
-                    <Td>
-                      <Flex justify="center">
-                        {role.roleId !== 1 && (
-                          <>
-                            <IconButton
-                              aria-label="Edit role"
-                              icon={<EditIcon />}
-                              onClick={() => handleEditRole(role.roleId)}
-                              mr={2}
-                              colorScheme="blue"
-                              onMouseEnter={() => setIsHovered(`edit_${role.roleId}`)}
-                              onMouseLeave={() => setIsHovered(null)}
-                              fontSize={isHovered === `edit_${role.roleId}` ? '24px' : '16px'}
-                              transition="font-size 0.3s ease"
-                            />
-                            <IconButton
-                              aria-label="Delete role"
-                              icon={<DeleteIcon />}
-                              onClick={() => handleDeleteRole(role)}
-                              colorScheme="red"
-                              onMouseEnter={() => setIsHovered(`delete_${role.roleId}`)}
-                              onMouseLeave={() => setIsHovered(null)}
-                              fontSize={isHovered === `delete_${role.roleId}` ? '24px' : '16px'}
-                              transition="font-size 0.3s ease"
-                            />
-                          </>
-                        )}
-                      </Flex>
-                    </Td>
+      <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={4} width="100%">
+        <GridItem>
+          <Card width="100%" p={4} borderRadius="md" height="250px">
+            <CardHeader>
+              <Box fontSize="lg" fontWeight="bold">Role</Box>
+            </CardHeader>
+            <Divider />
+            <CardBody>
+              <FormControl isRequired>
+                <FormLabel>Name <Box as="span" color="red"></Box></FormLabel>
+                <Input
+                  isRequired
+                  placeholder="New role name"
+                  value={newRoleName}
+                  onChange={(e) => setNewRoleName(e.target.value)}
+                  mb={3}
+                />
+              </FormControl>
+              <Flex justify="flex-end">
+                <Button size="sm" onClick={handleAddRole} colorScheme="blue">Save</Button>
+              </Flex>
+            </CardBody>
+          </Card>
+        </GridItem>
+        <GridItem>
+          <Card p={4} bg="white" borderRadius="md" overflow="auto" css={{
+            '&::-webkit-scrollbar': {
+              width: '8px',
+              height: '8px',
+              backgroundColor: 'transparent',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: '#cbd5e0',
+              borderRadius: '10px',
+            },
+            '&::-webkit-scrollbar-thumb:hover': {
+              backgroundColor: '#a0aec0',
+            },
+          }}>
+            <CardHeader>
+              <Box fontSize="lg" fontWeight="bold">Roles List</Box>
+            </CardHeader>
+            <CardBody>
+              <Table variant="simple">
+                <Thead>
+                  <Tr>
+                    <Th>Role</Th>
+                    <Th textAlign="center">Actions</Th>
                   </Tr>
-                ))}
-            </Tbody>
-          </Table>
-        </CardBody>
-      </Card>
+                </Thead>
+                <Tbody>
+                  {rolesData
+                    .filter(role => role.status === 'Active')
+                    .map((role) => (
+                      <Tr key={role.roleId} _hover={{ boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)" }}>
+                        <Td>{role.roleName}</Td>
+                        <Td>
+                          <Flex justify="center">
+                            {role.roleId !== 1 && (
+                              <>
+                                <IconButton
+                                  aria-label="Edit role"
+                                  icon={<EditIcon />}
+                                  onClick={() => handleEditRole(role.roleId)}
+                                  mr={2}
+                                  colorScheme="blue"
+                                  onMouseEnter={() => setIsHovered(`edit_${role.roleId}`)}
+                                  onMouseLeave={() => setIsHovered(null)}
+                                  fontSize={isHovered === `edit_${role.roleId}` ? '24px' : '16px'}
+                                  transition="font-size 0.3s ease"
+                                />
+                                <IconButton
+                                  aria-label="Delete role"
+                                  icon={<DeleteIcon />}
+                                  onClick={() => handleDeleteRole(role)}
+                                  colorScheme="red"
+                                  onMouseEnter={() => setIsHovered(`delete_${role.roleId}`)}
+                                  onMouseLeave={() => setIsHovered(null)}
+                                  fontSize={isHovered === `delete_${role.roleId}` ? '24px' : '16px'}
+                                  transition="font-size 0.3s ease"
+                                />
+                              </>
+                            )}
+                          </Flex>
+                        </Td>
+                      </Tr>
+                    ))}
+                </Tbody>
+              </Table>
+            </CardBody>
+          </Card>
+        </GridItem>
+      </Grid>
       <Modal isOpen={isDeleteModalOpen} onClose={handleCloseDeleteModal} size="sm">
         <ModalOverlay />
         <ModalContent>

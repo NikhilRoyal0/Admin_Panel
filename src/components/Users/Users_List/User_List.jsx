@@ -29,6 +29,8 @@ import {
   AddUserData,
 } from "../../../app/Slices/usersSlice";
 import NetworkError from "../../NotFound/networkError";
+import { getModulePermissions } from "../../../utils/permissions";
+
 
 export default function UserList() {
   const [searchValue, setSearchValue] = useState("");
@@ -98,7 +100,6 @@ export default function UserList() {
     );
   }
 
-  // Pagination
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
   const paginate = (pageNumber) => {
@@ -133,6 +134,12 @@ export default function UserList() {
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
 
+  const branchManagementPermissions = getModulePermissions('Users');
+  const canAddData = branchManagementPermissions.create;
+  const canDeleteData = branchManagementPermissions.delete;
+  const canEditData = branchManagementPermissions.update;
+
+
   return (
     <Box p="3" >
       <Flex align="center" justify="space-between" mb="6" mt={5}>
@@ -150,13 +157,25 @@ export default function UserList() {
             mr={5}
             ml="4"
             colorScheme="teal"
-            onClick={() => setIsAddUserModalOpen(true)}
+            onClick={() => {
+              if (canAddData) {
+                setIsAddUserModalOpen(true)
+              } else {
+                Toast({
+                  title: "You don't have permission to add user",
+                  status: "error",
+                  duration: 3000,
+                  isClosable: true,
+                  position: "top-right",
+                });
+              }
+            }}
           >
             Add User
           </Button>
         </Flex>
       </Flex>
-      <Box bg="gray.100" p="6" borderRadius="lg" overflowX="auto" css={{
+      <Box p="6" borderRadius="lg" overflowX="auto" css={{
         '&::-webkit-scrollbar': {
           width: '8px',
           height: '8px',
@@ -189,36 +208,62 @@ export default function UserList() {
                 </Tr>
               </Thead>
               <Tbody>
-                {currentUsers.map((user, index) => (
-                  <Tr key={index}>
-                    <Td>{user.firstName}</Td>
-                    <Td>{user.lastName}</Td>
-                    <Td>{user.email}</Td>
-                    <Td>{user.primaryPhone}</Td>
-                    <Td>{user.deviceId}</Td>
-                    <Td>{user.role}</Td>
-                    <Td>
-                      <Button
-                        size="sm"
-                        colorScheme="teal"
-                        mr="2"
-                        onClick={() => handleEdit(user.id)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        colorScheme="red"
-                        onClick={() => handleDelete(user.id)}
-                      >
-                        Delete
-                      </Button>
-                    </Td>
-                  </Tr>
-                ))}
+                {currentUsers
+                  .filter(user => user.status === 'Active')
+                  .map((user, index) => (
+                    <Tr key={index}>
+                      <Td>{user.firstName}</Td>
+                      <Td>{user.lastName}</Td>
+                      <Td>{user.email}</Td>
+                      <Td>{user.primaryPhone}</Td>
+                      <Td>{user.deviceId}</Td>
+                      <Td>{user.role}</Td>
+                      <Td>
+                        <Button
+                          size="xs"
+                          colorScheme="teal"
+                          mr="2"
+                          onClick={() => {
+                            if (canEditData) {
+                              handleEdit(user.id);
+                            } else {
+                              Toast({
+                                title: "You don't have permission to edit user",
+                                status: "error",
+                                duration: 3000,
+                                isClosable: true,
+                                position: "top-right",
+                              });
+                            }
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="xs"
+                          colorScheme="red"
+                          onClick={() => {
+                            if (canDeleteData) {
+                              handleDelete(user.id);
+                            } else {
+                              Toast({
+                                title: "You don't have permission to delete user",
+                                status: "error",
+                                duration: 3000,
+                                isClosable: true,
+                                position: "top-right",
+                              });
+                            }
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </Td>
+                    </Tr>
+                  ))}
               </Tbody>
             </Table>
-            <Flex justify="center" mt="4">
+            <Flex justify="flex-end" mt="4">
               <Button onClick={() => paginate(1)} mr={2}>&lt;&lt;</Button>
               <Button onClick={() => paginate(currentPage - 1)} mr={2}>&lt;</Button>
               {renderPagination()}

@@ -48,7 +48,6 @@ export const fetchUsersData = () => async (dispatch) => {
   }
 };
 
-// Add user data thunk action
 export const AddUserData = (newUserData) => async (dispatch) => {
   try {
     const apiToken = sessionStorage.getItem("api-token");
@@ -59,7 +58,7 @@ export const AddUserData = (newUserData) => async (dispatch) => {
       {
         headers: {
           "Content-Type": "application/json",
-          "api-token": apiToken, // Include API token in headers
+          "api-token": apiToken, 
         },
       }
     );

@@ -44,9 +44,9 @@ const renderContent = (path) => {
             </Text>
           </Link>
         );
-      case "/branch/branch-planner":
+      case "/branch/plan":
         return (
-          <Link to="/branch/branch-planner">
+          <Link to="/branch/plan">
             <Text fontSize="xl" fontWeight="bold">
               Branch / Branch Planner
             </Text>
@@ -68,19 +68,19 @@ const renderContent = (path) => {
             </Text>
           </Link>
         );
-      case "/student/certificate-templete":
+      case "/student/certificates":
         return (
-          <Link to="/student/certificate-template">
+          <Link to="/student/certificates">
             <Text fontSize="xl" fontWeight="bold">
-              Student / Certificate Templates
+              Student / Student Certificate
             </Text>
           </Link>
         );
-      case "/student/certificate":
+      case "/certificate/template":
         return (
-          <Link to="/student/certificate">
+          <Link to="/certificate/template">
             <Text fontSize="xl" fontWeight="bold">
-              Student / Student Certificate
+              Student / Certificate Templates
             </Text>
           </Link>
         );
@@ -92,35 +92,35 @@ const renderContent = (path) => {
             </Text>
           </Link>
         );
-      case "/courseStuff/course-list":
+      case "/courses":
         return (
-          <Link to="/courseStuff/course-list">
+          <Link to="/courses">
             <Text fontSize="xl" fontWeight="bold">
-              Course Stuff / Course List
+              Course / Course List
             </Text>
           </Link>
         );
-      case "/courseStuff/course-category":
+      case "/courses/categories":
         return (
-          <Link to="/courseStuff/course-category">
+          <Link to="/courses">
             <Text fontSize="xl" fontWeight="bold">
-              Course Stuff / Course Categories
+              Course / Course Categories
             </Text>
           </Link>
         );
-      case "/courseStuff/course-content":
+      case "/course/contents":
         return (
-          <Link to="/courseStuff/course-content">
+          <Link to="/courses">
             <Text fontSize="xl" fontWeight="bold">
-              Course Stuff / Course Content
+              Course / Course Content
             </Text>
           </Link>
         );
-      case "/courseStuff/course-purchase-history":
+      case "/course/purchase/history":
         return (
-          <Link to="/courseStuff/course-purchase-history">
+          <Link to="/courses">
             <Text fontSize="xl" fontWeight="bold">
-              Course Stuff / Course Purchase History
+              Course / Course Purchase History
             </Text>
           </Link>
         );
@@ -132,9 +132,9 @@ const renderContent = (path) => {
             </Text>
           </Link>
         );
-      case "/staff-attendence":
+      case "/staff/attendance":
         return (
-          <Link to="/staff-attendance">
+          <Link to="/staff/attendance">
             <Text fontSize="xl" fontWeight="bold">
               Staff / Staff Attendance
             </Text>

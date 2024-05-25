@@ -53,18 +53,18 @@ const routes = createBrowserRouter(
         <Route path="/user/roles" element={<Role />} />
         <Route path="/user/roles/edit/:roleId" element={<EditRolesWithPermissionCheck />} />
         <Route path="/branch/branch-list" element={<Branch_List />} />
-        <Route path="/branch/branch-planner" element={<Planner />} />
+        <Route path="/branch/plan" element={<Planner />} />
         <Route path="/student/student-list" element={<Student_List />} />
         <Route path="/student/qualifications" element={<Qualifications />} />
-        <Route path="/student/certificate" element={<Certificate />} />
-        <Route path="/student/certificate-templete" element={<Templetes />} />
+        <Route path="/student/certificates" element={<Certificate />} />
+        <Route path="/certificate/template" element={<Templetes />} />
         <Route path="/student/fee-option" element={<Fee_Option />} />
-        <Route path="/courseStuff/course-list" element={<Course_List />} />
-        <Route path="/courseStuff/course-category" element={<Course_Category />} />
-        <Route path="/courseStuff/course-content" element={<Course_Content />} />
-        <Route path="/courseStuff/course-purchase-history" element={<Purchase_History />} />
+        <Route path="/courses" element={<Course_List />} />
+        <Route path="/courses/categories" element={<Course_Category />} />
+        <Route path="/course/contents" element={<Course_Content />} />
+        <Route path="/course/purchase/history" element={<Purchase_History />} />
         <Route path="/media-content" element={<Media_Content />} />
-        <Route path="/staff-attendence" element={<Attendence />} />
+        <Route path="/staff/attendance" element={<Attendence />} />
         <Route path="/documents" element={<Documents />} />
         <Route path="/enquiry" element={<Enquiry />} />
       </Route>

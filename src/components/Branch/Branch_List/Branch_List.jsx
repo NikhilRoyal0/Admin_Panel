@@ -35,9 +35,10 @@ import {
   updateBranchData,
 } from "../../../app/Slices/branchSlice";
 import NetworkError from "../../NotFound/networkError";
+import { getModulePermissions } from "../../../utils/permissions";
+
 
 export default function Branch_List() {
-  const [searchValue, setSearchValue] = useState("");
   const [isAddBranchModalOpen, setIsAddBranchModalOpen] = useState(false);
   const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] =
     useState(false);
@@ -249,6 +250,11 @@ export default function Branch_List() {
   const currentBranch = BranchData.slice(indexOfFirstBranch, indexOfLastBranch);
 
 
+  const branchManagementPermissions = getModulePermissions('Branch');
+  const canAddBranch = branchManagementPermissions.create;
+  const canDeleteBranch = branchManagementPermissions.delete;
+  const canEditBranch = branchManagementPermissions.update;
+
 
   return (
     <Box p="3" >
@@ -261,7 +267,19 @@ export default function Branch_List() {
             mr={5}
             ml="4"
             colorScheme="teal"
-            onClick={() => setIsAddBranchModalOpen(true)}
+            onClick={() => {
+              if (canAddBranch) {
+                setIsAddBranchModalOpen(true);
+              } else {
+                Toast({
+                  title: "You don't have permission to add branch",
+                  status: "error",
+                  duration: 3000,
+                  isClosable: true,
+                  position: "top-right",
+                });
+              }
+            }}
           >
             Add Branch
           </Button>
@@ -300,58 +318,82 @@ export default function Branch_List() {
               </Tr>
             </Thead>
             <Tbody>
-              {currentBranch.map((Branch, index) => (
-                <Tr key={index}>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Branch.branchId}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Branch.branchAdmin}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Branch.branchAddress}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Branch.branchEmail}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Branch.branchPhone}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Branch.role}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Branch.primaryDeviceId}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    <Flex>
-                      <Button
-                        size="xs"
-                        colorScheme="teal"
-                        mr="1"
-                        onClick={() => handleEditBranch(Branch)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="xs"
-                        colorScheme="red"
-                        onClick={() => {
-                          setSelectedBranchId(Branch.branchId);
-                          setIsDeleteConfirmationModalOpen(true);
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    </Flex>
-                  </Td>
-                </Tr>
-              ))}
+              {currentBranch
+                .filter(Branch => Branch.status === 'Active')
+                .map((Branch, index) => (
+                  <Tr key={index}>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Branch.branchId}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Branch.branchAdmin}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Branch.branchAddress}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Branch.branchEmail}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Branch.branchPhone}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Branch.role}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Branch.primaryDeviceId}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      <Flex>
+                        <Button
+                          size="xs"
+                          colorScheme="teal"
+                          mr="1"
+                          onClick={() => {
+                            if (canEditBranch) {
+                              handleEditBranch(Branch)
+                            } else {
+                              Toast({
+                                title: "You don't have permission to edit branch",
+                                status: "error",
+                                duration: 3000,
+                                isClosable: true,
+                                position: "top-right",
+                              });
+                            }
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="xs"
+                          colorScheme="red"
+                          onClick={() => {
+                            if (canDeleteBranch) {
+                              setSelectedBranchId(Branch.branchId);
+                              setIsDeleteConfirmationModalOpen(true);
+                            } else {
+                              Toast({
+                                title: "You don't have permission to delete branch",
+                                status: "error",
+                                duration: 3000,
+                                isClosable: true,
+                                position: "top-right",
+                              });
+                            }
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </Flex>
+                    </Td>
+                  </Tr>
+                ))}
             </Tbody>
           </Table>
         )}
       </Box>
-      <Flex justify="center" mt="4">
+      <Flex justify="flex-end" mt="4">
         <Button onClick={() => paginate(1)} mr={2}>&lt;&lt;</Button>
         <Button onClick={() => paginate(currentPage - 1)} mr={2}>&lt;</Button>
         {renderPagination()}

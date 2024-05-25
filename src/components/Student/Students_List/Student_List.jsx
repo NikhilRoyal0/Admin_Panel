@@ -35,9 +35,10 @@ import {
   updateStudentData,
 } from "../../../app/Slices/studentSlice";
 import NetworkError from "../../NotFound/networkError";
+import { getModulePermissions } from "../../../utils/permissions";
+
 
 export default function Student_List() {
-  const [searchValue, setSearchValue] = useState("");
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
   const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] =
     useState(false);
@@ -262,6 +263,11 @@ export default function Student_List() {
   const currentStudents = StudentData.slice(indexOfFirstStudent, indexOfLastStudent);
 
 
+  const branchManagementPermissions = getModulePermissions('Students');
+  const canAddData = branchManagementPermissions.create;
+  const canDeleteData = branchManagementPermissions.delete;
+  const canEditData = branchManagementPermissions.update;
+
   return (
     <Box p="3" >
       <Flex align="center" justify="space-between" mb="6" mt={5}>
@@ -273,7 +279,19 @@ export default function Student_List() {
             mr={5}
             ml="4"
             colorScheme="teal"
-            onClick={() => setIsAddStudentModalOpen(true)}
+            onClick={() => {
+              if (canEditData) {
+                setIsAddStudentModalOpen(true)
+              } else {
+                Toast({
+                  title: "You don't have permission to add student",
+                  status: "error",
+                  duration: 3000,
+                  isClosable: true,
+                  position: "top-right",
+                });
+              }
+            }}
           >
             Add Student
           </Button>
@@ -317,73 +335,96 @@ export default function Student_List() {
               </Tr>
             </Thead>
             <Tbody>
-              {currentStudents.map((Student, index) => (
-                <Tr key={index}>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Student.student_id}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Student.studentName}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Student.email}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Student.password}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Student.role}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Student.branchId}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Student.handledBy}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Student.currentCourseId}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Student.primaryAddress}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Student.state}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Student.city}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    {Student.interestIn}
-                  </Td>
-                  <Td borderBottom="1px" borderColor="gray.200">
-                    <Flex>
-                      <Button
-                        size="xs"
-                        colorScheme="teal"
-                        mr="1"
-                        onClick={() => handleEditStudent(Student)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="xs"
-                        colorScheme="red"
-                        onClick={() => {
-                          setSelectedstudent_id(Student.student_id);
-                          setIsDeleteConfirmationModalOpen(true);
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    </Flex>
-                  </Td>
-                </Tr>
-              ))}
+              {currentStudents
+                .filter(Student => Student.status === 'Active')
+                .map((Student, index) => (
+                  <Tr key={index}>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Student.student_id}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Student.studentName}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Student.email}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Student.password}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Student.role}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Student.branchId}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Student.handledBy}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Student.currentCourseId}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Student.primaryAddress}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Student.state}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Student.city}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      {Student.interestIn}
+                    </Td>
+                    <Td borderBottom="1px" borderColor="gray.200">
+                      <Flex>
+                        <Button
+                          size="xs"
+                          colorScheme="teal"
+                          mr="1"
+                          onClick={() => {
+                            if (canEditData) {
+                              handleEditStudent(Student)
+                            } else {
+                              Toast({
+                                title: "You don't have permission to edit student",
+                                status: "error",
+                                duration: 3000,
+                                isClosable: true,
+                                position: "top-right",
+                              });
+                            }
+                          }}                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="xs"
+                          colorScheme="red"
+                          onClick={() => {
+                            if (canEditData) {
+                              setSelectedstudent_id(Student.student_id);
+                              setIsDeleteConfirmationModalOpen(true);
+                            } else {
+                              Toast({
+                                title: "You don't have permission to delete student",
+                                status: "error",
+                                duration: 3000,
+                                isClosable: true,
+                                position: "top-right",
+                              });
+                            }
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </Flex>
+                    </Td>
+                  </Tr>
+                ))}
             </Tbody>
           </Table>
         )}
       </Box>
-      <Flex justify="center" mt="4">
+      <Flex justify="flex-end" mt="4">
         <Button onClick={() => paginate(1)} mr={2}>&lt;&lt;</Button>
         <Button onClick={() => paginate(currentPage - 1)} mr={2}>&lt;</Button>
         {renderPagination()}

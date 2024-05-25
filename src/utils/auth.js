@@ -15,7 +15,7 @@ export const login = async (email, password) => {
             {
                 headers: {
                     "Content-Type": "application/json",
-                    "api-token": API_TOKEN, // Manually set the api-token header
+                    "api-token": API_TOKEN, 
                 },
             }
         );

@@ -6,6 +6,7 @@ import StudentReducer from "../Slices/studentSlice";
 import rolesReducer from "../Slices/roleSlice";
 import CountReducer from "../Slices/countSlice";
 import branchPlannerReducer from "../Slices/branchPlanner";
+import CertificateReducer from "../Slices/certificateSlice";
 
 const Store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ const Store = configureStore({
     roles: rolesReducer,
     Count: CountReducer,
     branchPlanner: branchPlannerReducer,
+    Certificate: CertificateReducer,
   },
 });
 
