@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Checkbox, Divider, Heading, Table, Tbody, Td, Th, Thead, Tr, Button, Flex, Spinner } from '@chakra-ui/react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { fetchrolesData, selectrolesData, updaterolesData, selectrolesError, selectrolesLoading } from '../../../app/Slices/roleSlice';
 import NetworkError from "../../NotFound/networkError";
 
 export default function EditRoles() {
     const { roleId } = useParams();
     const dispatch = useDispatch();
+    const navigate =  useNavigate()
     const roleData = useSelector(selectrolesData);
     const loading = useSelector(selectrolesLoading);
     const error = useSelector(selectrolesError);
@@ -74,7 +75,7 @@ export default function EditRoles() {
             };
 
             await dispatch(updaterolesData(updatedRoleData));
-
+            navigate("/user/roles")
             dispatch(fetchrolesData());
         }
     };

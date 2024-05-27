@@ -8,14 +8,13 @@ export const isAuthenticated = () => {
 };
 
 export const login = async (email, password) => {
-    try {
         const response = await axios.post(
             import.meta.env.VITE_BASE_URL + "users/login",
             { email, password },
             {
                 headers: {
                     "Content-Type": "application/json",
-                    "api-token": API_TOKEN, 
+                    "api-token": API_TOKEN,
                 },
             }
         );
@@ -23,20 +22,28 @@ export const login = async (email, password) => {
         const { authToken } = response.data.data;
 
         if (authToken) {
-            const userId = getUserIdFromToken(authToken);
+            const userDetails = getUserDetailsFromToken(authToken);
+
+            if (!userDetails) {
+                throw new Error("Error decoding token");
+            }
+
+            if (userDetails.status === "Inactive") {
+                throw new Error("User is no longer available");
+            }
+
+            if (userDetails.role === "Inactive") {
+                throw new Error("Role is no longer available for user");
+            }
+
             sessionStorage.setItem("authToken", authToken);
-            sessionStorage.setItem("userId", userId);
+            sessionStorage.setItem("userId", userDetails.userId);
             sessionStorage.setItem("api-token", API_TOKEN);
             return true;
         } else {
-            console.error("Token verification failed");
-            return false;
+            throw new Error("Invalid credentials");
         }
 
-    } catch (error) {
-        console.error("Login Error:", error);
-        return false;
-    }
 };
 
 export const logout = () => {
@@ -45,8 +52,11 @@ export const logout = () => {
     sessionStorage.removeItem("api-token");
 };
 
-export const getUserIdFromToken = (authToken) => {
-    if (!authToken) return null;
+export const getUserDetailsFromToken = (authToken) => {
+    if (!authToken) {
+        console.error("No authToken provided");
+        return null;
+    }
 
     try {
         const tokenParts = authToken.split('.');
@@ -55,7 +65,12 @@ export const getUserIdFromToken = (authToken) => {
         }
 
         const payload = JSON.parse(atob(tokenParts[1]));
-        return payload.userData.userId;
+
+        return {
+            userId: payload.userData.userId,
+            status: payload.userData.status,
+            role: payload.userData.roleAttribute[0].status,
+        };
     } catch (error) {
         console.error("Error decoding token:", error);
         return null;

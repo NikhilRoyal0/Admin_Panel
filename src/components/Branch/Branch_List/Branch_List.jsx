@@ -22,6 +22,7 @@ import {
   ModalFooter,
   Select,
   useToast,
+  Divider,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { BeatLoader } from "react-spinners";
@@ -32,10 +33,10 @@ import {
   selectBranchError,
   AddBranchData,
   deleteBranchData,
-  updateBranchData,
 } from "../../../app/Slices/branchSlice";
 import NetworkError from "../../NotFound/networkError";
 import { getModulePermissions } from "../../../utils/permissions";
+import {useNavigate} from "react-router-dom";
 
 
 export default function Branch_List() {
@@ -43,8 +44,6 @@ export default function Branch_List() {
   const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] =
     useState(false);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
-  const [editedBranchData, setEditedBranchData] = useState(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
 
   const [newBranchData, setNewBranchData] = useState({
@@ -61,6 +60,7 @@ export default function Branch_List() {
   const isLoading = useSelector(selectBranchLoading);
   const error = useSelector(selectBranchError);
   const dispatch = useDispatch();
+  const navigate  = useNavigate();
   const Toast = useToast({
     position: "top-right",
   });
@@ -147,60 +147,10 @@ export default function Branch_List() {
       });
   };
 
-  const handleEditBranch = (Branch) => {
-    setSelectedBranchId(Branch.bank_id);
-    setEditedBranchData(Branch);
-    setIsEditModalOpen(true);
+  const handleViewBranch = (branchId) => {
+    navigate(`../branch/dashboard/${branchId}`);
   };
 
-  const handleSaveChanges = () => {
-    setIsSaveLoading(true);
-
-    const formData = {
-      branchName: editedBranchData.branchName,
-      branchAdmin: editedBranchData.branchAdmin,
-      branchAddress: editedBranchData.branchAddress,
-      branchEmail: editedBranchData.branchEmail,
-      branchPhone: editedBranchData.branchPhone,
-      role: editedBranchData.role,
-      primaryDeviceId: editedBranchData.primaryDeviceId,
-    };
-
-    dispatch(updateBranchData(editedBranchData.branchId, formData))
-      .then(() => {
-        setIsEditModalOpen(false);
-        setSelectedBranchId(null);
-        dispatch(fetchBranchData());
-        setIsSaveLoading(false);
-        setNewBranchData({
-          branchName: "",
-          branchAdmin: "",
-          branchAddress: "",
-          branchEmail: "",
-          branchPhone: "",
-          role: "",
-          primaryDeviceId: "",
-        });
-        Toast({
-          title: "Branch added/updated successfully",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-          position: "top-right",
-        });
-      })
-      .catch((error) => {
-        setIsSaveLoading(false);
-        Toast({
-          title: "Failed to updating Branch",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-          position: "top-right",
-        });
-        console.log("Error updating Branch: ", error);
-      });
-  };
 
   if (isLoading) {
     return (
@@ -253,7 +203,6 @@ export default function Branch_List() {
   const branchManagementPermissions = getModulePermissions('Branch');
   const canAddBranch = branchManagementPermissions.create;
   const canDeleteBranch = branchManagementPermissions.delete;
-  const canEditBranch = branchManagementPermissions.update;
 
 
   return (
@@ -314,7 +263,7 @@ export default function Branch_List() {
                 <Th>Branch Phone</Th>
                 <Th>Role</Th>
                 <Th>Primary DeviceId</Th>
-                <Th>Edit/Delete</Th>
+                <Th>View/Delete</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -349,21 +298,9 @@ export default function Branch_List() {
                           size="xs"
                           colorScheme="teal"
                           mr="1"
-                          onClick={() => {
-                            if (canEditBranch) {
-                              handleEditBranch(Branch)
-                            } else {
-                              Toast({
-                                title: "You don't have permission to edit branch",
-                                status: "error",
-                                duration: 3000,
-                                isClosable: true,
-                                position: "top-right",
-                              });
-                            }
-                          }}
-                        >
-                          Edit
+                          onClick={() => handleViewBranch(Branch.branchId)}
+                          >
+                          View
                         </Button>
                         <Button
                           size="xs"
@@ -500,6 +437,40 @@ export default function Branch_List() {
               />
 
             </ModalBody>
+            <Divider />
+            <ModalHeader>Branch Plan</ModalHeader>
+            <ModalBody>
+              <Input
+                mb="3"
+                placeholder="Branch Id"
+
+                isRequired
+              />
+              <Input
+                mb="3"
+                placeholder="Admission Fee"
+
+                isRequired
+              />
+              <Input
+                mb="3"
+                placeholder="Payment Mode"
+
+                isRequired
+              />
+              <Input
+                mb="3"
+                placeholder="Kit Fee"
+                isRequired
+              />
+              <Input
+                mb="3"
+                placeholder="Website Url"
+
+                isRequired
+              />
+
+            </ModalBody>
             <ModalFooter>
               <Button
                 type="submit"
@@ -544,64 +515,6 @@ export default function Branch_List() {
               variant="ghost"
               onClick={() => setIsDeleteConfirmationModalOpen(false)}
             >
-              Cancel
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Edit Branch</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Box>
-              <Text mb="1" color="gray.600">
-                Branch Name
-              </Text>
-              <Input
-                mb="3"
-                placeholder="Branch Name"
-                value={editedBranchData?.branchName || ""}
-                onChange={(e) =>
-                  setEditedBranchData({
-                    ...editedBranchData,
-                    branchName: e.target.value,
-                  })
-                }
-                required
-              />
-            </Box>
-            <Box>
-              <Text mb="1" color="gray.600">
-                Branch Code
-              </Text>
-              <Input
-                mb="3"
-                placeholder="Branch Address"
-                value={editedBranchData?.branchAddress || ""}
-                onChange={(e) =>
-                  setEditedBranchData({
-                    ...editedBranchData,
-                    branchAddress: e.target.value,
-                  })
-                }
-                required
-              />
-            </Box>
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              colorScheme="teal"
-              mr={3}
-              onClick={handleSaveChanges}
-              isLoading={isSaveLoading}
-              spinner={<BeatLoader size={8} color="white" />}
-            >
-              Save Changes
-            </Button>
-            <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
               Cancel
             </Button>
           </ModalFooter>

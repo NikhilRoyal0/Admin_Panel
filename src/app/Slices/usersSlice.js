@@ -22,6 +22,20 @@ const UsersSlice = createSlice({
       state.isLoading = false;
       state.error = action.payload;
     },
+    updateUser: (state, action) => {
+      const updatedUser = action.payload;
+      state.data = state.data.map((User) =>
+        User.userId === updatedUser.userId ? updatedUser : User
+      );
+    },
+    deleteUser: (state, action) => {
+      const selectedUserId = action.payload;
+      state.data = state.data.filter(
+        (User) => User.userId !== selectedUserId
+      );
+      state.isLoading = false;
+      state.error = null;
+    },
   },
 });
 
@@ -31,14 +45,14 @@ export const { setUsersData, setUsersLoading, setUsersError } =
 export const fetchUsersData = () => async (dispatch) => {
   try {
     dispatch(setUsersLoading());
-    
+
     const apiToken = sessionStorage.getItem("api-token");
 
     const response = await axios.get(
       import.meta.env.VITE_BASE_URL + "users/all/getAllUsers",
       {
         headers: {
-          "api-token": apiToken, 
+          "api-token": apiToken,
         },
       }
     );
@@ -58,7 +72,7 @@ export const AddUserData = (newUserData) => async (dispatch) => {
       {
         headers: {
           "Content-Type": "application/json",
-          "api-token": apiToken, 
+          "api-token": apiToken,
         },
       }
     );
@@ -68,6 +82,49 @@ export const AddUserData = (newUserData) => async (dispatch) => {
     console.error("Error:", error);
   }
 };
+
+export const updateUserData = (userId, formData) => async (dispatch) => {
+  try {
+    const apiToken = sessionStorage.getItem("api-token");
+
+    const response = await axios.put(
+      import.meta.env.VITE_BASE_URL + `users/updateuser/${userId}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "api-token": apiToken,
+        },
+      }
+    );
+
+    const updatedUserData = response.data;
+
+    dispatch(updateUser(updatedUserData));
+  } catch (error) {
+    console.error("Error updating bank account:", error);
+  }
+};
+
+export const deleteUserData = (userId) => async (dispatch) => {
+  try {
+    const apiToken = sessionStorage.getItem("api-token");
+
+    await axios.delete(
+      import.meta.env.VITE_BASE_URL + `users/deleteuser/${userId}`,
+      {
+        headers: {
+          "api-token": apiToken,
+        },
+      }
+    );
+
+    dispatch(deleteUser(deleteUserData));
+  } catch (error) {
+    console.error("Error deleting bank account:", error);
+  }
+};
+
 
 export const selectUsersData = (state) => state.Users.data;
 export const selectUsersLoading = (state) => state.Users.isLoading;

@@ -28,6 +28,7 @@ import Attendence from "../components/Attendence/Attendence";
 import Login from "../components/Login_Logout/Login";
 import Logout from "../components/Login_Logout/Logout";
 import EditRoles from "../components/Users/Role/EditRoles";
+import Home_Branch from "../components/Branch/Branch_List/Home_Branch";
 import { useParams } from "react-router-dom";
 
 
@@ -53,6 +54,7 @@ const routes = createBrowserRouter(
         <Route path="/user/roles" element={<Role />} />
         <Route path="/user/roles/edit/:roleId" element={<EditRolesWithPermissionCheck />} />
         <Route path="/branch/branch-list" element={<Branch_List />} />
+        <Route path="/branch/dashboard/:branchId" element={<Home_Branch/>} />
         <Route path="/branch/plan" element={<Planner />} />
         <Route path="/student/student-list" element={<Student_List />} />
         <Route path="/student/qualifications" element={<Qualifications />} />

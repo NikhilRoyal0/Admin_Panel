@@ -237,10 +237,10 @@ export default function Planner() {
   const canEditData = branchManagementPermissions.update;
 
   return (
-    <Box p="3" >
+    <Box p="0" >
       <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
-          Plan List
+          Branch Plan
         </Text>
         <Flex align="center">
           <Button
@@ -367,13 +367,13 @@ export default function Planner() {
           </Table>
         )}
       </Box>
-      <Flex justify="flex-end" mt="4">
+      {/* <Flex justify="flex-end" mt="4">
         <Button onClick={() => paginate(1)} mr={2}>&lt;&lt;</Button>
         <Button onClick={() => paginate(currentPage - 1)} mr={2}>&lt;</Button>
         {renderPagination()}
         <Button onClick={() => paginate(currentPage + 1)} ml={2}>&gt;</Button>
         <Button onClick={() => paginate(totalPages)} ml={2}>&gt;&gt;</Button>
-      </Flex>
+      </Flex> */}
       
       <Modal
         isOpen={isAddbranchPlannerModalOpen}

@@ -19,6 +19,7 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
+  useToast,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -27,7 +28,10 @@ import {
   selectUsersLoading,
   selectUsersError,
   AddUserData,
+  updateUserData,
+  deleteUserData
 } from "../../../app/Slices/usersSlice";
+import { BeatLoader } from "react-spinners";
 import NetworkError from "../../NotFound/networkError";
 import { getModulePermissions } from "../../../utils/permissions";
 
@@ -44,14 +48,21 @@ export default function UserList() {
     password: "abc#123",
     role: "",
   });
-
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(10);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editedUserData, setEditedUserData] = useState({});
+  const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [isSaveLoading, setIsSaveLoading] = useState(false);
 
   const usersData = useSelector(selectUsersData);
   const isLoading = useSelector(selectUsersLoading);
   const error = useSelector(selectUsersError);
   const dispatch = useDispatch();
+  const Toast = useToast({
+    position: "top-right",
+  });
 
   useEffect(() => {
     dispatch(fetchUsersData());
@@ -65,9 +76,8 @@ export default function UserList() {
   );
 
   const handleAddUser = (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
 
-    // Dispatch the action to add new user data
     dispatch(AddUserData(newUserData))
       .then(() => {
         setNewUserData({
@@ -82,10 +92,89 @@ export default function UserList() {
         setIsAddUserModalOpen(false);
       })
       .catch((error) => {
-        // Handle any errors
         console.error("Error:", error);
       });
   };
+
+  const handleSaveChanges = () => {
+    setIsSaveLoading(true);
+
+    const formData = {
+      firstName: editedUserData.firstName,
+      lastName: editedUserData.lastName,
+      email: editedUserData.email,
+      primaryPhone: editedUserData.primaryPhone
+    };
+
+    dispatch(updateUserData(editedUserData.userId, formData))
+      .then(() => {
+        setIsEditModalOpen(false);
+        setSelectedUserId(null);
+        dispatch(fetchUsersData());
+        setIsSaveLoading(false);
+        setNewUserData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          primaryPhone: "",
+        });
+        Toast({
+          title: "User updated successfully",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+          position: "top-right",
+        });
+      })
+      .catch((error) => {
+        setIsSaveLoading(false);
+        Toast({
+          title: "Failed to updating User",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+          position: "top-right",
+        });
+        console.log("Error updating User: ", error);
+      });
+  };
+
+  const handleDeleteConfirmation = () => {
+    setIsSaveLoading(true);
+
+    dispatch(deleteUserData(selectedUserId))
+      .then(() => {
+        dispatch(fetchUsersData());
+        setIsDeleteConfirmationModalOpen(false);
+        setSelectedUserId(null);
+        setIsSaveLoading(false);
+        Toast({
+          title: "User deleted successfully",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+          position: "top-right",
+        });
+      })
+      .catch((error) => {
+        setIsSaveLoading(false);
+        Toast({
+          title: "Failed to delete User",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+          position: "top-right",
+        });
+        console.log("Error deleting User: ", error);
+      });
+  };
+
+  const handleEditUser = (user) => {
+    setSelectedUserId(user.userId);
+    setEditedUserData(user);
+    setIsEditModalOpen(true);
+  };
+
   if (isLoading) {
     return (
       <Flex justify="center" align="center" h="100vh">
@@ -134,47 +223,54 @@ export default function UserList() {
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
 
-  const branchManagementPermissions = getModulePermissions('Users');
-  const canAddData = branchManagementPermissions.create;
-  const canDeleteData = branchManagementPermissions.delete;
-  const canEditData = branchManagementPermissions.update;
+  const UserManagementPermissions = getModulePermissions('Users');
+  const canAddData = UserManagementPermissions.create;
+  const canDeleteData = UserManagementPermissions.delete;
+  const canEditData = UserManagementPermissions.update;
+
 
 
   return (
     <Box p="3" >
-      <Flex align="center" justify="space-between" mb="6" mt={5}>
-        <Text fontSize="2xl" fontWeight="bold" ml={5}>
-          User List
-        </Text>
-        <Flex align="center">
-          <Input
-            placeholder="Search by Email, Phone, or First Name"
-            w="300px"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-          />
-          <Button
-            mr={5}
-            ml="4"
-            colorScheme="teal"
-            onClick={() => {
-              if (canAddData) {
-                setIsAddUserModalOpen(true)
-              } else {
-                Toast({
-                  title: "You don't have permission to add user",
-                  status: "error",
-                  duration: 3000,
-                  isClosable: true,
-                  position: "top-right",
-                });
-              }
-            }}
-          >
-            Add User
-          </Button>
-        </Flex>
-      </Flex>
+<Flex
+  align="center"
+  justify="space-between"
+  mb="6"
+  mt={5}
+  direction={{ base: "row", md: "row" }} // Switch direction based on screen width
+>
+  <Text fontSize="2xl" fontWeight="bold" ml={{ base: 0, md: 5 }} mb={{ base: 4, md: 0 }}> {/* Adjust margin bottom for smaller screens */}
+    User List
+  </Text>
+  <Flex align="center" mb={{ base: 4, md: 0 }}> {/* Adjust margin bottom for smaller screens */}
+    <Input
+      placeholder="Search by Email, Phone, or First Name"
+      w={{ base: "100%", md: "300px" }} // Adjust width based on screen width
+      value={searchValue}
+      onChange={(e) => setSearchValue(e.target.value)}
+      mr={3}
+    />
+    <Button
+      colorScheme="teal"
+      onClick={() => {
+        if (canAddData) {
+          setIsAddUserModalOpen(true)
+        } else {
+          Toast({
+            title: "You don't have permission to add user",
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+            position: "top-right",
+          });
+        }
+      }}
+    >
+      Add User
+    </Button>
+  </Flex>
+</Flex>
+
       <Box p="6" borderRadius="lg" overflowX="auto" css={{
         '&::-webkit-scrollbar': {
           width: '8px',
@@ -219,45 +315,48 @@ export default function UserList() {
                       <Td>{user.deviceId}</Td>
                       <Td>{user.role}</Td>
                       <Td>
-                        <Button
-                          size="xs"
-                          colorScheme="teal"
-                          mr="2"
-                          onClick={() => {
-                            if (canEditData) {
-                              handleEdit(user.id);
-                            } else {
-                              Toast({
-                                title: "You don't have permission to edit user",
-                                status: "error",
-                                duration: 3000,
-                                isClosable: true,
-                                position: "top-right",
-                              });
-                            }
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="xs"
-                          colorScheme="red"
-                          onClick={() => {
-                            if (canDeleteData) {
-                              handleDelete(user.id);
-                            } else {
-                              Toast({
-                                title: "You don't have permission to delete user",
-                                status: "error",
-                                duration: 3000,
-                                isClosable: true,
-                                position: "top-right",
-                              });
-                            }
-                          }}
-                        >
-                          Delete
-                        </Button>
+                        <Flex>
+                          <Button
+                            size="xs"
+                            colorScheme="teal"
+                            mr="2"
+                            onClick={() => {
+                              if (canEditData) {
+                                handleEditUser(user);
+                              } else {
+                                Toast({
+                                  title: "You don't have permission to edit user",
+                                  status: "error",
+                                  duration: 3000,
+                                  isClosable: true,
+                                  position: "top-right",
+                                });
+                              }
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="xs"
+                            colorScheme="red"
+                            onClick={() => {
+                              if (canDeleteData) {
+                                setIsDeleteConfirmationModalOpen(true);
+                                setSelectedUserId(user.userId);
+                              } else {
+                                Toast({
+                                  title: "You don't have permission to delete user",
+                                  status: "error",
+                                  duration: 3000,
+                                  isClosable: true,
+                                  position: "top-right",
+                                });
+                              }
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </Flex>
                       </Td>
                     </Tr>
                   ))}
@@ -315,7 +414,7 @@ export default function UserList() {
               />
               <Input
                 mb="3"
-                placeholder=" Primary Phone Number"
+                placeholder="Primary Phone Number"
                 value={newUserData.primaryPhone}
                 onChange={(e) =>
                   setNewUserData({
@@ -361,7 +460,6 @@ export default function UserList() {
                 }
                 isRequired
               />
-
             </ModalBody>
             <ModalFooter>
               <Button type="submit" colorScheme="teal">
@@ -377,6 +475,126 @@ export default function UserList() {
           </ModalContent>
         </form>{" "}
         {/* Close form tag */}
+      </Modal>
+      <Modal
+        isOpen={isDeleteConfirmationModalOpen}
+        onClose={() => setIsDeleteConfirmationModalOpen(false)}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Confirm Deletion</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>Are you sure you want to delete this User?</ModalBody>
+          <ModalFooter>
+            <Button
+              colorScheme="red"
+              mr={3}
+              onClick={handleDeleteConfirmation}
+              isLoading={isSaveLoading}
+              spinner={<BeatLoader size={8} color="white" />}
+            >
+              Delete
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setIsDeleteConfirmationModalOpen(false)}
+            >
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit User</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Box>
+              <Text mb="1" color="gray.600">
+                First Name
+              </Text>
+              <Input
+                mb="3"
+                placeholder="First Name"
+                value={editedUserData?.firstName || ""}
+                onChange={(e) =>
+                  setEditedUserData({
+                    ...editedUserData,
+                    firstName: e.target.value,
+                  })
+                }
+                required
+              />
+            </Box>
+            <Box>
+              <Text mb="1" color="gray.600">
+                Last Name
+              </Text>
+              <Input
+                mb="3"
+                placeholder="Last Name"
+                value={editedUserData?.lastName || ""}
+                onChange={(e) =>
+                  setEditedUserData({
+                    ...editedUserData,
+                    lastName: e.target.value,
+                  })
+                }
+                required
+              />
+            </Box>
+            <Box>
+              <Text mb="1" color="gray.600">
+                Email
+              </Text>
+              <Input
+                mb="3"
+                placeholder="Email"
+                value={editedUserData?.email || ""}
+                onChange={(e) =>
+                  setEditedUserData({
+                    ...editedUserData,
+                    email: e.target.value,
+                  })
+                }
+                required
+              />
+            </Box>
+            <Box>
+              <Text mb="1" color="gray.600">
+                Primary Phone
+              </Text>
+              <Input
+                mb="3"
+                placeholder="Primary Phone"
+                value={editedUserData?.primaryPhone || ""}
+                onChange={(e) =>
+                  setEditedUserData({
+                    ...editedUserData,
+                    primaryPhone: e.target.value,
+                  })
+                }
+                required
+              />
+            </Box>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              colorScheme="teal"
+              mr={3}
+              onClick={handleSaveChanges}
+              isLoading={isSaveLoading}
+              spinner={<BeatLoader size={8} color="white" />}
+            >
+              Save Changes
+            </Button>
+            <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
       </Modal>
     </Box>
   );

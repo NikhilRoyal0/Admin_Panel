@@ -1,8 +1,11 @@
 import React from 'react';
 import { Text } from '@chakra-ui/react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
-const renderContent = (path) => {
+const RenderContent = () => {
+  const { branchId } = useParams();
+
+  const renderContent = (path) => {
     switch (path) {
       case "/":
         return (
@@ -41,6 +44,14 @@ const renderContent = (path) => {
           <Link to="/branch/branch-list">
             <Text fontSize="xl" fontWeight="bold">
               Branch / Branch List
+            </Text>
+          </Link>
+        );
+      case `/branch/dashboard/${branchId}`:
+        return (
+          <Link to={`/branch/branch-list`}>
+            <Text fontSize="xl" fontWeight="bold">
+              Branch / Dashboard
             </Text>
           </Link>
         );
@@ -167,6 +178,9 @@ const renderContent = (path) => {
       default:
         return null;
     }
+  };
+
+  return renderContent(window.location.pathname);
 };
 
-export default renderContent;
+export default RenderContent;

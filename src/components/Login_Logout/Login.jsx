@@ -7,7 +7,6 @@ import {
   FormLabel,
   Heading,
   Input,
-  Stack,
   Text,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
@@ -30,15 +29,24 @@ export default function Login() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setError("");
     try {
-      await login(email, password);
-      if (isAuthenticated()) {
-        window.location.replace("/dashboard");
+      const loginSuccessful = await login(email, password);
+      if (loginSuccessful && isAuthenticated()) {
+        window.location.replace("/dashboard")
       } else {
         setError("Authentication failed. Please check your credentials.");
       }
     } catch (error) {
-      setError("An error occurred. Please try again later.");
+      if (error.message === "User is no longer available") {
+        setError("User is no longer available.");
+      } else if (error.message === "Role is no longer available for user") {
+        setError("Role is no longer available for user.");
+      } else if (error.message === "Invalid credentials") {
+        setError("Sorry, your password and email was incorrect.");
+      } else {
+        setError("Enter valid credentials.");
+      }
       console.error("Login Error:", error);
     }
   };
@@ -52,7 +60,7 @@ export default function Login() {
       minHeight="100vh"
     >
       <Box
-        width="-moz-fit-content"
+        width="fit-content"
         backgroundColor="white"
         color="black"
         borderRadius="xl"

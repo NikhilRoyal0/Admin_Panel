@@ -91,11 +91,13 @@ export const fetchLinkItems = () => async (dispatch) => {
     const permissions = JSON.parse(userPermissions);
 
 
-    const menuItems = permissions.map(permission => ({
-      title: permission.module,
-      href: permission.pageRoute,
-      icon: getIconComponentByName(permission.module)
-    }));
+    const menuItems = permissions
+      .filter(permission => permission.permissionsList && permission.permissionsList.read) 
+      .map(permission => ({
+        title: permission.module,
+        href: permission.pageRoute,
+        icon: getIconComponentByName(permission.module)
+      }));
 
     const dashboardItem = {
       title: "Dashboard",
