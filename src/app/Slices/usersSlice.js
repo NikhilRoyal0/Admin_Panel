@@ -102,7 +102,7 @@ export const updateUserData = (userId, formData) => async (dispatch) => {
 
     dispatch(updateUser(updatedUserData));
   } catch (error) {
-    console.error("Error updating bank account:", error);
+    console.error("Error updating user:", error);
   }
 };
 
@@ -121,7 +121,7 @@ export const deleteUserData = (userId) => async (dispatch) => {
 
     dispatch(deleteUser(deleteUserData));
   } catch (error) {
-    console.error("Error deleting bank account:", error);
+    console.error("Error deleting user:", error);
   }
 };
 

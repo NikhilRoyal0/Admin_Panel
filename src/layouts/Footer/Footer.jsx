@@ -1,5 +1,5 @@
 
-import React, { ReactNode } from "react";
+import React from "react";
 import {
   Box,
   Container,
@@ -27,7 +27,8 @@ const SocialButton = ({ children, label, href }) => {
       justifyContent={"center"}
       transition={"background 0.3s ease"}
       _hover={{
-        bg: useColorModeValue("blackAlpha.200", "whiteAlpha.200"),
+        bg: useColorModeValue("gray.300", "gray.600"),
+        transform: "scale(1.2)",
       }}
     >
       <VisuallyHidden>{label}</VisuallyHidden>

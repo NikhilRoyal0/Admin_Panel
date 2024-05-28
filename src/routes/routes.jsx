@@ -24,12 +24,13 @@ import Purchase_History from "../components/CourseStuff/Purchase_History/Purchas
 import Media_Content from "../components/Media/Media_Content";
 import Documents from "../components/Docx/Documents";
 import Enquiry from "../components/Enquiry/Enquiry";
-import Attendence from "../components/Attendence/Attendence";
 import Login from "../components/Login_Logout/Login";
 import Logout from "../components/Login_Logout/Logout";
 import EditRoles from "../components/Users/Role/EditRoles";
 import Home_Branch from "../components/Branch/Branch_List/Home_Branch";
 import { useParams } from "react-router-dom";
+import StaffAttendance from "../components/Attendance/Staff/StaffAttendance";
+import StudentAttendance from "../components/Attendance/Student/StudentAttendance";
 
 
 const routes = createBrowserRouter(
@@ -54,7 +55,7 @@ const routes = createBrowserRouter(
         <Route path="/user/roles" element={<Role />} />
         <Route path="/user/roles/edit/:roleId" element={<EditRolesWithPermissionCheck />} />
         <Route path="/branch/branch-list" element={<Branch_List />} />
-        <Route path="/branch/dashboard/:branchId" element={<Home_Branch/>} />
+        <Route path="/branch/dashboard/:branchId" element={<Home_Branch />} />
         <Route path="/branch/plan" element={<Planner />} />
         <Route path="/student/student-list" element={<Student_List />} />
         <Route path="/student/qualifications" element={<Qualifications />} />
@@ -66,7 +67,8 @@ const routes = createBrowserRouter(
         <Route path="/course/contents" element={<Course_Content />} />
         <Route path="/course/purchase/history" element={<Purchase_History />} />
         <Route path="/media-content" element={<Media_Content />} />
-        <Route path="/staff/attendance" element={<Attendence />} />
+        <Route path="/staff/attendance" element={<StaffAttendance />} />
+        <Route path="/student/attendance" element={<StudentAttendance />} />
         <Route path="/documents" element={<Documents />} />
         <Route path="/enquiry" element={<Enquiry />} />
       </Route>

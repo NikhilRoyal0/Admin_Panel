@@ -1,11 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { RiDashboardLine } from "react-icons/ri";
 import { FaUsers } from "react-icons/fa";
-import { PiUserList } from "react-icons/pi";
 import { SlControlEnd } from "react-icons/sl";
 import { FaBuilding } from "react-icons/fa";
 import { FaCalendarDays } from "react-icons/fa6";
-import { GrPlan } from "react-icons/gr";
 import { RiFilePaper2Line } from "react-icons/ri";
 import { FaBook } from "react-icons/fa";
 import { LiaNewspaper } from "react-icons/lia";
@@ -24,8 +22,6 @@ const getIconComponentByName = (name) => {
       return FaBuilding;
     case "Users":
       return FaUsers;
-    case "Branch Planner":
-      return GrPlan;
     case "Staff Attendance":
       return FaCalendarDays;
     case "Roles":

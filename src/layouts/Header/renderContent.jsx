@@ -71,6 +71,14 @@ const RenderContent = () => {
             </Text>
           </Link>
         );
+      case "/student/attendance":
+        return (
+          <Link to="/student/student-list">
+            <Text fontSize="xl" fontWeight="bold">
+              Student / Student Attendance
+            </Text>
+          </Link>
+        );
       case "/student/qualifications":
         return (
           <Link to="/student/qualifications">

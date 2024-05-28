@@ -58,7 +58,7 @@ export const fetchBranchData = () => async (dispatch) => {
     dispatch(setBranchData(response.data));
   } catch (error) {
     dispatch(setBranchError(error.message));
-    console.error("Error fetching bank account data:", error);
+    console.error("Error fetching branch data:", error);
   }
 };
 
@@ -79,7 +79,7 @@ export const AddBranchData = (formData) => async (dispatch) => {
     console.log("Response:", response.data);
     dispatch(fetchBranchData());
   } catch (error) {
-    console.error("Error adding bank account:", error);
+    console.error("Error adding branch:", error);
   }
 };
 
@@ -102,7 +102,7 @@ export const updateBranchData = (branchId, formData) => async (dispatch) => {
 
     dispatch(updateBranch(updatedBranchData));
   } catch (error) {
-    console.error("Error updating bank account:", error);
+    console.error("Error updating branch :", error);
   }
 };
 
@@ -121,7 +121,7 @@ export const deleteBranchData = (branchId) => async (dispatch) => {
 
     dispatch(deleteBranch(deleteBranchData));
   } catch (error) {
-    console.error("Error deleting bank account:", error);
+    console.error("Error deleting branch:", error);
   }
 };
 

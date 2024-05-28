@@ -3,12 +3,6 @@ import {
   Box,
   Text,
   Input,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Flex,
   Spinner,
   Badge,
@@ -20,8 +14,8 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
-  Select,
   useToast,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { BeatLoader } from "react-spinners";
@@ -36,6 +30,7 @@ import {
 } from "../../../app/Slices/branchPlanner";
 import NetworkError from "../../NotFound/networkError";
 import { getModulePermissions } from "../../../utils/permissions";
+import { useParams } from "react-router-dom";
 
 
 export default function Planner() {
@@ -46,9 +41,10 @@ export default function Planner() {
   const [editedbranchPlannerData, setEditedbranchPlannerData] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
+  const { branchId } = useParams();
 
   const [newbranchPlannerData, setNewbranchPlannerData] = useState({
-    branchId: "",
+    branchId: branchId,
     admissionFee: "",
     paymentMode: "",
     kitFee: "",
@@ -62,9 +58,6 @@ export default function Planner() {
   const Toast = useToast({
     position: "top-right",
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const [branchPlannerPerPage, setbranchPlannerPerPage] = useState(10);
-
 
   useEffect(() => {
     dispatch(fetchbranchPlannerData());
@@ -75,7 +68,7 @@ export default function Planner() {
     setIsSaveLoading(true);
 
     const formData = new FormData();
-    formData.append("branchId", newbranchPlannerData.branchId);
+    formData.append("branchId", branchId);
     formData.append("admissionFee", newbranchPlannerData.admissionFee);
     formData.append("paymentMode", newbranchPlannerData.paymentMode);
     formData.append("kitFee", newbranchPlannerData.kitFee);
@@ -84,7 +77,7 @@ export default function Planner() {
       .then(() => {
         setIsSaveLoading(false);
         Toast({
-          title: "branchPlanner updated/deleted successfully",
+          title: "Branch plan added successfully",
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -121,7 +114,7 @@ export default function Planner() {
         setSelectedplanerId(null);
         setIsSaveLoading(false);
         Toast({
-          title: "branchPlanner added/updated successfully",
+          title: "Branch plan deleted successfully",
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -131,18 +124,18 @@ export default function Planner() {
       .catch((error) => {
         setIsSaveLoading(false);
         Toast({
-          title: "Failed to delete branchPlanner",
+          title: "Failed to delete branch plan",
           status: "error",
           duration: 3000,
           isClosable: true,
           position: "top-right",
         });
-        console.log("Error deleting branchPlanner: ", error);
+        console.log("Error deleting branch plan: ", error);
       });
   };
 
   const handleEditbranchPlanner = (branchPlanner) => {
-    setSelectedplanerId(branchPlanner.bank_id);
+    setSelectedplanerId(branchPlanner.planerId);
     setEditedbranchPlannerData(branchPlanner);
     setIsEditModalOpen(true);
   };
@@ -164,7 +157,7 @@ export default function Planner() {
           admissionFee: "",
         });
         Toast({
-          title: "branchPlanner added/updated successfully",
+          title: "Branch Plan updated successfully",
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -174,13 +167,13 @@ export default function Planner() {
       .catch((error) => {
         setIsSaveLoading(false);
         Toast({
-          title: "Failed to updating branchPlanner",
+          title: "Failed to updating branch plan",
           status: "error",
           duration: 3000,
           isClosable: true,
           position: "top-right",
         });
-        console.log("Error updating branchPlanner: ", error);
+        console.log("Error updating branch plan: ", error);
       });
   };
 
@@ -198,183 +191,86 @@ export default function Planner() {
     );
   }
 
-  const totalPages = Math.ceil(branchPlannerData.length / branchPlannerPerPage);
 
-  const paginate = (pageNumber) => {
-    if (pageNumber < 1) {
-      setCurrentPage(1);
-    } else if (pageNumber > totalPages) {
-      setCurrentPage(totalPages);
-    } else {
-      setCurrentPage(pageNumber);
-    }
-  };
-  const renderPagination = () => {
-    const pageButtons = [];
-    for (let i = 1; i <= totalPages; i++) {
-      pageButtons.push(
-        <Button
-          key={i}
-          onClick={() => paginate(i)}
-          variant={currentPage === i ? "solid" : "outline"}
-          colorScheme={currentPage === i ? "blue" : undefined}
-          mr={2}
-        >
-          {i}
-        </Button>
-      );
-    }
-    return pageButtons;
-  };
-
-  const indexOfLastbranchPlanner = currentPage * branchPlannerPerPage;
-  const indexOfFirstbranchPlanner = indexOfLastbranchPlanner - branchPlannerPerPage;
-  const currentbranchPlanner = branchPlannerData.slice(indexOfFirstbranchPlanner, indexOfLastbranchPlanner);
-
-  const branchManagementPermissions = getModulePermissions('Branch Planner');
-  const canAddData = branchManagementPermissions.create;
-  const canDeleteData = branchManagementPermissions.delete;
-  const canEditData = branchManagementPermissions.update;
+  const selectedPlan = branchPlannerData.filter(branch => branch.branchId === parseInt(branchId));
 
   return (
-    <Box p="0" >
-      <Flex align="center" justify="space-between" mb="6" mt={5}>
+    <Box p="0" width="100%">
+      <Flex align="center" justify="space-between" >
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
           Branch Plan
         </Text>
         <Flex align="center">
-          <Button
-            mr={5}
-            ml="4"
-            colorScheme="teal"
-            onClick={() => {
-              if (canAddData) {
+          {selectedPlan.length === 0 && (
+            <Button
+              mr={5}
+              ml="4"
+              colorScheme="teal"
+              onClick={() => {
                 setIsAddbranchPlannerModalOpen(true);
-              } else {
-                Toast({
-                  title: "You don't have permission to add branch plan",
-                  status: "error",
-                  duration: 3000,
-                  isClosable: true,
-                  position: "top-right",
-                });
-              }
-            }}
-          >
-            Add Plan
-          </Button>
+              }}
+            >
+              Add Plan
+            </Button>
+          )}
+
         </Flex>
       </Flex>
-      <Box bg="gray.100" p="6" borderRadius="lg" overflow="auto" css={{
-        '&::-webkit-scrollbar': {
-          width: '8px',
-          height: '8px',
-          backgroundColor: 'transparent',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: '#cbd5e0',
-          borderRadius: '10px',
-        },
-        '&::-webkit-scrollbar-thumb:hover': {
-          backgroundColor: '#a0aec0',
-        },
-      }}>
-        {currentbranchPlanner.length === 0 ? (
+      <Box p="6" borderRadius="lg">
+        {selectedPlan.length === 0 ? (
           <Text textAlign="center" fontSize="lg">
             No Plan available
           </Text>
         ) : (
-          <Table variant="simple" minWidth="100%">
-            <Thead>
-              <Tr>
-                <Th>Branch Id</Th>
-                <Th>Admission Fees</Th>
-                <Th>Admission Discount</Th>
-                <Th>Payment Mode</Th>
-                <Th>Kit Fee</Th>
-                <Th>Website Url</Th>
-                <Th>Edit/Delete</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {currentbranchPlanner
-                .map((branchPlanner, index) => (
-                  <Tr key={index}>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {branchPlanner.planerId}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {branchPlanner.admissionFee}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {branchPlanner.admissionDiscount}%
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {branchPlanner.paymentMode}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {branchPlanner.kitFee}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {branchPlanner.websiteUrl}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      <Flex>
-                        <Button
-                          size="xs"
-                          colorScheme="teal"
-                          mr="1"
-                          onClick={() => {
-                            if (canEditData) {
-                              handleEditbranchPlanner(branchPlanner);
-                            } else {
-                              Toast({
-                                title: "You don't have permission to edit branch plan",
-                                status: "error",
-                                duration: 3000,
-                                isClosable: true,
-                                position: "top-right",
-                              });
-                            }
-                          }}                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="xs"
-                          colorScheme="red"
-                          onClick={() => {
-                            if (canDeleteData) {
-                              setSelectedplanerId(branchPlanner.planerId);
-                              setIsDeleteConfirmationModalOpen(true);
-                            } else {
-                              Toast({
-                                title: "You don't have permission to delete branch plan",
-                                status: "error",
-                                duration: 3000,
-                                isClosable: true,
-                                position: "top-right",
-                              });
-                            }
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </Flex>
-                    </Td>
-                  </Tr>
-                ))}
-            </Tbody>
-          </Table>
+          <Flex width={"fit-content"} justifyContent="space-between">
+            {selectedPlan.map((branchPlanner, index) => (
+              <Box
+                key={index}
+                width={["100%", "100%"]} // Adjust width based on screen size
+                p="5"
+                bg="white"
+                boxShadow="md"
+                borderRadius="md"
+                borderBottom="1px"
+                borderColor="gray.200"
+                mb="20px" // Add margin for spacing between boxes
+              >
+                <Text >Admission Fee: {branchPlanner.admissionFee}</Text>
+                <Text >Admission Discount: {branchPlanner.admissionDiscount}%</Text>
+                <Text >Payment Mode: {branchPlanner.paymentMode}</Text>
+                <Text >Kit Fee: {branchPlanner.kitFee}</Text>
+                <Text >Website Url: {branchPlanner.websiteUrl}</Text>
+
+                <Flex mt="3">
+                  <Button
+                    size="xs"
+                    colorScheme="teal"
+                    mr="1"
+                    onClick={() => {
+                      handleEditbranchPlanner(branchPlanner);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="xs"
+                    colorScheme="red"
+                    onClick={() => {
+                      setSelectedplanerId(branchPlanner.planerId);
+                      setIsDeleteConfirmationModalOpen(true);
+
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </Flex>
+              </Box>
+            ))}
+          </Flex>
+
         )}
       </Box>
-      {/* <Flex justify="flex-end" mt="4">
-        <Button onClick={() => paginate(1)} mr={2}>&lt;&lt;</Button>
-        <Button onClick={() => paginate(currentPage - 1)} mr={2}>&lt;</Button>
-        {renderPagination()}
-        <Button onClick={() => paginate(currentPage + 1)} ml={2}>&gt;</Button>
-        <Button onClick={() => paginate(totalPages)} ml={2}>&gt;&gt;</Button>
-      </Flex> */}
-      
+
       <Modal
         isOpen={isAddbranchPlannerModalOpen}
         onClose={() => setIsAddbranchPlannerModalOpen(false)}
@@ -386,17 +282,10 @@ export default function Planner() {
             <ModalHeader>Add Plan</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              {/* Form input fields for adding a new branchPlanner */}
               <Input
                 mb="3"
                 placeholder="Branch Id"
-                value={newbranchPlannerData.branchId}
-                onChange={(e) =>
-                  setNewbranchPlannerData({
-                    ...newbranchPlannerData,
-                    branchId: e.target.value,
-                  })
-                }
+                value={branchId}
                 isRequired
               />
               <Input
@@ -467,7 +356,6 @@ export default function Planner() {
             </ModalFooter>
           </ModalContent>
         </form>{" "}
-        {/* Close form tag */}
       </Modal>
 
       <Modal
@@ -478,7 +366,7 @@ export default function Planner() {
         <ModalContent>
           <ModalHeader>Confirm Deletion</ModalHeader>
           <ModalCloseButton />
-          <ModalBody>Are you sure you want to delete this Plan ?</ModalBody>
+          <ModalBody>Are you sure you want to delete this Plan?</ModalBody>
           <ModalFooter>
             <Button
               colorScheme="red"
@@ -539,7 +427,6 @@ export default function Planner() {
           </ModalFooter>
         </ModalContent>
       </Modal>
-
     </Box>
   );
 }
