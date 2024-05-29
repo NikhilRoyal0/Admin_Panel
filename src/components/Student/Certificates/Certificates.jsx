@@ -142,8 +142,11 @@ export default function Certificate() {
   const indexOfFirstCertificate = indexOfLastCertificate - CertificatePerPage;
   const currentCertificate = CertificateData.slice(indexOfFirstCertificate, indexOfLastCertificate);
 
-  const branchManagementPermissions = getModulePermissions('Certificates');
-  const canAddData = branchManagementPermissions.create;
+  const certificateManagementPermissions = getModulePermissions('Certificates');
+  if (!certificateManagementPermissions) {
+    return <NetworkError />;
+  }
+  const canAddData = certificateManagementPermissions.create;
 
 
   return (

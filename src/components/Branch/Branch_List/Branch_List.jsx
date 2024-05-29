@@ -201,6 +201,11 @@ export default function Branch_List() {
 
 
   const branchManagementPermissions = getModulePermissions('Branch');
+
+  if (!branchManagementPermissions) {
+    return <NetworkError />;
+  }
+
   const canAddBranch = branchManagementPermissions.create;
   const canDeleteBranch = branchManagementPermissions.delete;
 

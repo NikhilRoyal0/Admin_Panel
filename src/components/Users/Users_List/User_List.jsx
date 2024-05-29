@@ -224,6 +224,10 @@ export default function UserList() {
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
 
   const UserManagementPermissions = getModulePermissions('Users');
+
+  if (!UserManagementPermissions) {
+    return <NetworkError />;
+  }
   const canAddData = UserManagementPermissions.create;
   const canDeleteData = UserManagementPermissions.delete;
   const canEditData = UserManagementPermissions.update;
@@ -232,44 +236,44 @@ export default function UserList() {
 
   return (
     <Box p="3" >
-<Flex
-  align="center"
-  justify="space-between"
-  mb="6"
-  mt={5}
-  direction={{ base: "row", md: "row" }} // Switch direction based on screen width
->
-  <Text fontSize="2xl" fontWeight="bold" ml={{ base: 0, md: 5 }} mb={{ base: 4, md: 0 }}> {/* Adjust margin bottom for smaller screens */}
-    User List
-  </Text>
-  <Flex align="center" mb={{ base: 4, md: 0 }}> {/* Adjust margin bottom for smaller screens */}
-    <Input
-      placeholder="Search by Email, Phone, or First Name"
-      w={{ base: "100%", md: "300px" }} // Adjust width based on screen width
-      value={searchValue}
-      onChange={(e) => setSearchValue(e.target.value)}
-      mr={3}
-    />
-    <Button
-      colorScheme="teal"
-      onClick={() => {
-        if (canAddData) {
-          setIsAddUserModalOpen(true)
-        } else {
-          Toast({
-            title: "You don't have permission to add user",
-            status: "error",
-            duration: 3000,
-            isClosable: true,
-            position: "top-right",
-          });
-        }
-      }}
-    >
-      Add User
-    </Button>
-  </Flex>
-</Flex>
+      <Flex
+        align="center"
+        justify="space-between"
+        mb="6"
+        mt={5}
+        direction={{ base: "row", md: "row" }} // Switch direction based on screen width
+      >
+        <Text fontSize="2xl" fontWeight="bold" ml={{ base: 0, md: 5 }} mb={{ base: 4, md: 0 }}> {/* Adjust margin bottom for smaller screens */}
+          User List
+        </Text>
+        <Flex align="center" mb={{ base: 4, md: 0 }}> {/* Adjust margin bottom for smaller screens */}
+          <Input
+            placeholder="Search by Email, Phone, or First Name"
+            w={{ base: "100%", md: "300px" }} // Adjust width based on screen width
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            mr={3}
+          />
+          <Button
+            colorScheme="teal"
+            onClick={() => {
+              if (canAddData) {
+                setIsAddUserModalOpen(true)
+              } else {
+                Toast({
+                  title: "You don't have permission to add user",
+                  status: "error",
+                  duration: 3000,
+                  isClosable: true,
+                  position: "top-right",
+                });
+              }
+            }}
+          >
+            Add User
+          </Button>
+        </Flex>
+      </Flex>
 
       <Box p="6" borderRadius="lg" overflowX="auto" css={{
         '&::-webkit-scrollbar': {

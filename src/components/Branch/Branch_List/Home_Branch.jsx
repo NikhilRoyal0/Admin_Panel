@@ -321,8 +321,15 @@ export default function Home_Branch() {
         </SimpleGrid>
       </Box>
       <Box w={{ base: '100%', md: '50%' }} pl={{ md: '2' }} mt={{ base: 4, md: 0 }}>
-        <Flex mb="4">
-          <Box flex="1" mr="4">
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          mb="4"
+        >
+          <Box
+            flex="1"
+            mr={{ base: "0", md: "4" }}
+            mb={{ base: "4", md: "0" }}
+          >
             <SimpleGrid columns={{ base: 1, md: 1 }} spacing={4}>
               <Box
                 bg="white"
@@ -364,8 +371,18 @@ export default function Home_Branch() {
               </Box>
             </SimpleGrid>
           </Box>
-          <Box flex="1" overflow="auto" >
-            <Box bg="white" boxShadow="md" p="4" borderRadius="md" overflow="auto" height="340px" width="100%"
+          <Box
+            flex="1"
+            overflow="auto"
+          >
+            <Box
+              bg="white"
+              boxShadow="md"
+              p="4"
+              borderRadius="md"
+              overflow="auto"
+              height="340px"
+              width="100%"
               css={{
                 '&::-webkit-scrollbar': {
                   width: '8px',
@@ -379,11 +396,13 @@ export default function Home_Branch() {
                 '&::-webkit-scrollbar-thumb:hover': {
                   backgroundColor: '#a0aec0',
                 },
-              }}>
+              }}
+            >
               <Planner />
             </Box>
           </Box>
         </Flex>
+
         <Box bg="white" boxShadow="md" p="4" borderRadius="md" overflow="auto" height="715px" css={{
           '&::-webkit-scrollbar': {
             width: '8px',

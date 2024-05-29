@@ -263,10 +263,13 @@ export default function Student_List() {
   const currentStudents = StudentData.slice(indexOfFirstStudent, indexOfLastStudent);
 
 
-  const branchManagementPermissions = getModulePermissions('Students');
-  const canAddData = branchManagementPermissions.create;
-  const canDeleteData = branchManagementPermissions.delete;
-  const canEditData = branchManagementPermissions.update;
+  const studentManagementPermissions = getModulePermissions('Students');
+  if (!studentManagementPermissions) {
+    return <NetworkError />;
+  }
+  const canAddData = studentManagementPermissions.create;
+  const canDeleteData = studentManagementPermissions.delete;
+  const canEditData = studentManagementPermissions.update;
 
   return (
     <Box p="3" >
@@ -280,7 +283,7 @@ export default function Student_List() {
             ml="4"
             colorScheme="teal"
             onClick={() => {
-              if (canEditData) {
+              if (canAddData) {
                 setIsAddStudentModalOpen(true)
               } else {
                 Toast({
@@ -400,7 +403,7 @@ export default function Student_List() {
                           size="xs"
                           colorScheme="red"
                           onClick={() => {
-                            if (canEditData) {
+                            if (canDeleteData) {
                               setSelectedstudent_id(Student.student_id);
                               setIsDeleteConfirmationModalOpen(true);
                             } else {
