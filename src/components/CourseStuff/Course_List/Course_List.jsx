@@ -145,7 +145,7 @@ export default function Course_List() {
   };
 
   const handleViewcourse = (courseId) => {
-    navigate(`../course/info/${courseId}`);
+    navigate(`/course/info/${courseId}`);
   };
 
 

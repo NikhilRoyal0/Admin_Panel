@@ -25,18 +25,14 @@ import {
   selectbranchPlannerLoading,
   selectbranchPlannerError,
   AddbranchPlannerData,
-  deletebranchPlannerData,
   updatebranchPlannerData,
 } from "../../../app/Slices/branchPlanner";
 import NetworkError from "../../NotFound/networkError";
-import { getModulePermissions } from "../../../utils/permissions";
 import { useParams } from "react-router-dom";
 
 
 export default function Planner() {
   const [isAddbranchPlannerModalOpen, setIsAddbranchPlannerModalOpen] = useState(false);
-  const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] =
-    useState(false);
   const [selectedplanerId, setSelectedplanerId] = useState(null);
   const [editedbranchPlannerData, setEditedbranchPlannerData] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -46,6 +42,7 @@ export default function Planner() {
   const [newbranchPlannerData, setNewbranchPlannerData] = useState({
     branchId: branchId,
     admissionFee: "",
+    admissionDiscount: "",
     paymentMode: "",
     kitFee: "",
     websiteUrl: "",
@@ -70,6 +67,7 @@ export default function Planner() {
     const formData = new FormData();
     formData.append("branchId", branchId);
     formData.append("admissionFee", newbranchPlannerData.admissionFee);
+    formData.append("admissionDiscount", newbranchPlannerData.admissionDiscount);
     formData.append("paymentMode", newbranchPlannerData.paymentMode);
     formData.append("kitFee", newbranchPlannerData.kitFee);
     formData.append("websiteUrl", newbranchPlannerData.websiteUrl);
@@ -104,35 +102,6 @@ export default function Planner() {
       });
   };
 
-  const handleDeleteConfirmation = () => {
-    setIsSaveLoading(true);
-
-    dispatch(deletebranchPlannerData(selectedplanerId))
-      .then(() => {
-        dispatch(fetchbranchPlannerData());
-        setIsDeleteConfirmationModalOpen(false);
-        setSelectedplanerId(null);
-        setIsSaveLoading(false);
-        Toast({
-          title: "Branch plan deleted successfully",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-          position: "top-right",
-        });
-      })
-      .catch((error) => {
-        setIsSaveLoading(false);
-        Toast({
-          title: "Failed to delete branch plan",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-          position: "top-right",
-        });
-        console.log("Error deleting branch plan: ", error);
-      });
-  };
 
   const handleEditbranchPlanner = (branchPlanner) => {
     setSelectedplanerId(branchPlanner.planerId);
@@ -145,6 +114,10 @@ export default function Planner() {
 
     const formData = {
       admissionFee: editedbranchPlannerData.admissionFee,
+      admissionDiscount: editedbranchPlannerData.admissionDiscount,
+      paymentMode: editedbranchPlannerData.paymentMode,
+      kitFee: editedbranchPlannerData.kitFee,
+      websiteUrl: editedbranchPlannerData.websiteUrl,
     };
 
     dispatch(updatebranchPlannerData(editedbranchPlannerData.planerId, formData))
@@ -252,17 +225,6 @@ export default function Planner() {
                   >
                     Edit
                   </Button>
-                  <Button
-                    size="xs"
-                    colorScheme="red"
-                    onClick={() => {
-                      setSelectedplanerId(branchPlanner.planerId);
-                      setIsDeleteConfirmationModalOpen(true);
-
-                    }}
-                  >
-                    Delete
-                  </Button>
                 </Flex>
               </Box>
             ))}
@@ -296,6 +258,18 @@ export default function Planner() {
                   setNewbranchPlannerData({
                     ...newbranchPlannerData,
                     admissionFee: e.target.value,
+                  })
+                }
+                isRequired
+              />
+              <Input
+                mb="3"
+                placeholder="Admission Discount"
+                value={newbranchPlannerData.admissionDiscount}
+                onChange={(e) =>
+                  setNewbranchPlannerData({
+                    ...newbranchPlannerData,
+                    admissionDiscount: e.target.value,
                   })
                 }
                 isRequired
@@ -358,35 +332,6 @@ export default function Planner() {
         </form>{" "}
       </Modal>
 
-      <Modal
-        isOpen={isDeleteConfirmationModalOpen}
-        onClose={() => setIsDeleteConfirmationModalOpen(false)}
-      >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Confirm Deletion</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>Are you sure you want to delete this Plan?</ModalBody>
-          <ModalFooter>
-            <Button
-              colorScheme="red"
-              mr={3}
-              onClick={handleDeleteConfirmation}
-              isLoading={isSaveLoading}
-              spinner={<BeatLoader size={8} color="white" />}
-            >
-              Delete
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => setIsDeleteConfirmationModalOpen(false)}
-            >
-              Cancel
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
       <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
         <ModalOverlay />
         <ModalContent>
@@ -405,6 +350,66 @@ export default function Planner() {
                   setEditedbranchPlannerData({
                     ...editedbranchPlannerData,
                     admissionFee: e.target.value,
+                  })
+                }
+                required
+              />
+              <Text mb="1" color="gray.600">
+                Payment Mode
+              </Text>
+              <Input
+                mb="3"
+                placeholder="Payment Mode"
+                value={editedbranchPlannerData?.paymentMode || ""}
+                onChange={(e) =>
+                  setEditedbranchPlannerData({
+                    ...editedbranchPlannerData,
+                    paymentMode: e.target.value,
+                  })
+                }
+                required
+              />
+              <Text mb="1" color="gray.600">
+                Kit Fee
+              </Text>
+              <Input
+                mb="3"
+                placeholder="Kit Fee"
+                value={editedbranchPlannerData?.kitFee || ""}
+                onChange={(e) =>
+                  setEditedbranchPlannerData({
+                    ...editedbranchPlannerData,
+                    kitFee: e.target.value,
+                  })
+                }
+                required
+              />
+              <Text mb="1" color="gray.600">
+                Website URL
+              </Text>
+              <Input
+                mb="3"
+                placeholder="Website URL"
+                value={editedbranchPlannerData?.websiteUrl || ""}
+                onChange={(e) =>
+                  setEditedbranchPlannerData({
+                    ...editedbranchPlannerData,
+                    websiteUrl: e.target.value,
+                  })
+                }
+                required
+              />
+              <Text mb="1" color="gray.600">
+                Admission Discount
+              </Text>
+              <Input
+                mb="3"
+                placeholder="Admission Fees"
+                value={editedbranchPlannerData?.admissionDiscount || ""}
+                onChange={(e) =>
+                  setEditedbranchPlannerData({
+                    ...editedbranchPlannerData,
+                    admissionDiscount: e.target.value,
                   })
                 }
                 required

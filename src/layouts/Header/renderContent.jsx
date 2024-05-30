@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 
 const RenderContent = () => {
   const { branchId } = useParams();
+  const {courseId} = useParams();
 
   const renderContent = (path) => {
     switch (path) {
@@ -116,6 +117,14 @@ const RenderContent = () => {
           <Link to="/courses">
             <Text fontSize="xl" fontWeight="bold">
               Course / Course List
+            </Text>
+          </Link>
+        );
+      case `/course/info/${courseId}`:
+        return (
+          <Link to="/courses">
+            <Text fontSize="xl" fontWeight="bold">
+              Course / Course Details
             </Text>
           </Link>
         );

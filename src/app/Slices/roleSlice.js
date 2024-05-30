@@ -61,7 +61,7 @@ export const fetchrolesData = () => async (dispatch) => {
   }
 };
 
-export const addrolesData = ({ roleName, permissions,createdBy }) => async () => {
+export const addrolesData = ({ roleName, permissions, createdBy, createdOn }) => async () => {
   try {
     const apiToken = sessionStorage.getItem("api-token");
 
@@ -69,26 +69,27 @@ export const addrolesData = ({ roleName, permissions,createdBy }) => async () =>
       roleName,
       permissions,
       createdBy,
+      createdOn,
     }, {
       headers: {
-        'Content-Type': 'application/json', 
+        'Content-Type': 'application/json',
         "api-token": apiToken,
       },
     });
     console.log('Response:', response.data);
   } catch (error) {
     console.error('Error:', error);
-    throw error; 
+    throw error;
   }
 }
 
-export const updaterolesData = ({ roleId, roleName, permissions }) => async (dispatch) => {
+export const updaterolesData = ({ roleId, roleName, permissions, updatedOn }) => async (dispatch) => {
   try {
 
     const apiToken = sessionStorage.getItem("api-token");
 
     const response = await axios.put(import.meta.env.VITE_BASE_URL + `roles/updateRole/${roleId}`,
-      { roleName, permissions },
+      { roleName, permissions, updatedOn },
       {
         headers: {
           'Content-Type': 'application/json',

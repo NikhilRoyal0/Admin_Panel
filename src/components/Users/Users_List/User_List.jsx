@@ -20,6 +20,7 @@ import {
   ModalBody,
   ModalFooter,
   useToast,
+  Select
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -31,9 +32,11 @@ import {
   updateUserData,
   deleteUserData
 } from "../../../app/Slices/usersSlice";
+import { fetchrolesData, selectrolesData, selectrolesError, selectrolesLoading } from "../../../app/Slices/roleSlice";
 import { BeatLoader } from "react-spinners";
 import NetworkError from "../../NotFound/networkError";
 import { getModulePermissions } from "../../../utils/permissions";
+import { fetchBranchData, selectBranchData, selectBranchError, selectBranchLoading } from "../../../app/Slices/branchSlice";
 
 
 export default function UserList() {
@@ -43,10 +46,14 @@ export default function UserList() {
     firstName: "",
     lastName: "",
     email: "",
+    password: "",
     primaryPhone: "",
-    deviceId: "",
-    password: "abc#123",
+    secondaryPhone: "",
     role: "",
+    status: "",
+    createdOn: Date.now(),
+    branchId: "",
+    profilePhoto: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(10);
@@ -57,6 +64,12 @@ export default function UserList() {
   const [isSaveLoading, setIsSaveLoading] = useState(false);
 
   const usersData = useSelector(selectUsersData);
+  const roleData = useSelector(selectrolesData);
+  const BranchData = useSelector(selectBranchData);
+  const BranchError = useSelector(selectBranchError);
+  const BranchLoading = useSelector(selectBranchLoading);
+  const roleError = useSelector(selectrolesError);
+  const roleLoading = useSelector(selectrolesLoading);
   const isLoading = useSelector(selectUsersLoading);
   const error = useSelector(selectUsersError);
   const dispatch = useDispatch();
@@ -66,6 +79,8 @@ export default function UserList() {
 
   useEffect(() => {
     dispatch(fetchUsersData());
+    dispatch(fetchrolesData());
+    dispatch(fetchBranchData());
   }, [dispatch]);
 
   const filteredUsers = usersData.filter(
@@ -84,10 +99,14 @@ export default function UserList() {
           firstName: "",
           lastName: "",
           email: "",
-          primaryPhone: "",
           password: "",
-          deviceId: "",
+          primaryPhone: "",
+          secondaryPhone: "",
           role: "",
+          status: "",
+          createdOn: "",
+          branchId: "",
+          profilePhoto: "",
         });
         setIsAddUserModalOpen(false);
       })
@@ -103,7 +122,15 @@ export default function UserList() {
       firstName: editedUserData.firstName,
       lastName: editedUserData.lastName,
       email: editedUserData.email,
-      primaryPhone: editedUserData.primaryPhone
+      password: editedUserData.password,
+      primaryPhone: editedUserData.primaryPhone,
+      secondaryPhone: editedUserData.secondaryPhone,
+      role: editedUserData.role,
+      status: editedUserData.status,
+      updatedOn: editedUserData.updatedOn,
+      branchId: editedUserData.branchId,
+      profilePhoto: editedUserData.profilePhoto
+
     };
 
     dispatch(updateUserData(editedUserData.userId, formData))
@@ -116,7 +143,14 @@ export default function UserList() {
           firstName: "",
           lastName: "",
           email: "",
+          password: "",
           primaryPhone: "",
+          secondaryPhone: "",
+          role: "",
+          status: "",
+          createdOn: "",
+          branchId: "",
+          profilePhoto: "",
         });
         Toast({
           title: "User updated successfully",
@@ -184,6 +218,34 @@ export default function UserList() {
   }
 
   if (error) {
+    return (
+      <NetworkError />
+    );
+  }
+
+  if (roleLoading) {
+    return (
+      <Flex justify="center" align="center" h="100vh">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
+
+  if (roleError) {
+    return (
+      <NetworkError />
+    );
+  }
+
+  if (BranchLoading) {
+    return (
+      <Flex justify="center" align="center" h="100vh">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
+
+  if (BranchError) {
     return (
       <NetworkError />
     );
@@ -418,6 +480,15 @@ export default function UserList() {
               />
               <Input
                 mb="3"
+                placeholder="Password"
+                value={newUserData.password}
+                onChange={(e) =>
+                  setNewUserData({ ...newUserData, password: e.target.value })
+                }
+                isRequired
+              />
+              <Input
+                mb="3"
                 placeholder="Primary Phone Number"
                 value={newUserData.primaryPhone}
                 onChange={(e) =>
@@ -430,31 +501,49 @@ export default function UserList() {
               />
               <Input
                 mb="3"
-                placeholder="Enter Password"
-                value={newUserData.password}
+                placeholder="Secondary Phone Number"
+                value={newUserData.secondaryPhone}
                 onChange={(e) =>
                   setNewUserData({
                     ...newUserData,
-                    password: e.target.value,
+                    secondaryPhone: e.target.value,
                   })
                 }
                 isRequired
               />
               <Input
                 mb="3"
-                placeholder="Device Id"
-                value={newUserData.deviceId}
+                placeholder="Profile Photo"
+                value={newUserData.profilePhoto}
                 onChange={(e) =>
                   setNewUserData({
                     ...newUserData,
-                    deviceId: e.target.value,
+                    profilePhoto: e.target.value,
                   })
                 }
                 isRequired
               />
-              <Input
+              <Select
                 mb="3"
-                placeholder="Role"
+                placeholder="Select Branch"
+                value={newUserData.branchId}
+                onChange={(e) =>
+                  setNewUserData({
+                    ...newUserData,
+                    branchId: e.target.value,
+                  })
+                }
+                isRequired
+              >
+                {BranchData.map((branch) => (
+                  <option key={branch.branchId} value={branch.branchId}>
+                    {branch.branchName}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                mb="3"
+                placeholder="Select Role"
                 value={newUserData.role}
                 onChange={(e) =>
                   setNewUserData({
@@ -463,7 +552,30 @@ export default function UserList() {
                   })
                 }
                 isRequired
-              />
+              >
+                {roleData.map((role) => (
+                  <option key={role.roleId} value={role.roleId}>
+                    {role.roleName}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                mb="3"
+                placeholder="Select status"
+                value={newUserData.status}
+                onChange={(e) =>
+                  setNewUserData({
+                    ...newUserData,
+                    status: e.target.value,
+                  })
+                }
+                isRequired
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Disabled">Disabled</option>
+                <option value="NeedKyc">Need KYC</option>
+              </Select>
             </ModalBody>
             <ModalFooter>
               <Button type="submit" colorScheme="teal">
@@ -578,6 +690,108 @@ export default function UserList() {
                   setEditedUserData({
                     ...editedUserData,
                     primaryPhone: e.target.value,
+                  })
+                }
+                required
+              />
+            </Box>
+            <Box>
+              <Text mb="1" color="gray.600">
+                Secondary Phone
+              </Text>
+              <Input
+                mb="3"
+                placeholder="Secondary Phone"
+                value={editedUserData?.secondaryPhone || ""}
+                onChange={(e) =>
+                  setEditedUserData({
+                    ...editedUserData,
+                    secondaryPhone: e.target.value,
+                  })
+                }
+                required
+              />
+            </Box>
+            <Box>
+              <Text mb="1" color="gray.600">
+                Role
+              </Text>
+              <Select
+                mb="3"
+                placeholder="Select Role"
+                value={editedUserData?.role || ""}
+                onChange={(e) =>
+                  setEditedUserData({
+                    ...editedUserData,
+                    role: e.target.value,
+                  })
+                }
+                isRequired
+              >
+                {roleData.map((role) => (
+                  <option key={role.roleId} value={role.roleId}>
+                    {role.roleName}
+                  </option>
+                ))}
+              </Select>
+            </Box>
+            <Box>
+              <Text mb="1" color="gray.600">
+                Status
+              </Text>
+              <Select
+                mb="3"
+                placeholder="Select status"
+                value={editedUserData?.status || ""}
+                onChange={(e) =>
+                  setEditedUserData({
+                    ...editedUserData,
+                    status: e.target.value,
+                  })
+                }
+                isRequired
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Disabled">Disabled</option>
+                <option value="NeedKyc">Need KYC</option>
+              </Select>
+            </Box>
+            <Box>
+              <Text mb="1" color="gray.600">
+                Branch Id
+              </Text>
+              <Select
+                mb="3"
+                placeholder="Select Branch"
+                value={editedUserData?.branchId || ""}
+                onChange={(e) =>
+                  setEditedUserData({
+                    ...editedUserData,
+                    branchId: e.target.value,
+                  })
+                }
+                isRequired
+              >
+                {BranchData.map((branch) => (
+                  <option key={branch.branchId} value={branch.branchId}>
+                    {branch.branchName}
+                  </option>
+                ))}
+              </Select>
+            </Box>
+            <Box>
+              <Text mb="1" color="gray.600">
+                Profile Photo
+              </Text>
+              <Input
+                mb="3"
+                placeholder="Profile Photo"
+                value={editedUserData?.profilePhoto || ""}
+                onChange={(e) =>
+                  setEditedUserData({
+                    ...editedUserData,
+                    profilePhoto: e.target.value,
                   })
                 }
                 required

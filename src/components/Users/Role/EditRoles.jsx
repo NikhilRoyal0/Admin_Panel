@@ -71,7 +71,8 @@ export default function EditRoles() {
             const updatedRoleData = {
                 ...role,
                 roleName: roleName,
-                permissions: JSON.stringify(updatedPermissions)
+                permissions: JSON.stringify(updatedPermissions),
+                updatedOn: Date.now()
             };
 
             await dispatch(updaterolesData(updatedRoleData));

@@ -31,6 +31,7 @@ import Home_Branch from "../components/Branch/Branch_List/Home_Branch";
 import { useParams } from "react-router-dom";
 import StaffAttendance from "../components/Attendance/Staff/StaffAttendance";
 import StudentAttendance from "../components/Attendance/Student/StudentAttendance";
+import Course from "../components/CourseStuff/Course_List/Course";
 
 
 const routes = createBrowserRouter(
@@ -63,7 +64,7 @@ const routes = createBrowserRouter(
         <Route path="/certificate/template" element={<Templetes />} />
         <Route path="/student/fee-option" element={<Fee_Option />} />
         <Route path="/courses" element={<Course_List />} />
-        <Route path="/course/info/:courseId" element={<Home_Branch />} />
+        <Route path="/course/info/:courseId" element={<Course />} />
         <Route path="/courses/categories" element={<Course_Category />} />
         <Route path="/course/contents" element={<Course_Content />} />
         <Route path="/course/purchase/history" element={<Purchase_History />} />

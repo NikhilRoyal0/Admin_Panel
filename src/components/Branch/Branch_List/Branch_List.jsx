@@ -22,7 +22,6 @@ import {
   ModalFooter,
   Select,
   useToast,
-  Divider,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { BeatLoader } from "react-spinners";
@@ -34,9 +33,10 @@ import {
   AddBranchData,
   deleteBranchData,
 } from "../../../app/Slices/branchSlice";
+import { fetchrolesData, selectrolesData, selectrolesError, selectrolesLoading } from "../../../app/Slices/roleSlice";
 import NetworkError from "../../NotFound/networkError";
 import { getModulePermissions } from "../../../utils/permissions";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 
 export default function Branch_List() {
@@ -50,17 +50,24 @@ export default function Branch_List() {
     branchName: "",
     branchAdmin: "",
     branchAddress: "",
+    status: "",
+    branchPassword: "",
     branchEmail: "",
     branchPhone: "",
+    walletAmount: 0,
+    commission: 0,
     role: "",
-    primaryDeviceId: "",
+    createdOn: Date.now(),
   });
 
   const BranchData = useSelector(selectBranchData);
+  const roleData = useSelector(selectrolesData);
+  const roleError = useSelector(selectrolesError);
+  const roleLoading = useSelector(selectrolesLoading);
   const isLoading = useSelector(selectBranchLoading);
   const error = useSelector(selectBranchError);
   const dispatch = useDispatch();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const Toast = useToast({
     position: "top-right",
   });
@@ -70,6 +77,7 @@ export default function Branch_List() {
 
   useEffect(() => {
     dispatch(fetchBranchData());
+    dispatch(fetchrolesData());
   }, [dispatch]);
 
   const handleAddBranch = (e) => {
@@ -80,15 +88,19 @@ export default function Branch_List() {
     formData.append("branchName", newBranchData.branchName);
     formData.append("branchAdmin", newBranchData.branchAdmin);
     formData.append("branchAddress", newBranchData.branchAddress);
+    formData.append("status", newBranchData.status);
+    formData.append("branchPassword", newBranchData.branchPassword);
     formData.append("branchEmail", newBranchData.branchEmail);
     formData.append("branchPhone", newBranchData.branchPhone);
+    formData.append("walletAmount", 0);
+    formData.append("commission", 0);
     formData.append("role", newBranchData.role);
-    formData.append("primaryDeviceId", newBranchData.primaryDeviceId);
+    formData.append("createdOn", Date.now());
     dispatch(AddBranchData(formData))
       .then(() => {
         setIsSaveLoading(false);
         Toast({
-          title: "Branch updated/deleted successfully",
+          title: "Branch added successfully",
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -98,10 +110,14 @@ export default function Branch_List() {
           branchName: "",
           branchAdmin: "",
           branchAddress: "",
+          status: null,
+          branchPassword: "",
           branchEmail: "",
           branchPhone: "",
+          walletAmount: "",
+          commission: "",
           role: "",
-          primaryDeviceId: "",
+          createdOn: "",
         });
         setIsAddBranchModalOpen(false);
       })
@@ -148,7 +164,7 @@ export default function Branch_List() {
   };
 
   const handleViewBranch = (branchId) => {
-    navigate(`../branch/dashboard/${branchId}`);
+    navigate(`/branch/dashboard/${branchId}`);
   };
 
 
@@ -161,6 +177,20 @@ export default function Branch_List() {
   }
 
   if (error) {
+    return (
+      <NetworkError />
+    );
+  }
+
+  if (roleLoading) {
+    return (
+      <Flex justify="center" align="center" h="100vh">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
+
+  if (roleError) {
     return (
       <NetworkError />
     );
@@ -304,7 +334,7 @@ export default function Branch_List() {
                           colorScheme="teal"
                           mr="1"
                           onClick={() => handleViewBranch(Branch.branchId)}
-                          >
+                        >
                           View
                         </Button>
                         <Button
@@ -392,6 +422,23 @@ export default function Branch_List() {
                 }
                 isRequired
               />
+              <Select
+                mb="3"
+                placeholder="Select status"
+                value={newBranchData.status}
+                onChange={(e) =>
+                  setNewBranchData({
+                    ...newBranchData,
+                    status: e.target.value,
+                  })
+                }
+                isRequired
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Disabled">Disabled</option>
+                <option value="NeedKyc">Need KYC</option>
+              </Select>
               <Input
                 mb="3"
                 placeholder="Branch Email"
@@ -400,6 +447,18 @@ export default function Branch_List() {
                   setNewBranchData({
                     ...newBranchData,
                     branchEmail: e.target.value,
+                  })
+                }
+                isRequired
+              />
+              <Input
+                mb="3"
+                placeholder="Branch Password"
+                value={newBranchData.branchPassword}
+                onChange={(e) =>
+                  setNewBranchData({
+                    ...newBranchData,
+                    branchPassword: e.target.value,
                   })
                 }
                 isRequired
@@ -416,9 +475,9 @@ export default function Branch_List() {
                 }
                 isRequired
               />
-              <Input
+              <Select
                 mb="3"
-                placeholder="Role"
+                placeholder="Select Role"
                 value={newBranchData.role}
                 onChange={(e) =>
                   setNewBranchData({
@@ -427,54 +486,13 @@ export default function Branch_List() {
                   })
                 }
                 isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Primary DeviceId"
-                value={newBranchData.primaryDeviceId}
-                onChange={(e) =>
-                  setNewBranchData({
-                    ...newBranchData,
-                    primaryDeviceId: e.target.value,
-                  })
-                }
-                isRequired
-              />
-
-            </ModalBody>
-            <Divider />
-            <ModalHeader>Branch Plan</ModalHeader>
-            <ModalBody>
-              <Input
-                mb="3"
-                placeholder="Branch Id"
-
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Admission Fee"
-
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Payment Mode"
-
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Kit Fee"
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Website Url"
-
-                isRequired
-              />
-
+              >
+                {roleData.map((role) => (
+                  <option key={role.roleId} value={role.roleId}>
+                    {role.roleName}
+                  </option>
+                ))}
+              </Select>
             </ModalBody>
             <ModalFooter>
               <Button
@@ -494,7 +512,6 @@ export default function Branch_List() {
             </ModalFooter>
           </ModalContent>
         </form>{" "}
-        {/* Close form tag */}
       </Modal>
 
       <Modal

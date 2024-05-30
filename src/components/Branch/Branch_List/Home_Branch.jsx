@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box, Spinner, Text, Flex, SimpleGrid, Input, FormControl, FormLabel, Table, Thead, Tbody, Tr, Th, Td, Button, Divider,
-  useToast
-} from '@chakra-ui/react';
+import { Box, Spinner, Select, Text, Flex, SimpleGrid, Input, FormControl, FormLabel, Table, Thead, Tbody, Tr, Th, Td, Button, Divider, useToast } from '@chakra-ui/react';
 import { useParams } from "react-router-dom";
 import {
   fetchBranchData,
@@ -18,8 +15,6 @@ import Planner from '../Planner/Planner';
 import { FaUserGraduate } from 'react-icons/fa';
 import { SiCoursera } from "react-icons/si";
 
-
-
 export default function Home_Branch() {
   const { branchId } = useParams();
   const BranchData = useSelector(selectBranchData);
@@ -27,19 +22,48 @@ export default function Home_Branch() {
   const isLoading = useSelector(selectBranchLoading);
   const error = useSelector(selectBranchError);
   const dispatch = useDispatch();
-  const Toast = useToast()
+  const Toast = useToast();
   const [isEditable, setIsEditable] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [formData, setFormData] = useState({
     branchName: "",
-    branchAddress: ""
+    branchAdmin: "",
+    branchAddress: "",
+    status: "",
+    branchPassword: "",
+    branchEmail: "",
+    branchPhone: "",
+    walletAmount: "",
+    commission: "",
+    role: "",
+    updatedOn: Date.now(),
   });
 
   useEffect(() => {
     dispatch(fetchBranchData());
     dispatch(fetchStudentData());
-
   }, [dispatch]);
+
+  useEffect(() => {
+    if (BranchData.length > 0) {
+      const selectedBranch = BranchData.find(branch => branch.branchId === parseInt(branchId));
+      if (selectedBranch) {
+        setFormData({
+          branchName: selectedBranch.branchName,
+          branchAdmin: selectedBranch.branchAdmin,
+          branchAddress: selectedBranch.branchAddress,
+          status: selectedBranch.status,
+          branchPassword: selectedBranch.branchPassword,
+          branchEmail: selectedBranch.branchEmail,
+          branchPhone: selectedBranch.branchPhone,
+          walletAmount: selectedBranch.walletAmount,
+          commission: selectedBranch.commission,
+          role: selectedBranch.role,
+          updatedOn: Date.now(),
+        });
+      }
+    }
+  }, [BranchData, branchId]);
 
   if (isLoading) {
     return (
@@ -59,25 +83,13 @@ export default function Home_Branch() {
     if (isEditable) {
       handleUpdateBranch();
     } else {
-      setFormData({
-        branchName: selectedBranch.branchName,
-        branchAddress: selectedBranch.branchAddress
-      });
       setIsEditable(!isEditable);
     }
   };
 
-  const filteredStudents = StudentData.filter(student => {
-    const matchBranchId = student.branchId === parseInt(branchId);
-    const searchString = searchInput ? searchInput.toLowerCase() : '';
-    return matchBranchId && (
-      (student.admissionNo && student.admissionNo.toLowerCase().includes(searchString)) ||
-      (student.email && student.email.toLowerCase().includes(searchString)) ||
-      (student.studentName && student.studentName.toLowerCase().includes(searchString))
-    );
-  });
-
-  const filteredStudentsCount = StudentData.filter(student => student.branchId === parseInt(branchId)).length;
+  const handleCancel = () => {
+    setIsEditable(false)
+  }
 
   const handleFormChange = (e) => {
     setFormData({
@@ -101,7 +113,7 @@ export default function Home_Branch() {
       })
       .catch(() => {
         Toast({
-          title: "Failed to updating Branch",
+          title: "Failed to update Branch",
           status: "error",
           duration: 3000,
           isClosable: true,
@@ -110,8 +122,7 @@ export default function Home_Branch() {
       });
   };
 
-
-  const selectedBranch = BranchData.find(branch => branch.branchId === parseInt(branchId));
+  const selectedBranch = BranchData.find(branch => branch.branchId === (branchId));
 
   if (!selectedBranch) {
     return (
@@ -121,6 +132,17 @@ export default function Home_Branch() {
     );
   }
 
+  const filteredStudents = StudentData.filter(student => {
+    const matchBranchId = student.branchId === parseInt(branchId);
+    const searchString = searchInput ? searchInput.toLowerCase() : '';
+    return matchBranchId && (
+      (student.admissionNo && student.admissionNo.toLowerCase().includes(searchString)) ||
+      (student.email && student.email.toLowerCase().includes(searchString)) ||
+      (student.studentName && student.studentName.toLowerCase().includes(searchString))
+    );
+  });
+
+  const filteredStudentsCount = StudentData.filter(student => student.branchId === parseInt(branchId)).length;
 
   return (
     <Flex p="4" mt={2} direction={{ base: 'column', md: 'row' }}>
@@ -140,9 +162,16 @@ export default function Home_Branch() {
       }}>
         <Flex justify="space-between" align="center">
           <Text fontSize="2xl" fontWeight="bold">Branch Details</Text>
-          <Button onClick={handleEditToggle} colorScheme="teal">
-            {isEditable ? 'Save' : 'Edit'}
-          </Button>
+          <Flex>
+            {isEditable && (
+              <Button mr={2} onClick={handleCancel} colorScheme="red">
+                Cancel
+              </Button>
+            )}
+            <Button onClick={handleEditToggle} colorScheme="teal">
+              {isEditable ? 'Save' : 'Edit'}
+            </Button>
+          </Flex>
         </Flex>
         <Divider my="4" />
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
@@ -157,8 +186,8 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Branch Name</FormLabel>
             <Input
-              value={formData.branchName || selectedBranch.branchName}
               name="branchName"
+              value={formData.branchName}
               onChange={handleFormChange}
               readOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
@@ -167,7 +196,9 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel fontWeight="bold">Branch Admin</FormLabel>
             <Input
-              value={selectedBranch.branchAdmin}
+              name="branchAdmin"
+              value={formData.branchAdmin}
+              onChange={handleFormChange}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
@@ -175,8 +206,8 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Branch Address</FormLabel>
             <Input
-              value={formData.branchAddress || selectedBranch.branchAddress}
               name="branchAddress"
+              value={formData.branchAddress}
               onChange={handleFormChange}
               readOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
@@ -184,15 +215,35 @@ export default function Home_Branch() {
           </FormControl>
           <FormControl>
             <FormLabel>Status</FormLabel>
-            <Input
-              value={selectedBranch.status}
-              isReadOnly={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
-            />
+            {isEditable ? (
+              <Select
+                value={formData.status}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    status: e.target.value,
+                  })
+                }
+                bg="white"
+                isRequired
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Disabled">Disabled</option>
+                <option value="NeedKyc">Need KYC</option>
+              </Select>
+            ) : (
+              <Input
+                value={formData.status || selectedBranch.status}
+                isReadOnly
+                bg="gray.100"
+              />
+            )}
           </FormControl>
           <FormControl>
             <FormLabel>Branch IP</FormLabel>
             <Input
+              name="branchIp"
               value={selectedBranch.branchIp}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
@@ -201,7 +252,9 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Branch Password</FormLabel>
             <Input
-              value={selectedBranch.branchPassword}
+              name="branchPassword"
+              value={formData.branchPassword}
+              onChange={handleFormChange}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
@@ -209,7 +262,9 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Branch Email</FormLabel>
             <Input
-              value={selectedBranch.branchEmail}
+              name="branchEmail"
+              value={formData.branchEmail}
+              onChange={handleFormChange}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
@@ -217,7 +272,9 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Branch Phone</FormLabel>
             <Input
-              value={selectedBranch.branchPhone}
+              name="branchPhone"
+              value={formData.branchPhone}
+              onChange={handleFormChange}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
@@ -225,6 +282,7 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Course List</FormLabel>
             <Input
+              name="courseList"
               value={selectedBranch.courseList}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
@@ -233,7 +291,9 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Wallet Amount</FormLabel>
             <Input
-              value={selectedBranch.walletAmount}
+              name="walletAmount"
+              value={formData.walletAmount}
+              onChange={handleFormChange}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
@@ -241,7 +301,9 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Commission</FormLabel>
             <Input
-              value={selectedBranch.commission}
+              name="commission"
+              value={formData.commission}
+              onChange={handleFormChange}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
@@ -249,7 +311,9 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Role</FormLabel>
             <Input
-              value={selectedBranch.role}
+              name="role"
+              value={formData.role}
+              onChange={handleFormChange}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
@@ -257,7 +321,9 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Updated On</FormLabel>
             <Input
-              value={selectedBranch.updatedOn}
+              name="updatedOn"
+              value={formData.updatedOn}
+              onChange={handleFormChange}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
@@ -265,14 +331,16 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Created On</FormLabel>
             <Input
+              name="createdOn"
               value={selectedBranch.createdOn}
-              isReadOnly={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              isReadOnly
+              bg='gray.100'
             />
           </FormControl>
           <FormControl>
             <FormLabel>Primary Device Id</FormLabel>
             <Input
+              name="primaryDeviceId"
               value={selectedBranch.primaryDeviceId}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
@@ -281,6 +349,7 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Device Ids</FormLabel>
             <Input
+              name="deviceIds"
               value={selectedBranch.deviceIds}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
@@ -289,6 +358,7 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Last Active At</FormLabel>
             <Input
+              name="lastActiveAt"
               value={selectedBranch.lastActiveAt}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
@@ -297,6 +367,7 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Reason</FormLabel>
             <Input
+              name="reason"
               value={selectedBranch.reason}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
@@ -305,6 +376,7 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Branch Users</FormLabel>
             <Input
+              name="branchUsers"
               value={selectedBranch.branchUsers}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
@@ -313,6 +385,7 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel>Branch Media</FormLabel>
             <Input
+              name="branchMedia"
               value={selectedBranch.branchMedia}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
