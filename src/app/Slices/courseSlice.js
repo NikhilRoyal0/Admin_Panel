@@ -61,34 +61,32 @@ export const fetchcourseData = () => async (dispatch) => {
   }
 };
 
-export const AddcourseData = ({ courseName, permissions,createdBy }) => async () => {
+export const AddcourseData = (formData) => async (dispatch) => {
   try {
     const apiToken = sessionStorage.getItem("api-token");
 
-    const response = await axios.post(import.meta.env.VITE_BASE_URL + 'courses/add', {
-      courseName,
-      permissions,
-      createdBy,
-    }, {
+    const response = await axios.post(import.meta.env.VITE_BASE_URL + 'courses/add',
+      formData, {
       headers: {
-        'Content-Type': 'application/json', 
+        'Content-Type': 'application/json',
         "api-token": apiToken,
       },
     });
     console.log('Response:', response.data);
+    dispatch(fetchcourseData());
   } catch (error) {
     console.error('Error:', error);
-    throw error; 
+    throw error;
   }
 }
 
-export const updatecourseData = ({ courseId, courseName, permissions }) => async (dispatch) => {
+export const updatecourseData = ({ formData }) => async (dispatch) => {
   try {
 
     const apiToken = sessionStorage.getItem("api-token");
 
     const response = await axios.put(import.meta.env.VITE_BASE_URL + `courses/update/${courseId}`,
-      { courseName, permissions },
+      { formData },
       {
         headers: {
           'Content-Type': 'application/json',

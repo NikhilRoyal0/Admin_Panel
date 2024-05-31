@@ -8,6 +8,7 @@ import CountReducer from "../Slices/countSlice";
 import branchPlannerReducer from "../Slices/branchPlanner";
 import CertificateReducer from "../Slices/certificateSlice";
 import CourseReducer from "../Slices/courseSlice";
+import categoryReducer from "../Slices/categorySlice";
 
 const Store = configureStore({
   reducer: {
@@ -20,6 +21,7 @@ const Store = configureStore({
     branchPlanner: branchPlannerReducer,
     Certificate: CertificateReducer,
     course: CourseReducer,
+    category: categoryReducer,
   },
 });
 

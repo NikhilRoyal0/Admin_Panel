@@ -11,7 +11,7 @@ import {
   Td,
   Flex,
   Spinner,
-  Badge,
+  Grid,
   Button,
   Modal,
   ModalOverlay,
@@ -20,8 +20,8 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
-  Select,
   useToast,
+  Select,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { BeatLoader } from "react-spinners";
@@ -34,6 +34,8 @@ import {
   deleteStudentData,
   updateStudentData,
 } from "../../../app/Slices/studentSlice";
+import { selectBranchData, selectBranchError, selectBranchLoading, fetchBranchData } from "../../../app/Slices/branchSlice";
+import { selectrolesData, selectrolesError, selectrolesLoading, fetchrolesData } from "../../../app/Slices/roleSlice";
 import NetworkError from "../../NotFound/networkError";
 import { getModulePermissions } from "../../../utils/permissions";
 
@@ -62,6 +64,12 @@ export default function Student_List() {
   });
 
   const StudentData = useSelector(selectStudentData);
+  const roleData = useSelector(selectrolesData);
+  const roleLoading = useSelector(selectrolesLoading);
+  const roleError = useSelector(selectrolesError);
+  const branchData = useSelector(selectBranchData);
+  const branchLoading = useSelector(selectBranchLoading);
+  const branchError = useSelector(selectBranchError);
   const isLoading = useSelector(selectStudentLoading);
   const error = useSelector(selectStudentError);
   const dispatch = useDispatch();
@@ -71,9 +79,10 @@ export default function Student_List() {
   const [currentPage, setCurrentPage] = useState(1);
   const [StudentsPerPage, setStudentsPerPage] = useState(10);
 
-
   useEffect(() => {
     dispatch(fetchStudentData());
+    dispatch(fetchBranchData());
+    dispatch(fetchrolesData());
   }, [dispatch]);
 
   const handleAddStudent = (e) => {
@@ -96,7 +105,7 @@ export default function Student_List() {
       .then(() => {
         setIsSaveLoading(false);
         Toast({
-          title: "Student updated/deleted successfully",
+          title: "Student added successfully",
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -139,7 +148,7 @@ export default function Student_List() {
         setSelectedstudent_id(null);
         setIsSaveLoading(false);
         Toast({
-          title: "Student added/updated successfully",
+          title: "Student deleted successfully",
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -169,9 +178,24 @@ export default function Student_List() {
     setIsSaveLoading(true);
 
     const formData = {
+      studentName: editedStudentData.studentName,
       email: editedStudentData.email,
       password: editedStudentData.password,
+      role: editedStudentData.role,
+      updatedOn: Date.now(),
+      status: editedStudentData.status,
+      branchId: editedStudentData.branchId,
+      handledBy: editedStudentData.handledBy,
+      currentCourseId: editedStudentData.currentCourseId,
+      walletAmount: editedStudentData.walletAmount,
+      referCode: editedStudentData.referCode,
+      parentCode: editedStudentData.parentCode,
       primaryAddress: editedStudentData.primaryAddress,
+      state: editedStudentData.state,
+      city: editedStudentData.city,
+      interestIn: editedStudentData.interestIn,
+      admissionNo: editedStudentData.admissionNo,
+      profilePhoto: editedStudentData.profilePhoto,
 
     };
 
@@ -195,7 +219,7 @@ export default function Student_List() {
           interestIn: "",
         });
         Toast({
-          title: "Student added/updated successfully",
+          title: "Student updated successfully",
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -224,6 +248,34 @@ export default function Student_List() {
   }
 
   if (error) {
+    return (
+      <NetworkError />
+    );
+  }
+
+  if (roleLoading) {
+    return (
+      <Flex justify="center" align="center" h="100vh">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
+
+  if (roleError) {
+    return (
+      <NetworkError />
+    );
+  }
+
+  if (branchLoading) {
+    return (
+      <Flex justify="center" align="center" h="100vh">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
+
+  if (branchError) {
     return (
       <NetworkError />
     );
@@ -439,6 +491,7 @@ export default function Student_List() {
       <Modal
         isOpen={isAddStudentModalOpen}
         onClose={() => setIsAddStudentModalOpen(false)}
+        size="3xl"
       >
         <ModalOverlay />
         <form onSubmit={handleAddStudent}>
@@ -447,140 +500,152 @@ export default function Student_List() {
             <ModalHeader>Add Student</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              {/* Form input fields for adding a new Student */}
-              <Input
-                mb="3"
-                placeholder="Student Name"
-                value={newStudentData.studentName}
-                onChange={(e) =>
-                  setNewStudentData({
-                    ...newStudentData,
-                    studentName: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Student email"
-                value={newStudentData.email}
-                onChange={(e) =>
-                  setNewStudentData({
-                    ...newStudentData,
-                    email: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Student password"
-                value={newStudentData.password}
-                onChange={(e) =>
-                  setNewStudentData({
-                    ...newStudentData,
-                    password: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Student Email"
-                value={newStudentData.role}
-                onChange={(e) =>
-                  setNewStudentData({
-                    ...newStudentData,
-                    role: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Branch Id"
-                value={newStudentData.branchId}
-                onChange={(e) =>
-                  setNewStudentData({
-                    ...newStudentData,
-                    branchId: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Handled By"
-                value={newStudentData.handledBy}
-                onChange={(e) =>
-                  setNewStudentData({
-                    ...newStudentData,
-                    handledBy: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder=" Current CourseId"
-                value={newStudentData.currentCourseId}
-                onChange={(e) =>
-                  setNewStudentData({
-                    ...newStudentData,
-                    currentCourseId: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Primary Address"
-                value={newStudentData.primaryAddress}
-                onChange={(e) =>
-                  setNewStudentData({
-                    ...newStudentData,
-                    primaryAddress: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="State"
-                value={newStudentData.state}
-                onChange={(e) =>
-                  setNewStudentData({
-                    ...newStudentData,
-                    state: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder=" Current CourseId"
-                value={newStudentData.city}
-                onChange={(e) =>
-                  setNewStudentData({
-                    ...newStudentData,
-                    city: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Interest In"
-                value={newStudentData.interestIn}
-                onChange={(e) =>
-                  setNewStudentData({
-                    ...newStudentData,
-                    interestIn: e.target.value,
-                  })
-                }
-                isRequired
-              />
-
+              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={3}>
+                <Input
+                  mb="3"
+                  placeholder="Student Name"
+                  value={newStudentData.studentName}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      studentName: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Student email"
+                  value={newStudentData.email}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      email: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Student password"
+                  value={newStudentData.password}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      password: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Select
+                  mb="3"
+                  placeholder="Select Role"
+                  value={newStudentData.role}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      role: e.target.value,
+                    })
+                  }
+                  isRequired
+                >
+                  {roleData.map((role) => (
+                    <option key={role.roleId} value={role.roleId}>
+                      {role.roleName}
+                    </option>
+                  ))}
+                </Select>
+                <Select
+                  mb="3"
+                  placeholder="Select Branch"
+                  value={newStudentData.branchId}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      branchId: e.target.value,
+                    })
+                  }
+                  isRequired
+                >
+                  {branchData.map((branch) => (
+                    <option key={branch.branchId} value={branch.branchId}>
+                      {branch.branchName}
+                    </option>
+                  ))}
+                </Select>
+                <Input
+                  mb="3"
+                  placeholder="Handled By"
+                  value={newStudentData.handledBy}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      handledBy: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder=" Current CourseId"
+                  value={newStudentData.currentCourseId}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      currentCourseId: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Primary Address"
+                  value={newStudentData.primaryAddress}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      primaryAddress: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="State"
+                  value={newStudentData.state}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      state: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder=" City"
+                  value={newStudentData.city}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      city: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Interest In"
+                  value={newStudentData.interestIn}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      interestIn: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+              </Grid>
             </ModalBody>
             <ModalFooter>
               <Button
@@ -632,63 +697,320 @@ export default function Student_List() {
         </ModalContent>
       </Modal>
 
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
+      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} size="3xl">
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Edit Student</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Box>
-              <Text mb="1" color="gray.600">
-                Student Email
-              </Text>
-              <Input
-                mb="3"
-                placeholder="Student Email"
-                value={editedStudentData?.email || ""}
-                onChange={(e) =>
-                  setEditedStudentData({
-                    ...editedStudentData,
-                    email: e.target.value,
-                  })
-                }
-                required
-              />
-            </Box>
-            <Box>
-              <Text mb="1" color="gray.600">
-                Student Password
-              </Text>
-              <Input
-                mb="3"
-                placeholder="Student Password"
-                value={editedStudentData?.password || ""}
-                onChange={(e) =>
-                  setEditedStudentData({
-                    ...editedStudentData,
-                    password: e.target.value,
-                  })
-                }
-                required
-              />
-            </Box>
-            <Box>
-              <Text mb="1" color="gray.600">
-                Primary Address
-              </Text>
-              <Input
-                mb="3"
-                placeholder="Primary Address"
-                value={editedStudentData?.primaryAddress || ""}
-                onChange={(e) =>
-                  setEditedStudentData({
-                    ...editedStudentData,
-                    primaryAddress: e.target.value,
-                  })
-                }
-                required
-              />
-            </Box>
+            <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={3}>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Student Name
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Student Name"
+                  value={editedStudentData?.studentName || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      studentName: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Student Email
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Student Email"
+                  value={editedStudentData?.email || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      email: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Student Password
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Student Password"
+                  value={editedStudentData?.password || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      password: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Role
+                </Text>
+                <Select
+                  mb="3"
+                  placeholder="Select Role"
+                  value={editedStudentData?.role || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      role: e.target.value,
+                    })
+                  }
+                  isRequired
+                >
+                  {roleData.map((role) => (
+                    <option key={role.roleId} value={role.roleId}>
+                      {role.roleName}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Status
+                </Text>
+                <Select
+                  mb="3"
+                  placeholder="Select status"
+                  value={editedStudentData?.status || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      status: e.target.value,
+                    })
+                  }
+                  isRequired
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Disabled">Disabled</option>
+                  <option value="NeedKyc">Need KYC</option>
+                </Select>
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Branch Id
+                </Text>
+                <Select
+                  mb="3"
+                  placeholder="Select Branch"
+                  value={editedStudentData?.branchId || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      branchId: e.target.value,
+                    })
+                  }
+                  isRequired
+                >
+                  {branchData.map((branch) => (
+                    <option key={branch.branchId} value={branch.branchId}>
+                      {branch.branchId}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Handled By
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Handled By"
+                  value={editedStudentData?.handledBy || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      handledBy: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Current Course Id
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Current Course Id"
+                  value={editedStudentData?.currentCourseId || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      currentCourseId: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Wallet Amount
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Wallet Amount"
+                  value={editedStudentData?.walletAmount || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      walletAmount: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Refer Code
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Refer Code"
+                  value={editedStudentData?.referCode || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      referCode: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Parent Code
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Parent Code"
+                  value={editedStudentData?.parentCode || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      parentCode: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Primary Address
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Primary Address"
+                  value={editedStudentData?.primaryAddress || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      primaryAddress: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  State
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="State"
+                  value={editedStudentData?.state || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      state: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  City
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="City"
+                  value={editedStudentData?.city || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      city: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Interest In
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Interest In"
+                  value={editedStudentData?.interestIn || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      interestIn: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Admission Number
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Admission Number"
+                  value={editedStudentData?.admissionNo || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      admissionNo: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Profile Photo
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Profile Photo"
+                  value={editedStudentData?.profilePhoto || ""}
+                  onChange={(e) =>
+                    setEditedStudentData({
+                      ...editedStudentData,
+                      profilePhoto: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+            </Grid>
           </ModalBody>
           <ModalFooter>
             <Button

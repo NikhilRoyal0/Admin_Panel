@@ -20,7 +20,8 @@ import {
   ModalBody,
   ModalFooter,
   useToast,
-  Select
+  Select,
+  Grid,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -442,6 +443,7 @@ export default function UserList() {
       <Modal
         isOpen={isAddUserModalOpen}
         onClose={() => setIsAddUserModalOpen(false)}
+        size="3xl"
       >
         <ModalOverlay />
         <form onSubmit={handleAddUser}>
@@ -450,132 +452,133 @@ export default function UserList() {
             <ModalHeader>Add User</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              {/* Form input fields for adding a new user */}
-              <Input
-                mb="3"
-                placeholder="First Name"
-                value={newUserData.firstName}
-                onChange={(e) =>
-                  setNewUserData({ ...newUserData, firstName: e.target.value })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Last Name"
-                value={newUserData.lastName}
-                onChange={(e) =>
-                  setNewUserData({ ...newUserData, lastName: e.target.value })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Email"
-                value={newUserData.email}
-                onChange={(e) =>
-                  setNewUserData({ ...newUserData, email: e.target.value })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Password"
-                value={newUserData.password}
-                onChange={(e) =>
-                  setNewUserData({ ...newUserData, password: e.target.value })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Primary Phone Number"
-                value={newUserData.primaryPhone}
-                onChange={(e) =>
-                  setNewUserData({
-                    ...newUserData,
-                    primaryPhone: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Secondary Phone Number"
-                value={newUserData.secondaryPhone}
-                onChange={(e) =>
-                  setNewUserData({
-                    ...newUserData,
-                    secondaryPhone: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Profile Photo"
-                value={newUserData.profilePhoto}
-                onChange={(e) =>
-                  setNewUserData({
-                    ...newUserData,
-                    profilePhoto: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Select
-                mb="3"
-                placeholder="Select Branch"
-                value={newUserData.branchId}
-                onChange={(e) =>
-                  setNewUserData({
-                    ...newUserData,
-                    branchId: e.target.value,
-                  })
-                }
-                isRequired
-              >
-                {BranchData.map((branch) => (
-                  <option key={branch.branchId} value={branch.branchId}>
-                    {branch.branchName}
-                  </option>
-                ))}
-              </Select>
-              <Select
-                mb="3"
-                placeholder="Select Role"
-                value={newUserData.role}
-                onChange={(e) =>
-                  setNewUserData({
-                    ...newUserData,
-                    role: e.target.value,
-                  })
-                }
-                isRequired
-              >
-                {roleData.map((role) => (
-                  <option key={role.roleId} value={role.roleId}>
-                    {role.roleName}
-                  </option>
-                ))}
-              </Select>
-              <Select
-                mb="3"
-                placeholder="Select status"
-                value={newUserData.status}
-                onChange={(e) =>
-                  setNewUserData({
-                    ...newUserData,
-                    status: e.target.value,
-                  })
-                }
-                isRequired
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Disabled">Disabled</option>
-                <option value="NeedKyc">Need KYC</option>
-              </Select>
+              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={3}>
+                <Input
+                  mb="3"
+                  placeholder="First Name"
+                  value={newUserData.firstName}
+                  onChange={(e) =>
+                    setNewUserData({ ...newUserData, firstName: e.target.value })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Last Name"
+                  value={newUserData.lastName}
+                  onChange={(e) =>
+                    setNewUserData({ ...newUserData, lastName: e.target.value })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Email"
+                  value={newUserData.email}
+                  onChange={(e) =>
+                    setNewUserData({ ...newUserData, email: e.target.value })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Password"
+                  value={newUserData.password}
+                  onChange={(e) =>
+                    setNewUserData({ ...newUserData, password: e.target.value })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Primary Phone Number"
+                  value={newUserData.primaryPhone}
+                  onChange={(e) =>
+                    setNewUserData({
+                      ...newUserData,
+                      primaryPhone: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Secondary Phone Number"
+                  value={newUserData.secondaryPhone}
+                  onChange={(e) =>
+                    setNewUserData({
+                      ...newUserData,
+                      secondaryPhone: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Profile Photo"
+                  value={newUserData.profilePhoto}
+                  onChange={(e) =>
+                    setNewUserData({
+                      ...newUserData,
+                      profilePhoto: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Select
+                  mb="3"
+                  placeholder="Select Branch"
+                  value={newUserData.branchId}
+                  onChange={(e) =>
+                    setNewUserData({
+                      ...newUserData,
+                      branchId: e.target.value,
+                    })
+                  }
+                  isRequired
+                >
+                  {BranchData.map((branch) => (
+                    <option key={branch.branchId} value={branch.branchId}>
+                      {branch.branchName}
+                    </option>
+                  ))}
+                </Select>
+                <Select
+                  mb="3"
+                  placeholder="Select Role"
+                  value={newUserData.role}
+                  onChange={(e) =>
+                    setNewUserData({
+                      ...newUserData,
+                      role: e.target.value,
+                    })
+                  }
+                  isRequired
+                >
+                  {roleData.map((role) => (
+                    <option key={role.roleId} value={role.roleId}>
+                      {role.roleName}
+                    </option>
+                  ))}
+                </Select>
+                <Select
+                  mb="3"
+                  placeholder="Select status"
+                  value={newUserData.status}
+                  onChange={(e) =>
+                    setNewUserData({
+                      ...newUserData,
+                      status: e.target.value,
+                    })
+                  }
+                  isRequired
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Disabled">Disabled</option>
+                  <option value="NeedKyc">Need KYC</option>
+                </Select>
+              </Grid>
             </ModalBody>
             <ModalFooter>
               <Button type="submit" colorScheme="teal">
@@ -621,182 +624,184 @@ export default function UserList() {
         </ModalContent>
       </Modal>
 
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
+      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} size="3xl">
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Edit User</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Box>
-              <Text mb="1" color="gray.600">
-                First Name
-              </Text>
-              <Input
-                mb="3"
-                placeholder="First Name"
-                value={editedUserData?.firstName || ""}
-                onChange={(e) =>
-                  setEditedUserData({
-                    ...editedUserData,
-                    firstName: e.target.value,
-                  })
-                }
-                required
-              />
-            </Box>
-            <Box>
-              <Text mb="1" color="gray.600">
-                Last Name
-              </Text>
-              <Input
-                mb="3"
-                placeholder="Last Name"
-                value={editedUserData?.lastName || ""}
-                onChange={(e) =>
-                  setEditedUserData({
-                    ...editedUserData,
-                    lastName: e.target.value,
-                  })
-                }
-                required
-              />
-            </Box>
-            <Box>
-              <Text mb="1" color="gray.600">
-                Email
-              </Text>
-              <Input
-                mb="3"
-                placeholder="Email"
-                value={editedUserData?.email || ""}
-                onChange={(e) =>
-                  setEditedUserData({
-                    ...editedUserData,
-                    email: e.target.value,
-                  })
-                }
-                required
-              />
-            </Box>
-            <Box>
-              <Text mb="1" color="gray.600">
-                Primary Phone
-              </Text>
-              <Input
-                mb="3"
-                placeholder="Primary Phone"
-                value={editedUserData?.primaryPhone || ""}
-                onChange={(e) =>
-                  setEditedUserData({
-                    ...editedUserData,
-                    primaryPhone: e.target.value,
-                  })
-                }
-                required
-              />
-            </Box>
-            <Box>
-              <Text mb="1" color="gray.600">
-                Secondary Phone
-              </Text>
-              <Input
-                mb="3"
-                placeholder="Secondary Phone"
-                value={editedUserData?.secondaryPhone || ""}
-                onChange={(e) =>
-                  setEditedUserData({
-                    ...editedUserData,
-                    secondaryPhone: e.target.value,
-                  })
-                }
-                required
-              />
-            </Box>
-            <Box>
-              <Text mb="1" color="gray.600">
-                Role
-              </Text>
-              <Select
-                mb="3"
-                placeholder="Select Role"
-                value={editedUserData?.role || ""}
-                onChange={(e) =>
-                  setEditedUserData({
-                    ...editedUserData,
-                    role: e.target.value,
-                  })
-                }
-                isRequired
-              >
-                {roleData.map((role) => (
-                  <option key={role.roleId} value={role.roleId}>
-                    {role.roleName}
-                  </option>
-                ))}
-              </Select>
-            </Box>
-            <Box>
-              <Text mb="1" color="gray.600">
-                Status
-              </Text>
-              <Select
-                mb="3"
-                placeholder="Select status"
-                value={editedUserData?.status || ""}
-                onChange={(e) =>
-                  setEditedUserData({
-                    ...editedUserData,
-                    status: e.target.value,
-                  })
-                }
-                isRequired
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Disabled">Disabled</option>
-                <option value="NeedKyc">Need KYC</option>
-              </Select>
-            </Box>
-            <Box>
-              <Text mb="1" color="gray.600">
-                Branch Id
-              </Text>
-              <Select
-                mb="3"
-                placeholder="Select Branch"
-                value={editedUserData?.branchId || ""}
-                onChange={(e) =>
-                  setEditedUserData({
-                    ...editedUserData,
-                    branchId: e.target.value,
-                  })
-                }
-                isRequired
-              >
-                {BranchData.map((branch) => (
-                  <option key={branch.branchId} value={branch.branchId}>
-                    {branch.branchName}
-                  </option>
-                ))}
-              </Select>
-            </Box>
-            <Box>
-              <Text mb="1" color="gray.600">
-                Profile Photo
-              </Text>
-              <Input
-                mb="3"
-                placeholder="Profile Photo"
-                value={editedUserData?.profilePhoto || ""}
-                onChange={(e) =>
-                  setEditedUserData({
-                    ...editedUserData,
-                    profilePhoto: e.target.value,
-                  })
-                }
-                required
-              />
-            </Box>
+            <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={3}>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  First Name
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="First Name"
+                  value={editedUserData?.firstName || ""}
+                  onChange={(e) =>
+                    setEditedUserData({
+                      ...editedUserData,
+                      firstName: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Last Name
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Last Name"
+                  value={editedUserData?.lastName || ""}
+                  onChange={(e) =>
+                    setEditedUserData({
+                      ...editedUserData,
+                      lastName: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Email
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Email"
+                  value={editedUserData?.email || ""}
+                  onChange={(e) =>
+                    setEditedUserData({
+                      ...editedUserData,
+                      email: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Primary Phone
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Primary Phone"
+                  value={editedUserData?.primaryPhone || ""}
+                  onChange={(e) =>
+                    setEditedUserData({
+                      ...editedUserData,
+                      primaryPhone: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Secondary Phone
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Secondary Phone"
+                  value={editedUserData?.secondaryPhone || ""}
+                  onChange={(e) =>
+                    setEditedUserData({
+                      ...editedUserData,
+                      secondaryPhone: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Role
+                </Text>
+                <Select
+                  mb="3"
+                  placeholder="Select Role"
+                  value={editedUserData?.role || ""}
+                  onChange={(e) =>
+                    setEditedUserData({
+                      ...editedUserData,
+                      role: e.target.value,
+                    })
+                  }
+                  isRequired
+                >
+                  {roleData.map((role) => (
+                    <option key={role.roleId} value={role.roleId}>
+                      {role.roleName}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Status
+                </Text>
+                <Select
+                  mb="3"
+                  placeholder="Select status"
+                  value={editedUserData?.status || ""}
+                  onChange={(e) =>
+                    setEditedUserData({
+                      ...editedUserData,
+                      status: e.target.value,
+                    })
+                  }
+                  isRequired
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Disabled">Disabled</option>
+                  <option value="NeedKyc">Need KYC</option>
+                </Select>
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Branch Id
+                </Text>
+                <Select
+                  mb="3"
+                  placeholder="Select Branch"
+                  value={editedUserData?.branchId || ""}
+                  onChange={(e) =>
+                    setEditedUserData({
+                      ...editedUserData,
+                      branchId: e.target.value,
+                    })
+                  }
+                  isRequired
+                >
+                  {BranchData.map((branch) => (
+                    <option key={branch.branchId} value={branch.branchId}>
+                      {branch.branchName}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
+              <Box>
+                <Text mb="1" color="gray.600">
+                  Profile Photo
+                </Text>
+                <Input
+                  mb="3"
+                  placeholder="Profile Photo"
+                  value={editedUserData?.profilePhoto || ""}
+                  onChange={(e) =>
+                    setEditedUserData({
+                      ...editedUserData,
+                      profilePhoto: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </Box>
+            </Grid>
           </ModalBody>
           <ModalFooter>
             <Button

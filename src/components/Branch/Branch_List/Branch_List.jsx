@@ -22,6 +22,7 @@ import {
   ModalFooter,
   Select,
   useToast,
+  Grid,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { BeatLoader } from "react-spinners";
@@ -377,122 +378,123 @@ export default function Branch_List() {
       <Modal
         isOpen={isAddBranchModalOpen}
         onClose={() => setIsAddBranchModalOpen(false)}
+        size="3xl"
       >
         <ModalOverlay />
         <form onSubmit={handleAddBranch}>
-          {" "}
           <ModalContent>
             <ModalHeader>Add Branch</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              {/* Form input fields for adding a new Branch */}
-              <Input
-                mb="3"
-                placeholder="Branch Name"
-                value={newBranchData.branchName}
-                onChange={(e) =>
-                  setNewBranchData({
-                    ...newBranchData,
-                    branchName: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Branch Admin"
-                value={newBranchData.branchAdmin}
-                onChange={(e) =>
-                  setNewBranchData({
-                    ...newBranchData,
-                    branchAdmin: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Branch Address"
-                value={newBranchData.branchAddress}
-                onChange={(e) =>
-                  setNewBranchData({
-                    ...newBranchData,
-                    branchAddress: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Select
-                mb="3"
-                placeholder="Select status"
-                value={newBranchData.status}
-                onChange={(e) =>
-                  setNewBranchData({
-                    ...newBranchData,
-                    status: e.target.value,
-                  })
-                }
-                isRequired
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Disabled">Disabled</option>
-                <option value="NeedKyc">Need KYC</option>
-              </Select>
-              <Input
-                mb="3"
-                placeholder="Branch Email"
-                value={newBranchData.branchEmail}
-                onChange={(e) =>
-                  setNewBranchData({
-                    ...newBranchData,
-                    branchEmail: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Branch Password"
-                value={newBranchData.branchPassword}
-                onChange={(e) =>
-                  setNewBranchData({
-                    ...newBranchData,
-                    branchPassword: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Branch Phone"
-                value={newBranchData.branchPhone}
-                onChange={(e) =>
-                  setNewBranchData({
-                    ...newBranchData,
-                    branchPhone: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Select
-                mb="3"
-                placeholder="Select Role"
-                value={newBranchData.role}
-                onChange={(e) =>
-                  setNewBranchData({
-                    ...newBranchData,
-                    role: e.target.value,
-                  })
-                }
-                isRequired
-              >
-                {roleData.map((role) => (
-                  <option key={role.roleId} value={role.roleId}>
-                    {role.roleName}
-                  </option>
-                ))}
-              </Select>
+              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={3}>
+                <Input
+                  mb="3"
+                  placeholder="Branch Name"
+                  value={newBranchData.branchName}
+                  onChange={(e) =>
+                    setNewBranchData({
+                      ...newBranchData,
+                      branchName: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Branch Admin"
+                  value={newBranchData.branchAdmin}
+                  onChange={(e) =>
+                    setNewBranchData({
+                      ...newBranchData,
+                      branchAdmin: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Branch Address"
+                  value={newBranchData.branchAddress}
+                  onChange={(e) =>
+                    setNewBranchData({
+                      ...newBranchData,
+                      branchAddress: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Select
+                  mb="3"
+                  placeholder="Select status"
+                  value={newBranchData.status}
+                  onChange={(e) =>
+                    setNewBranchData({
+                      ...newBranchData,
+                      status: e.target.value,
+                    })
+                  }
+                  isRequired
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Disabled">Disabled</option>
+                  <option value="NeedKyc">Need KYC</option>
+                </Select>
+                <Input
+                  mb="3"
+                  placeholder="Branch Email"
+                  value={newBranchData.branchEmail}
+                  onChange={(e) =>
+                    setNewBranchData({
+                      ...newBranchData,
+                      branchEmail: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Branch Password"
+                  value={newBranchData.branchPassword}
+                  onChange={(e) =>
+                    setNewBranchData({
+                      ...newBranchData,
+                      branchPassword: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Branch Phone"
+                  value={newBranchData.branchPhone}
+                  onChange={(e) =>
+                    setNewBranchData({
+                      ...newBranchData,
+                      branchPhone: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Select
+                  mb="3"
+                  placeholder="Select Role"
+                  value={newBranchData.role}
+                  onChange={(e) =>
+                    setNewBranchData({
+                      ...newBranchData,
+                      role: e.target.value,
+                    })
+                  }
+                  isRequired
+                >
+                  {roleData.map((role) => (
+                    <option key={role.roleId} value={role.roleId}>
+                      {role.roleName}
+                    </option>
+                  ))}
+                </Select>
+              </Grid>
             </ModalBody>
             <ModalFooter>
               <Button

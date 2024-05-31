@@ -3,15 +3,8 @@ import {
   Box,
   Text,
   Input,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Flex,
   Spinner,
-  Badge,
   Button,
   Modal,
   ModalOverlay,
@@ -20,9 +13,10 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
-  Select,
+  Image,
   useToast,
-  Divider,
+  Select,
+  Grid,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { BeatLoader } from "react-spinners";
@@ -37,6 +31,8 @@ import {
 import NetworkError from "../../NotFound/networkError";
 import { getModulePermissions } from "../../../utils/permissions";
 import { useNavigate } from "react-router-dom";
+import fallbackImage from "../../../assets/images/imageError.png";
+import { fetchcategoryData, selectcategoryData, selectcategoryError, selectcategoryLoading } from "../../../app/Slices/categorySlice";
 
 
 export default function Course_List() {
@@ -50,12 +46,26 @@ export default function Course_List() {
     courseName: "",
     duration: "",
     price: "",
+    mrp: "",
+    createdBy: "",
     shortInfo: "",
     longInfo: "",
-    createdBy: "",
+    thumbnail: "",
+    smallThumbnail: "",
+    courseTitle: "",
+    sampleVideo: "",
+    status: "Pending",
+    createdOn: Date.now(),
+    category: "",
+    categoryId: "",
+    htmlInfo: "",
+    benefits: "",
   });
 
   const courseData = useSelector(selectcourseData);
+  const categoryData = useSelector(selectcategoryData);
+  const categoryError = useSelector(selectcategoryError);
+  const categoryLoading = useSelector(selectcategoryLoading);
   const isLoading = useSelector(selectcourseLoading);
   const error = useSelector(selectcourseError);
   const dispatch = useDispatch();
@@ -67,26 +77,46 @@ export default function Course_List() {
   const [coursePerPage, setcoursePerPage] = useState(10);
 
 
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+
   useEffect(() => {
     dispatch(fetchcourseData());
+    dispatch(fetchcategoryData());
   }, [dispatch]);
 
   const handleAddcourse = (e) => {
     e.preventDefault();
     setIsSaveLoading(true);
+    const userId = sessionStorage.getItem('userId');
+
+    if (!userId) {
+      console.error('User ID not found');
+    }
 
     const formData = new FormData();
     formData.append("courseName", newcourseData.courseName);
     formData.append("duration", newcourseData.duration);
     formData.append("price", newcourseData.price);
+    formData.append("mrp", newcourseData.mrp);
+    formData.append("createdBy", userId);
     formData.append("shortInfo", newcourseData.shortInfo);
     formData.append("longInfo", newcourseData.longInfo);
-    formData.append("createdBy", newcourseData.createdBy);
+    formData.append("thumbnail", newcourseData.thumbnail);
+    formData.append("smallThumbnail", newcourseData.smallThumbnail);
+    formData.append("courseTitle", newcourseData.courseTitle);
+    formData.append("sampleVideo", newcourseData.sampleVideo);
+    formData.append("status", "Pending");
+    formData.append("createdOn", Date.now());
+    formData.append("category", newcourseData.category);
+    formData.append("categoryId", newcourseData.categoryId);
+    formData.append("htmlInfo", newcourseData.htmlInfo);
+    formData.append("benefits", newcourseData.benefits);
     dispatch(AddcourseData(formData))
       .then(() => {
         setIsSaveLoading(false);
         Toast({
-          title: "course updated/deleted successfully",
+          title: "Course added successfully",
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -96,9 +126,20 @@ export default function Course_List() {
           courseName: "",
           duration: "",
           price: "",
+          mrp: "",
+          createdBy: "",
           shortInfo: "",
           longInfo: "",
-          createdBy: "",
+          thumbnail: "",
+          smallThumbnail: "",
+          courseTitle: "",
+          sampleVideo: "",
+          status: "",
+          createdOn: "",
+          category: "",
+          categoryId: "",
+          htmlInfo: "",
+          benefits: "",
         });
         setIsAddcourseModalOpen(false);
       })
@@ -124,7 +165,7 @@ export default function Course_List() {
         setSelectedcourseId(null);
         setIsSaveLoading(false);
         Toast({
-          title: "course added/updated successfully",
+          title: "Course deleted successfully",
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -148,6 +189,13 @@ export default function Course_List() {
     navigate(`/course/info/${courseId}`);
   };
 
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value);
+  };
+
+  const handleStatusChange = (e) => {
+    setSelectedStatus(e.target.value);
+  };
 
   if (isLoading) {
     return (
@@ -158,10 +206,28 @@ export default function Course_List() {
   }
 
   if (error) {
+    return <NetworkError />;
+  }
+
+  if (categoryLoading) {
     return (
-      <NetworkError />
+      <Flex justify="center" align="center" h="100vh">
+        <Spinner size="xl" />
+      </Flex>
     );
   }
+
+  if (categoryError) {
+    return <NetworkError />;
+  }
+
+  const filteredCourses = courseData.filter((course) => {
+    const categoryMatch = selectedCategory
+      ? course.categoryId == selectedCategory
+      : true;
+    const statusMatch = selectedStatus ? course.status == selectedStatus : true;
+    return categoryMatch && statusMatch;
+  });
 
   const totalPages = Math.ceil(courseData.length / coursePerPage);
 
@@ -174,6 +240,7 @@ export default function Course_List() {
       setCurrentPage(pageNumber);
     }
   };
+
   const renderPagination = () => {
     const pageButtons = [];
     for (let i = 1; i <= totalPages; i++) {
@@ -194,31 +261,60 @@ export default function Course_List() {
 
   const indexOfLastcourse = currentPage * coursePerPage;
   const indexOfFirstcourse = indexOfLastcourse - coursePerPage;
-  const currentcourse = courseData.slice(indexOfFirstcourse, indexOfLastcourse);
+  const currentcourse = filteredCourses.slice(indexOfFirstcourse, indexOfLastcourse);
 
-
-  const courseManagementPermissions = getModulePermissions('Courses');
+  const courseManagementPermissions = getModulePermissions("Courses");
 
   if (!courseManagementPermissions) {
     return <NetworkError />;
   }
-  const canAddcourse = courseManagementPermissions.create;
+
+  const canAddData = courseManagementPermissions.create;
+  const canDeleteData = courseManagementPermissions.delete;
 
 
   return (
-    <Box p="3" >
+    <Box p="3">
       <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
           Course List
         </Text>
-        <Flex align="center">
+        <Grid
+          templateColumns={{
+            base: "repeat(1, 1fr)",
+            md: "repeat(3, 1fr)",
+          }}
+          gap={3}
+          alignItems="center"
+        >
+          <Select
+            placeholder="Filter by Category"
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+          >
+            {categoryData.map((category) => (
+              <option key={category.categoryId} value={category.categoryId}>
+                {category.categoryTitle}
+              </option>
+            ))}
+          </Select>
+          <Select
+            placeholder="Filter by Status"
+            value={selectedStatus}
+            onChange={handleStatusChange}
+          >
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Active">Active</option>
+            <option value="Draft">Draft</option>
+            <option value="Archive">Archive</option>
+          </Select>
           <Button
-            mr={5}
-            ml="4"
-            colorScheme="teal"
+            colorScheme="blue"
             onClick={() => {
-              if (canAddcourse) {
-                setIsAddcourseModalOpen(true);
+              if (canAddData) {
+                setIsAddcourseModalOpen(true)
               } else {
                 Toast({
                   title: "You don't have permission to add course",
@@ -228,170 +324,340 @@ export default function Course_List() {
                   position: "top-right",
                 });
               }
-            }}
-          >
-            Add course
+            }}          >
+            Add Course
           </Button>
-        </Flex>
-      </Flex>
-      <Box bg="gray.100" p="6" borderRadius="lg" overflowX="auto" css={{
-        '&::-webkit-scrollbar': {
-          width: '8px',
-          height: '8px',
-          backgroundColor: 'transparent',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: '#cbd5e0',
-          borderRadius: '10px',
-        },
-        '&::-webkit-scrollbar-thumb:hover': {
-          backgroundColor: '#a0aec0',
-        },
-      }}>
-        {currentcourse.length === 0 ? (
-          <Text textAlign="center" fontSize="lg">
-            No course available
-          </Text>
-        ) : (
-          <Table variant="simple" minWidth="100%">
-            <Thead>
-              <Tr>
-                <Th>Course Name</Th>
-                <Th>Course Duration </Th>
-                <Th>Course Price</Th>
-                <Th>Short Info</Th>
-                <Th>Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {currentcourse
-                .filter(course => course.status === 'Active')
-                .map((course, index) => (
-                  <Tr key={index}>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {course.courseName}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {course.duration}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {course.price}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {course.shortInfo}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      <Flex>
-                        <Button
-                          size="xs"
-                          colorScheme="teal"
-                          mr="1"
-                          onClick={() => handleViewcourse(course.courseId)}
-                        >
-                          More Info
-                        </Button>
-                      </Flex>
-                    </Td>
-                  </Tr>
-                ))}
-            </Tbody>
-          </Table>
-        )}
-      </Box>
-      <Flex justify="flex-end" mt="4">
-        <Button onClick={() => paginate(1)} mr={2}>&lt;&lt;</Button>
-        <Button onClick={() => paginate(currentPage - 1)} mr={2}>&lt;</Button>
-        {renderPagination()}
-        <Button onClick={() => paginate(currentPage + 1)} ml={2}>&gt;</Button>
-        <Button onClick={() => paginate(totalPages)} ml={2}>&gt;&gt;</Button>
+        </Grid>
       </Flex>
 
-      {/* Add course Modal */}
+      <Box
+        bg="gray.100"
+        p="6"
+        borderRadius="lg"
+        overflowX="auto"
+        width="100%"
+        css={{
+          "&::-webkit-scrollbar": {
+            width: "8px",
+            height: "8px",
+            backgroundColor: "transparent",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#cbd5e0",
+            borderRadius: "10px",
+          },
+          "&::-webkit-scrollbar-thumb:hover": {
+            backgroundColor: "#a0aec0",
+          },
+        }}
+      >
+        <Grid
+          templateColumns={{ base: "repeat(1, 1fr)", sm: "repeat(2, 1fr)", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)", xl: "repeat(5, 1fr)" }}
+          gap={6}
+          mb={4}
+        >
+          {currentcourse.length === 0 ? (
+            <Text textAlign="center" justifyContent="center" fontSize="lg">
+              No course available
+            </Text>
+          ) : (
+            currentcourse
+              .map((course, index) => (
+                <Box
+                  key={index}
+                  bg="white"
+                  p="4"
+                  borderRadius="lg"
+                  boxShadow="md"
+                  maxWidth="300px"
+                  boxSizing="border-box"
+                  transition="box-shadow 0.3s"
+                  _hover={{
+                    boxShadow: "2xl",
+                  }}
+                >
+                  <Image
+                    src={course.smallThumbnail}
+                    alt={course.courseName}
+                    borderRadius="lg"
+                    mb="4"
+                    height="200px"
+                    width="100%"
+                    objectFit="cover"
+                    onError={(e) => (e.target.src = fallbackImage)}
+                  />
+                  <Text fontWeight="bold" mb="2">
+                    {course.courseName}
+                  </Text>
+                  <Text mb="2">
+                    <b>Duration:</b> {course.duration}
+                  </Text>
+                  <Text mb="2">
+                    <b>Price:</b> {course.price}
+                  </Text>
+                  <Text mb="2">
+                    <b>Short Info:</b> {course.shortInfo}
+                  </Text>
+                  <Flex alignItems="center">
+                    <Button
+                      size="sm"
+                      mr={2}
+                      colorScheme="teal"
+                      onClick={() => handleViewcourse(course.courseId)}
+                    >
+                      More Info
+                    </Button>
+                    <Button
+                      size="xs"
+                      colorScheme="red"
+                      onClick={() => {
+                        if (canDeleteData) {
+                          setSelectedcourseId(course.courseId);
+                          setIsDeleteConfirmationModalOpen(true);
+                        } else {
+                          Toast({
+                            title: "You don't have permission to delete course",
+                            status: "error",
+                            duration: 3000,
+                            isClosable: true,
+                            position: "top-right",
+                          });
+                        }
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </Flex>
+                </Box>
+              ))
+          )}
+        </Grid>
+      </Box>
+      <Flex justify="flex-end" mt="4">
+        <Button onClick={() => paginate(1)} mr={2}>
+          &lt;&lt;
+        </Button>
+        <Button onClick={() => paginate(currentPage - 1)} mr={2}>
+          &lt;
+        </Button>
+        {renderPagination()}
+        <Button onClick={() => paginate(currentPage + 1)} mr={2}>
+          &gt;
+        </Button>
+        <Button onClick={() => paginate(totalPages)} mr={2}>
+          &gt;&gt;
+        </Button>
+      </Flex>
+
+      {/* Add/Edit course Modal */}
       <Modal
         isOpen={isAddcourseModalOpen}
         onClose={() => setIsAddcourseModalOpen(false)}
+        size="3xl"
       >
         <ModalOverlay />
-        <form onSubmit={handleAddcourse}>
-          {" "}
-          <ModalContent>
-            <ModalHeader>Add course</ModalHeader>
-            <ModalCloseButton />
+        <ModalContent>
+          <ModalHeader>Add Course</ModalHeader>
+          <ModalCloseButton />
+          <form onSubmit={handleAddcourse}>
             <ModalBody>
-              {/* Form input fields for adding a new course */}
-              <Input
-                mb="3"
-                placeholder="Course Name"
-                value={newcourseData.courseName}
-                onChange={(e) =>
-                  setNewcourseData({
-                    ...newcourseData,
-                    courseName: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Course Duration"
-                value={newcourseData.duration}
-                onChange={(e) =>
-                  setNewcourseData({
-                    ...newcourseData,
-                    duration: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Course Price"
-                value={newcourseData.price}
-                onChange={(e) =>
-                  setNewcourseData({
-                    ...newcourseData,
-                    price: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Short Info"
-                value={newcourseData.shortInfo}
-                onChange={(e) =>
-                  setNewcourseData({
-                    ...newcourseData,
-                    shortInfo: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Long Info"
-                value={newcourseData.longInfo}
-                onChange={(e) =>
-                  setNewcourseData({
-                    ...newcourseData,
-                    longInfo: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Created By"
-                value={newcourseData.createdBy}
-                onChange={(e) =>
-                  setNewcourseData({
-                    ...newcourseData,
-                    createdBy: e.target.value,
-                  })
-                }
-                isRequired
-              />
-
+              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={3}>
+                <Input
+                  mb="3"
+                  placeholder="Course Name"
+                  value={newcourseData.courseName}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      courseName: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Course Title"
+                  value={newcourseData.courseTitle}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      courseTitle: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Course Duration"
+                  value={newcourseData.duration}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      duration: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Course Price"
+                  value={newcourseData.price}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      price: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Course Mrp"
+                  value={newcourseData.mrp}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      mrp: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Created By"
+                  value={newcourseData.createdBy}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      createdBy: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Short Info"
+                  value={newcourseData.shortInfo}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      shortInfo: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Long Info"
+                  value={newcourseData.longInfo}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      longInfo: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Thumbnail"
+                  value={newcourseData.thumbnail}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      thumbnail: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Small Thumbnail"
+                  value={newcourseData.smallThumbnail}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      smallThumbnail: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Sample Video"
+                  value={newcourseData.sampleVideo}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      sampleVideo: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Select
+                  mb="3"
+                  placeholder="Select Category"
+                  value={newcourseData.category}
+                  onChange={(e) => {
+                    const selectedCategory = categoryData.find(category => category.categoryTitle === e.target.value);
+                    setNewcourseData({
+                      ...newcourseData,
+                      category: e.target.value,
+                      categoryId: selectedCategory ? selectedCategory.categoryId : ''
+                    });
+                  }}
+                  isRequired
+                >
+                  {categoryData.map((category) => (
+                    <option key={category.categoryId} value={category.categoryTitle}>
+                      {category.categoryTitle}
+                    </option>
+                  ))}
+                </Select>
+                <Select
+                  mb="3"
+                  placeholder="Select Category Id"
+                  value={newcourseData.categoryId}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      categoryId: e.target.value,
+                    })
+                  }
+                  isDisabled={true}
+                  isRequired
+                >
+                  {categoryData.map((category) => (
+                    <option key={category.categoryId} value={category.categoryId}>
+                      {category.categoryId}
+                    </option>
+                  ))}
+                </Select>
+                <Input
+                  mb="3"
+                  placeholder="HTML Info"
+                  value={newcourseData.htmlInfo}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      htmlInfo: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Benefits"
+                  value={newcourseData.benefits}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      benefits: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+              </Grid>
             </ModalBody>
             <ModalFooter>
               <Button
@@ -409,9 +675,8 @@ export default function Course_List() {
                 Cancel
               </Button>
             </ModalFooter>
-          </ModalContent>
-        </form>{" "}
-        {/* Close form tag */}
+          </form>
+        </ModalContent>
       </Modal>
 
       <Modal
@@ -422,7 +687,7 @@ export default function Course_List() {
         <ModalContent>
           <ModalHeader>Confirm Deletion</ModalHeader>
           <ModalCloseButton />
-          <ModalBody>Are you sure you want to delete this course ?</ModalBody>
+          <ModalBody>Are you sure you want to delete this course?</ModalBody>
           <ModalFooter>
             <Button
               colorScheme="red"
@@ -442,7 +707,6 @@ export default function Course_List() {
           </ModalFooter>
         </ModalContent>
       </Modal>
-
     </Box>
   );
 }
