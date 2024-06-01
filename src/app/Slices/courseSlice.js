@@ -80,13 +80,13 @@ export const AddcourseData = (formData) => async (dispatch) => {
   }
 }
 
-export const updatecourseData = ({ formData }) => async (dispatch) => {
+export const updatecourseData = (updatedFormData, courseId) => async (dispatch) => {
   try {
 
     const apiToken = sessionStorage.getItem("api-token");
 
     const response = await axios.put(import.meta.env.VITE_BASE_URL + `courses/update/${courseId}`,
-      { formData },
+      updatedFormData,
       {
         headers: {
           'Content-Type': 'application/json',

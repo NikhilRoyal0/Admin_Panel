@@ -41,7 +41,12 @@ export default function Certificate() {
   const [newCertificateData, setNewCertificateData] = useState({
     title: "",
     studentName: "",
+    student_id: "",
+    issueDate: "",
     issueBy: "",
+    certificateHash: "",
+    templeteId: "",
+    certificateNumber: "",
   });
 
   const CertificateData = useSelector(selectCertificateData);
@@ -65,7 +70,12 @@ export default function Certificate() {
     const formData = new FormData();
     formData.append("title", newCertificateData.title);
     formData.append("studentName", newCertificateData.studentName);
+    formData.append("student_id", newCertificateData.student_id);
+    formData.append("issueDate", newCertificateData.issueDate);
     formData.append("issueBy", newCertificateData.issueBy);
+    formData.append("certificateHash", newCertificateData.certificateHash);
+    formData.append("templeteId", newCertificateData.templeteId);
+    formData.append("certificateNumber", newCertificateData.certificateNumber);
     dispatch(AddCertificateData(formData))
       .then(() => {
         dispatch(fetchCertificateData());
@@ -80,7 +90,12 @@ export default function Certificate() {
         setNewCertificateData({
           title: "",
           studentName: "",
+          student_id: "",
+          issueDate: "",
           issueBy: "",
+          certificateHash: "",
+          templeteId: "",
+          certificateNumber: "",
         });
         setIsAddCertificateModalOpen(false);
       })
@@ -147,6 +162,8 @@ export default function Certificate() {
     return <NetworkError />;
   }
   const canAddData = certificateManagementPermissions.create;
+  const canEditData = certificateManagementPermissions.update;
+  const canDeleteData = certificateManagementPermissions.delete;
 
 
   return (
@@ -199,9 +216,11 @@ export default function Certificate() {
         }}
       >
         {currentCertificate.length === 0 ? (
-          <Text textAlign="center" fontSize="lg">
-            No Certificates available
-          </Text>
+          <Flex justify="center" align="center" height="100%">
+            <Box textAlign="center">
+              <Text fontSize="xl" fontWeight="bold">No certificate available</Text>
+            </Box>
+          </Flex>
         ) : (
           <Table variant="simple" minWidth="100%">
             <Thead>
@@ -209,6 +228,8 @@ export default function Certificate() {
                 <Th>Certificate Title</Th>
                 <Th>Student Name</Th>
                 <Th>Issued By</Th>
+                <Th>Edit/Delete</Th>
+
               </Tr>
             </Thead>
             <Tbody>
@@ -223,6 +244,49 @@ export default function Certificate() {
                   <Td borderBottom="1px" borderColor="gray.200">
                     {Certificate.issueBy}
                   </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    <Flex>
+                      <Button
+                        size="xs"
+                        colorScheme="teal"
+                        mr="1"
+                        onClick={() => {
+                          if (canEditData) {
+                            handleEditStudent(Student)
+                          } else {
+                            Toast({
+                              title: "You don't have permission to edit certificate",
+                              status: "error",
+                              duration: 3000,
+                              isClosable: true,
+                              position: "top-right",
+                            });
+                          }
+                        }}                        >
+                        Edit
+                      </Button>
+                      <Button
+                        size="xs"
+                        colorScheme="red"
+                        onClick={() => {
+                          if (canDeleteData) {
+                            setSelectedstudent_id(Student.student_id);
+                            setIsDeleteConfirmationModalOpen(true);
+                          } else {
+                            Toast({
+                              title: "You don't have permission to delete certificate",
+                              status: "error",
+                              duration: 3000,
+                              isClosable: true,
+                              position: "top-right",
+                            });
+                          }
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </Flex>
+                  </Td>
                 </Tr>
               ))}
             </Tbody>
@@ -230,11 +294,23 @@ export default function Certificate() {
         )}
       </Box>
       <Flex justify="flex-end" mt="4">
-        <Button onClick={() => paginate(1)} mr={2}>&lt;&lt;</Button>
-        <Button onClick={() => paginate(currentPage - 1)} mr={2}>&lt;</Button>
-        {renderPagination()}
-        <Button onClick={() => paginate(currentPage + 1)} ml={2}>&gt;</Button>
-        <Button onClick={() => paginate(totalPages)} ml={2}>&gt;&gt;</Button>
+        {currentCertificate.length > 0 && (
+          <Flex justify="flex-end" mt="4">
+            <Button onClick={() => paginate(1)} mr={2}>
+              &lt;&lt;
+            </Button>
+            <Button onClick={() => paginate(currentPage - 1)} mr={2}>
+              &lt;
+            </Button>
+            {renderPagination()}
+            <Button onClick={() => paginate(currentPage + 1)} mr={2}>
+              &gt;
+            </Button>
+            <Button onClick={() => paginate(totalPages)} mr={2}>
+              &gt;&gt;
+            </Button>
+          </Flex>
+        )}
       </Flex>
 
       {/* Add Certificate Modal */}
@@ -274,12 +350,72 @@ export default function Certificate() {
               />
               <Input
                 mb="3"
+                placeholder="Student Id"
+                value={newCertificateData.student_id}
+                onChange={(e) =>
+                  setNewCertificateData({
+                    ...newCertificateData,
+                    student_id: e.target.value,
+                  })
+                }
+                isRequired
+              />
+              <Input
+                mb="3"
+                placeholder="Issued Date"
+                value={newCertificateData.issueDate}
+                onChange={(e) =>
+                  setNewCertificateData({
+                    ...newCertificateData,
+                    issueDate: e.target.value,
+                  })
+                }
+                isRequired
+              />
+              <Input
+                mb="3"
                 placeholder="Issued By"
                 value={newCertificateData.issueBy}
                 onChange={(e) =>
                   setNewCertificateData({
                     ...newCertificateData,
                     issueBy: e.target.value,
+                  })
+                }
+                isRequired
+              />
+              <Input
+                mb="3"
+                placeholder="Certificate Hash"
+                value={newCertificateData.certificateHash}
+                onChange={(e) =>
+                  setNewCertificateData({
+                    ...newCertificateData,
+                    certificateHash: e.target.value,
+                  })
+                }
+                isRequired
+              />
+              <Input
+                mb="3"
+                placeholder="Template Id"
+                value={newCertificateData.templeteId}
+                onChange={(e) =>
+                  setNewCertificateData({
+                    ...newCertificateData,
+                    templeteId: e.target.value,
+                  })
+                }
+                isRequired
+              />
+              <Input
+                mb="3"
+                placeholder="Certificate Number"
+                value={newCertificateData.certificateNumber}
+                onChange={(e) =>
+                  setNewCertificateData({
+                    ...newCertificateData,
+                    certificateNumber: e.target.value,
                   })
                 }
                 isRequired

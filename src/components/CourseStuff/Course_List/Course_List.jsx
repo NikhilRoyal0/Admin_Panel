@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import {
   Box,
   Text,
@@ -17,6 +18,7 @@ import {
   useToast,
   Select,
   Grid,
+  Textarea,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { BeatLoader } from "react-spinners";
@@ -37,8 +39,7 @@ import { fetchcategoryData, selectcategoryData, selectcategoryError, selectcateg
 
 export default function Course_List() {
   const [isAddcourseModalOpen, setIsAddcourseModalOpen] = useState(false);
-  const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] =
-    useState(false);
+  const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] = useState(false);
   const [selectedcourseId, setSelectedcourseId] = useState(null);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
 
@@ -70,6 +71,7 @@ export default function Course_List() {
   const error = useSelector(selectcourseError);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { branchId } = useParams();
   const Toast = useToast({
     position: "top-right",
   });
@@ -92,6 +94,10 @@ export default function Course_List() {
 
     if (!userId) {
       console.error('User ID not found');
+    }
+
+    if (!branchId) {
+      console.error('Branch ID not found');
     }
 
     const formData = new FormData();
@@ -226,10 +232,11 @@ export default function Course_List() {
       ? course.categoryId == selectedCategory
       : true;
     const statusMatch = selectedStatus ? course.status == selectedStatus : true;
-    return categoryMatch && statusMatch;
+    const branchMatch = branchId ? course.branchId == branchId : true;
+    return categoryMatch && statusMatch && branchMatch;
   });
 
-  const totalPages = Math.ceil(courseData.length / coursePerPage);
+  const totalPages = Math.ceil(filteredCourses.length / coursePerPage);
 
   const paginate = (pageNumber) => {
     if (pageNumber < 1) {
@@ -357,9 +364,11 @@ export default function Course_List() {
           mb={4}
         >
           {currentcourse.length === 0 ? (
-            <Text textAlign="center" justifyContent="center" fontSize="lg">
-              No course available
-            </Text>
+            <Flex justify="center" align="center" height="100%">
+              <Box textAlign="center">
+                <Text fontSize="xl" fontWeight="bold">No course available</Text>
+              </Box>
+            </Flex>
           ) : (
             currentcourse
               .map((course, index) => (
@@ -375,30 +384,36 @@ export default function Course_List() {
                   _hover={{
                     boxShadow: "2xl",
                   }}
+                  display="flex"
+                  flexDirection="column"
+                  justifyContent="space-between"
+                  height="100%"
                 >
-                  <Image
-                    src={course.smallThumbnail}
-                    alt={course.courseName}
-                    borderRadius="lg"
-                    mb="4"
-                    height="200px"
-                    width="100%"
-                    objectFit="cover"
-                    onError={(e) => (e.target.src = fallbackImage)}
-                  />
-                  <Text fontWeight="bold" mb="2">
-                    {course.courseName}
-                  </Text>
-                  <Text mb="2">
-                    <b>Duration:</b> {course.duration}
-                  </Text>
-                  <Text mb="2">
-                    <b>Price:</b> {course.price}
-                  </Text>
-                  <Text mb="2">
-                    <b>Short Info:</b> {course.shortInfo}
-                  </Text>
-                  <Flex alignItems="center">
+                  <Box>
+                    <Image
+                      src={course.smallThumbnail}
+                      alt={course.courseName}
+                      borderRadius="lg"
+                      mb="4"
+                      height="200px"
+                      width="100%"
+                      objectFit="cover"
+                      onError={(e) => (e.target.src = fallbackImage)}
+                    />
+                    <Text fontWeight="bold" mb="2">
+                      {course.courseName}
+                    </Text>
+                    <Text mb="2">
+                      <b>Duration:</b> {course.duration}
+                    </Text>
+                    <Text mb="2">
+                      <b>Price:</b> {course.price}
+                    </Text>
+                    <Text mb="2">
+                      <b>Short Info:</b> {course.shortInfo}
+                    </Text>
+                  </Box>
+                  <Flex alignItems="center" mt="auto">
                     <Button
                       size="sm"
                       mr={2}
@@ -408,7 +423,7 @@ export default function Course_List() {
                       More Info
                     </Button>
                     <Button
-                      size="xs"
+                      size="sm"
                       colorScheme="red"
                       onClick={() => {
                         if (canDeleteData) {
@@ -429,26 +444,30 @@ export default function Course_List() {
                     </Button>
                   </Flex>
                 </Box>
+
               ))
           )}
         </Grid>
       </Box>
       <Flex justify="flex-end" mt="4">
-        <Button onClick={() => paginate(1)} mr={2}>
-          &lt;&lt;
-        </Button>
-        <Button onClick={() => paginate(currentPage - 1)} mr={2}>
-          &lt;
-        </Button>
-        {renderPagination()}
-        <Button onClick={() => paginate(currentPage + 1)} mr={2}>
-          &gt;
-        </Button>
-        <Button onClick={() => paginate(totalPages)} mr={2}>
-          &gt;&gt;
-        </Button>
+        {currentcourse.length > 0 && (
+          <Flex justify="flex-end" mt="4">
+            <Button onClick={() => paginate(1)} mr={2}>
+              &lt;&lt;
+            </Button>
+            <Button onClick={() => paginate(currentPage - 1)} mr={2}>
+              &lt;
+            </Button>
+            {renderPagination()}
+            <Button onClick={() => paginate(currentPage + 1)} mr={2}>
+              &gt;
+            </Button>
+            <Button onClick={() => paginate(totalPages)} mr={2}>
+              &gt;&gt;
+            </Button>
+          </Flex>
+        )}
       </Flex>
-
       {/* Add/Edit course Modal */}
       <Modal
         isOpen={isAddcourseModalOpen}
@@ -548,18 +567,6 @@ export default function Course_List() {
                 />
                 <Input
                   mb="3"
-                  placeholder="Long Info"
-                  value={newcourseData.longInfo}
-                  onChange={(e) =>
-                    setNewcourseData({
-                      ...newcourseData,
-                      longInfo: e.target.value,
-                    })
-                  }
-                  isRequired
-                />
-                <Input
-                  mb="3"
                   placeholder="Thumbnail"
                   value={newcourseData.thumbnail}
                   onChange={(e) =>
@@ -653,6 +660,18 @@ export default function Course_List() {
                     setNewcourseData({
                       ...newcourseData,
                       benefits: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Textarea
+                  mb="3"
+                  placeholder="Long Info"
+                  value={newcourseData.longInfo}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      longInfo: e.target.value,
                     })
                   }
                   isRequired

@@ -46,6 +46,8 @@ export default function Branch_List() {
     useState(false);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState("");
+
 
   const [newBranchData, setNewBranchData] = useState({
     branchName: "",
@@ -168,6 +170,10 @@ export default function Branch_List() {
     navigate(`/branch/dashboard/${branchId}`);
   };
 
+  const handleStatusChange = (e) => {
+    setSelectedStatus(e.target.value);
+  };
+
 
   if (isLoading) {
     return (
@@ -197,7 +203,14 @@ export default function Branch_List() {
     );
   }
 
-  const totalPages = Math.ceil(BranchData.length / BranchPerPage);
+  const filteredBranch = BranchData.filter((branch) => {
+
+    const statusMatch = selectedStatus ? branch.status == selectedStatus : true;
+    return statusMatch;
+  });
+
+
+  const totalPages = Math.ceil(filteredBranch.length / BranchPerPage);
 
   const paginate = (pageNumber) => {
     if (pageNumber < 1) {
@@ -208,6 +221,7 @@ export default function Branch_List() {
       setCurrentPage(pageNumber);
     }
   };
+
   const renderPagination = () => {
     const pageButtons = [];
     for (let i = 1; i <= totalPages; i++) {
@@ -228,7 +242,7 @@ export default function Branch_List() {
 
   const indexOfLastBranch = currentPage * BranchPerPage;
   const indexOfFirstBranch = indexOfLastBranch - BranchPerPage;
-  const currentBranch = BranchData.slice(indexOfFirstBranch, indexOfLastBranch);
+  const currentBranch = filteredBranch.slice(indexOfFirstBranch, indexOfLastBranch);
 
 
   const branchManagementPermissions = getModulePermissions('Branch');
@@ -247,7 +261,24 @@ export default function Branch_List() {
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
           Branch List
         </Text>
-        <Flex align="center">
+        <Grid
+          templateColumns={{
+            base: "repeat(1, 1fr)",
+            md: "repeat(2, 1fr)",
+          }}
+          gap={3}
+          alignItems="center"
+        >
+          <Select
+            placeholder="Filter by Status"
+            value={selectedStatus}
+            onChange={handleStatusChange}
+          >
+            <option value="Inactive">Inactive</option>
+            <option value="Active">Active</option>
+            <option value="Disabled">Disabled</option>
+            <option value="NeedKyc">NeedKyc</option>
+          </Select>
           <Button
             mr={5}
             ml="4"
@@ -268,7 +299,7 @@ export default function Branch_List() {
           >
             Add Branch
           </Button>
-        </Flex>
+        </Grid>
       </Flex>
       <Box bg="gray.100" p="6" borderRadius="lg" overflowX="auto" css={{
         '&::-webkit-scrollbar': {
@@ -285,9 +316,11 @@ export default function Branch_List() {
         },
       }}>
         {currentBranch.length === 0 ? (
-          <Text textAlign="center" fontSize="lg">
-            No Branch available
-          </Text>
+          <Flex justify="center" align="center" height="100%">
+            <Box textAlign="center">
+              <Text fontSize="xl" fontWeight="bold">No branch available</Text>
+            </Box>
+          </Flex>
         ) : (
           <Table variant="simple" minWidth="100%">
             <Thead>
@@ -304,7 +337,6 @@ export default function Branch_List() {
             </Thead>
             <Tbody>
               {currentBranch
-                .filter(Branch => Branch.status === 'Active')
                 .map((Branch, index) => (
                   <Tr key={index}>
                     <Td borderBottom="1px" borderColor="gray.200">
@@ -367,11 +399,23 @@ export default function Branch_List() {
         )}
       </Box>
       <Flex justify="flex-end" mt="4">
-        <Button onClick={() => paginate(1)} mr={2}>&lt;&lt;</Button>
-        <Button onClick={() => paginate(currentPage - 1)} mr={2}>&lt;</Button>
-        {renderPagination()}
-        <Button onClick={() => paginate(currentPage + 1)} ml={2}>&gt;</Button>
-        <Button onClick={() => paginate(totalPages)} ml={2}>&gt;&gt;</Button>
+        {currentBranch.length > 0 && (
+          <Flex justify="flex-end" mt="4">
+            <Button onClick={() => paginate(1)} mr={2}>
+              &lt;&lt;
+            </Button>
+            <Button onClick={() => paginate(currentPage - 1)} mr={2}>
+              &lt;
+            </Button>
+            {renderPagination()}
+            <Button onClick={() => paginate(currentPage + 1)} mr={2}>
+              &gt;
+            </Button>
+            <Button onClick={() => paginate(totalPages)} mr={2}>
+              &gt;&gt;
+            </Button>
+          </Flex>
+        )}
       </Flex>
 
       {/* Add Branch Modal */}

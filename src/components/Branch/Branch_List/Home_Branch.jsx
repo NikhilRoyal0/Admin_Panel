@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Spinner, Select, Text, Flex, SimpleGrid, Input, FormControl, FormLabel, Table, Thead, Tbody, Tr, Th, Td, Button, Divider, useToast } from '@chakra-ui/react';
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   fetchBranchData,
   selectBranchData,
@@ -14,14 +14,19 @@ import { fetchStudentData, selectStudentData } from '../../../app/Slices/student
 import Planner from '../Planner/Planner';
 import { FaUserGraduate } from 'react-icons/fa';
 import { SiCoursera } from "react-icons/si";
+import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseData } from '../../../app/Slices/courseSlice';
 
 export default function Home_Branch() {
   const { branchId } = useParams();
   const BranchData = useSelector(selectBranchData);
+  const courseData = useSelector(selectcourseData);
+  const courseError = useSelector(selectcourseError);
+  const courseLoading = useSelector(selectcourseLoading);
   const StudentData = useSelector(selectStudentData);
   const isLoading = useSelector(selectBranchLoading);
   const error = useSelector(selectBranchError);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const Toast = useToast();
   const [isEditable, setIsEditable] = useState(false);
   const [searchInput, setSearchInput] = useState('');
@@ -42,6 +47,7 @@ export default function Home_Branch() {
   useEffect(() => {
     dispatch(fetchBranchData());
     dispatch(fetchStudentData());
+    dispatch(fetchcourseData());
   }, [dispatch]);
 
   useEffect(() => {
@@ -74,6 +80,20 @@ export default function Home_Branch() {
   }
 
   if (error) {
+    return (
+      <NetworkError />
+    );
+  }
+
+  if (courseLoading) {
+    return (
+      <Flex justify="center" align="center" h="100vh">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
+
+  if (courseError) {
     return (
       <NetworkError />
     );
@@ -121,6 +141,13 @@ export default function Home_Branch() {
         });
       });
   };
+
+  const handleCourses = (branchId) => {
+    navigate(`/courses/${branchId}`)
+  }
+
+
+  const selectedCourse = courseData.filter(course => course.branchId === parseInt(branchId)).length;
 
   const selectedBranch = BranchData.find(branch => branch.branchId === (branchId));
 
@@ -435,11 +462,12 @@ export default function Home_Branch() {
                 justifyContent="center"
               >
                 <SiCoursera size={50} color="#3182ce" />
-                <Text fontSize="20px" fontWeight="bold" mt="4" textAlign="center">
+                <Text fontSize="20px" fontWeight="bold" mt="4" textAlign="center" onClick={() => handleCourses(branchId)}
+                  cursor="pointer">
                   Total Courses
                 </Text>
                 <Text fontSize="25px" mt="2" fontWeight="bold" color="#4a5568">
-                  {filteredStudentsCount}
+                  {selectedCourse}
                 </Text>
               </Box>
             </SimpleGrid>
@@ -499,9 +527,11 @@ export default function Home_Branch() {
             />
           </Flex>
           {filteredStudents.length === 0 ? (
-            <Text textAlign="center" mt={20} fontSize="xl" fontWeight="bold">
-              No Student available
-            </Text>
+            <Flex justify="center" align="center" height="100%">
+              <Box textAlign="center">
+                <Text fontSize="xl" fontWeight="bold">No student available</Text>
+              </Box>
+            </Flex>
           ) : (
             <Table variant="simple" overflow="auto">
               <Thead>

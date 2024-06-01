@@ -70,7 +70,7 @@ export const AddcategoryData = (formData) => async (dispatch) => {
     const apiToken = sessionStorage.getItem("api-token");
 
     const response = await axios.post(
-      import.meta.env.VITE_BASE_URL + "/courses/categories/add",
+      import.meta.env.VITE_BASE_URL + "courses/categories/add",
       formData,
       {
         headers: {

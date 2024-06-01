@@ -54,13 +54,20 @@ export default function Student_List() {
     email: "",
     password: "",
     role: "",
+    createdOn: Date.now(),
+    status: "",
     branchId: "",
     handledBy: "",
     currentCourseId: "",
+    walletAmount: 0,
+    referCode: "",
+    parentCode: "",
     primaryAddress: "",
     state: "",
     city: "",
     interestIn: "",
+    admissionNo: "",
+    profilePhoto: "",
   });
 
   const StudentData = useSelector(selectStudentData);
@@ -78,6 +85,8 @@ export default function Student_List() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [StudentsPerPage, setStudentsPerPage] = useState(10);
+  const [selectedStatus, setSelectedStatus] = useState("");
+
 
   useEffect(() => {
     dispatch(fetchStudentData());
@@ -94,13 +103,20 @@ export default function Student_List() {
     formData.append("email", newStudentData.email);
     formData.append("password", newStudentData.password);
     formData.append("role", newStudentData.role);
+    formData.append("createdOn", Date.now());
+    formData.append("status", newStudentData.status);
     formData.append("branchId", newStudentData.branchId);
     formData.append("handledBy", newStudentData.handledBy);
     formData.append("currentCourseId", newStudentData.currentCourseId);
+    formData.append("walletAmount", 0);
+    formData.append("referCode", newStudentData.referCode);
+    formData.append("parentCode", newStudentData.parentCode);
     formData.append("primaryAddress", newStudentData.primaryAddress);
     formData.append("state", newStudentData.state);
     formData.append("city", newStudentData.city);
     formData.append("interestIn", newStudentData.interestIn);
+    formData.append("admissionNo", newStudentData.admissionNo);
+    formData.append("profilePhoto", newStudentData.profilePhoto);
     dispatch(AddStudentData(formData))
       .then(() => {
         setIsSaveLoading(false);
@@ -116,13 +132,20 @@ export default function Student_List() {
           email: "",
           password: "",
           role: "",
+          createdOn: Date.now(),
+          status: "",
           branchId: "",
           handledBy: "",
           currentCourseId: "",
+          walletAmount: "",
+          referCode: "",
+          parentCode: "",
           primaryAddress: "",
           state: "",
           city: "",
           interestIn: "",
+          admissionNo: "",
+          profilePhoto: "",
         });
         setIsAddStudentModalOpen(false);
       })
@@ -169,9 +192,13 @@ export default function Student_List() {
   };
 
   const handleEditStudent = (Student) => {
-    setSelectedstudent_id(Student.bank_id);
+    setSelectedstudent_id(Student.student_id);
     setEditedStudentData(Student);
     setIsEditModalOpen(true);
+  };
+
+  const handleStatusChange = (e) => {
+    setSelectedStatus(e.target.value);
   };
 
   const handleSaveChanges = () => {
@@ -210,13 +237,20 @@ export default function Student_List() {
           email: "",
           password: "",
           role: "",
+          updatedOn: Date.now(),
+          status: "",
           branchId: "",
           handledBy: "",
           currentCourseId: "",
+          walletAmount: "",
+          referCode: "",
+          parentCode: "",
           primaryAddress: "",
           state: "",
           city: "",
           interestIn: "",
+          admissionNo: "",
+          profilePhoto: "",
         });
         Toast({
           title: "Student updated successfully",
@@ -281,7 +315,14 @@ export default function Student_List() {
     );
   }
 
-  const totalPages = Math.ceil(StudentData.length / StudentsPerPage);
+
+  const filteredStudent = StudentData.filter((student) => {
+
+    const statusMatch = selectedStatus ? student.status == selectedStatus : true;
+    return statusMatch;
+  });
+
+  const totalPages = Math.ceil(filteredStudent.length / StudentsPerPage);
 
   const paginate = (pageNumber) => {
     if (pageNumber < 1) {
@@ -312,7 +353,7 @@ export default function Student_List() {
 
   const indexOfLastStudent = currentPage * StudentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - StudentsPerPage;
-  const currentStudents = StudentData.slice(indexOfFirstStudent, indexOfLastStudent);
+  const currentStudents = filteredStudent.slice(indexOfFirstStudent, indexOfLastStudent);
 
 
   const studentManagementPermissions = getModulePermissions('Students');
@@ -329,7 +370,24 @@ export default function Student_List() {
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
           Student List
         </Text>
-        <Flex align="center">
+        <Grid
+          templateColumns={{
+            base: "repeat(1, 1fr)",
+            md: "repeat(2, 1fr)",
+          }}
+          gap={3}
+          alignItems="center"
+        >
+          <Select
+            placeholder="Filter by Status"
+            value={selectedStatus}
+            onChange={handleStatusChange}
+          >
+            <option value="Inactive">Inactive</option>
+            <option value="Active">Active</option>
+            <option value="Disabled">Disabled</option>
+            <option value="NeedKyc">NeedKyc</option>
+          </Select>
           <Button
             mr={5}
             ml="4"
@@ -350,7 +408,7 @@ export default function Student_List() {
           >
             Add Student
           </Button>
-        </Flex>
+        </Grid>
       </Flex>
       <Box bg="gray.100" p="6" borderRadius="lg" overflow="auto" css={{
         '&::-webkit-scrollbar': {
@@ -367,9 +425,11 @@ export default function Student_List() {
         },
       }}>
         {currentStudents.length === 0 ? (
-          <Text textAlign="center" fontSize="lg">
-            No Student available
-          </Text>
+          <Flex justify="center" align="center" height="100%">
+            <Box textAlign="center">
+              <Text fontSize="xl" fontWeight="bold">No student available</Text>
+            </Box>
+          </Flex>
         ) : (
           <Table variant="simple" minWidth="100%">
             <Thead>
@@ -391,7 +451,6 @@ export default function Student_List() {
             </Thead>
             <Tbody>
               {currentStudents
-                .filter(Student => Student.status === 'Active')
                 .map((Student, index) => (
                   <Tr key={index}>
                     <Td borderBottom="1px" borderColor="gray.200">
@@ -480,11 +539,23 @@ export default function Student_List() {
         )}
       </Box>
       <Flex justify="flex-end" mt="4">
-        <Button onClick={() => paginate(1)} mr={2}>&lt;&lt;</Button>
-        <Button onClick={() => paginate(currentPage - 1)} mr={2}>&lt;</Button>
-        {renderPagination()}
-        <Button onClick={() => paginate(currentPage + 1)} ml={2}>&gt;</Button>
-        <Button onClick={() => paginate(totalPages)} ml={2}>&gt;&gt;</Button>
+        {currentStudents.length > 0 && (
+          <Flex justify="flex-end" mt="4">
+            <Button onClick={() => paginate(1)} mr={2}>
+              &lt;&lt;
+            </Button>
+            <Button onClick={() => paginate(currentPage - 1)} mr={2}>
+              &lt;
+            </Button>
+            {renderPagination()}
+            <Button onClick={() => paginate(currentPage + 1)} mr={2}>
+              &gt;
+            </Button>
+            <Button onClick={() => paginate(totalPages)} mr={2}>
+              &gt;&gt;
+            </Button>
+          </Flex>
+        )}
       </Flex>
 
       {/* Add Student Modal */}
@@ -515,7 +586,7 @@ export default function Student_List() {
                 />
                 <Input
                   mb="3"
-                  placeholder="Student email"
+                  placeholder="Student Email"
                   value={newStudentData.email}
                   onChange={(e) =>
                     setNewStudentData({
@@ -527,7 +598,7 @@ export default function Student_List() {
                 />
                 <Input
                   mb="3"
-                  placeholder="Student password"
+                  placeholder="Student Password"
                   value={newStudentData.password}
                   onChange={(e) =>
                     setNewStudentData({
@@ -554,6 +625,24 @@ export default function Student_List() {
                       {role.roleName}
                     </option>
                   ))}
+                </Select>
+                <Select
+                  mb="3"
+                  placeholder="Select status"
+                  value={newStudentData.status}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      status: e.target.value,
+                    })
+                  }
+                  isRequired
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Disabled">Disabled</option>
+                  <option value="NeedKyc">Need KYC</option>
+                  <option value="NeedKyc">Empty</option>
                 </Select>
                 <Select
                   mb="3"
@@ -593,6 +682,30 @@ export default function Student_List() {
                     setNewStudentData({
                       ...newStudentData,
                       currentCourseId: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder=" Refer Code"
+                  value={newStudentData.referCode}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      referCode: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder=" Parent Code"
+                  value={newStudentData.parentCode}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      parentCode: e.target.value,
                     })
                   }
                   isRequired
@@ -641,6 +754,30 @@ export default function Student_List() {
                     setNewStudentData({
                       ...newStudentData,
                       interestIn: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Admission Number"
+                  value={newStudentData.admissionNo}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      admissionNo: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                <Input
+                  mb="3"
+                  placeholder="Profile Photo"
+                  value={newStudentData.profilePhoto}
+                  onChange={(e) =>
+                    setNewStudentData({
+                      ...newStudentData,
+                      profilePhoto: e.target.value,
                     })
                   }
                   isRequired

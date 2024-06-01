@@ -191,9 +191,11 @@ export default function Planner() {
       </Flex>
       <Box p="6" borderRadius="lg">
         {selectedPlan.length === 0 ? (
-          <Text textAlign="center" fontSize="lg">
-            No Plan available
-          </Text>
+          <Flex justify="center" align="center" height="100%">
+            <Box textAlign="center">
+              <Text fontSize="xl" fontWeight="bold">No branch plan available</Text>
+            </Box>
+          </Flex>
         ) : (
           <Flex width={"fit-content"} justifyContent="space-between">
             {selectedPlan.map((branchPlanner, index) => (

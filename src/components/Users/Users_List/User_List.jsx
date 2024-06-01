@@ -63,6 +63,7 @@ export default function UserList() {
   const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   const usersData = useSelector(selectUsersData);
   const roleData = useSelector(selectrolesData);
@@ -210,6 +211,10 @@ export default function UserList() {
     setIsEditModalOpen(true);
   };
 
+  const handleStatusChange = (e) => {
+    setSelectedStatus(e.target.value);
+  };
+
   if (isLoading) {
     return (
       <Flex justify="center" align="center" h="100vh">
@@ -252,7 +257,13 @@ export default function UserList() {
     );
   }
 
-  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+  const FilterUsers = filteredUsers.filter((users) => {
+
+    const statusMatch = selectedStatus ? users.status == selectedStatus : true;
+    return statusMatch;
+  });
+
+  const totalPages = Math.ceil(FilterUsers.length / usersPerPage);
 
   const paginate = (pageNumber) => {
     if (pageNumber < 1) {
@@ -284,7 +295,7 @@ export default function UserList() {
 
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const currentUsers = FilterUsers.slice(indexOfFirstUser, indexOfLastUser);
 
   const UserManagementPermissions = getModulePermissions('Users');
 
@@ -304,15 +315,31 @@ export default function UserList() {
         justify="space-between"
         mb="6"
         mt={5}
-        direction={{ base: "row", md: "row" }} // Switch direction based on screen width
       >
-        <Text fontSize="2xl" fontWeight="bold" ml={{ base: 0, md: 5 }} mb={{ base: 4, md: 0 }}> {/* Adjust margin bottom for smaller screens */}
+        <Text fontSize="2xl" fontWeight="bold" ml={{ base: 0, md: 5 }} mb={{ base: 4, md: 0 }}>
           User List
         </Text>
-        <Flex align="center" mb={{ base: 4, md: 0 }}> {/* Adjust margin bottom for smaller screens */}
+        <Grid
+          templateColumns={{
+            base: "repeat(1, 1fr)",
+            md: "repeat(3, 1fr)",
+          }}
+          gap={3}
+          alignItems="center"
+        >
+          <Select
+            placeholder="Filter by Status"
+            value={selectedStatus}
+            onChange={handleStatusChange}
+          >
+            <option value="Inactive">Inactive</option>
+            <option value="Active">Active</option>
+            <option value="Disabled">Disabled</option>
+            <option value="NeedKyc">NeedKyc</option>
+          </Select>
           <Input
-            placeholder="Search by Email, Phone, or First Name"
-            w={{ base: "100%", md: "300px" }} // Adjust width based on screen width
+            placeholder="Search here..."
+            w={{ base: "100%", md: "200px" }}
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             mr={3}
@@ -335,7 +362,7 @@ export default function UserList() {
           >
             Add User
           </Button>
-        </Flex>
+        </Grid>
       </Flex>
 
       <Box p="6" borderRadius="lg" overflowX="auto" css={{
@@ -352,10 +379,12 @@ export default function UserList() {
           backgroundColor: '#a0aec0',
         },
       }}>
-        {filteredUsers.length === 0 ? (
-          <Text textAlign="center" fontSize="lg">
-            No users available
-          </Text>
+        {currentUsers.length === 0 ? (
+          <Flex justify="center" align="center" height="100%">
+            <Box textAlign="center">
+              <Text fontSize="xl" fontWeight="bold">No Users available</Text>
+            </Box>
+          </Flex>
         ) : (
           <>
             <Table variant="simple" minWidth="100%">
@@ -372,7 +401,6 @@ export default function UserList() {
               </Thead>
               <Tbody>
                 {currentUsers
-                  .filter(user => user.status === 'Active')
                   .map((user, index) => (
                     <Tr key={index}>
                       <Td>{user.firstName}</Td>
@@ -430,11 +458,23 @@ export default function UserList() {
               </Tbody>
             </Table>
             <Flex justify="flex-end" mt="4">
-              <Button onClick={() => paginate(1)} mr={2}>&lt;&lt;</Button>
-              <Button onClick={() => paginate(currentPage - 1)} mr={2}>&lt;</Button>
-              {renderPagination()}
-              <Button onClick={() => paginate(currentPage + 1)} ml={2}>&gt;</Button>
-              <Button onClick={() => paginate(totalPages)} ml={2}>&gt;&gt;</Button>
+              {currentUsers.length > 0 && (
+                <Flex justify="flex-end" mt="4">
+                  <Button onClick={() => paginate(1)} mr={2}>
+                    &lt;&lt;
+                  </Button>
+                  <Button onClick={() => paginate(currentPage - 1)} mr={2}>
+                    &lt;
+                  </Button>
+                  {renderPagination()}
+                  <Button onClick={() => paginate(currentPage + 1)} mr={2}>
+                    &gt;
+                  </Button>
+                  <Button onClick={() => paginate(totalPages)} mr={2}>
+                    &gt;&gt;
+                  </Button>
+                </Flex>
+              )}
             </Flex>
           </>
         )}
