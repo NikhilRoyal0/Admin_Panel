@@ -9,6 +9,7 @@ import branchPlannerReducer from "../Slices/branchPlanner";
 import CertificateReducer from "../Slices/certificateSlice";
 import CourseReducer from "../Slices/courseSlice";
 import categoryReducer from "../Slices/categorySlice";
+import templeteReducer from "../Slices/templete";
 
 const Store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ const Store = configureStore({
     Certificate: CertificateReducer,
     course: CourseReducer,
     category: categoryReducer,
+    templete: templeteReducer,
   },
 });
 

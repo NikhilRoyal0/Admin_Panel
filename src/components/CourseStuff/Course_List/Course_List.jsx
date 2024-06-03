@@ -120,6 +120,7 @@ export default function Course_List() {
     formData.append("benefits", newcourseData.benefits);
     dispatch(AddcourseData(formData))
       .then(() => {
+        dispatch(fetchcourseData());
         setIsSaveLoading(false);
         Toast({
           title: "Course added successfully",
@@ -331,7 +332,8 @@ export default function Course_List() {
                   position: "top-right",
                 });
               }
-            }}          >
+            }}
+          >
             Add Course
           </Button>
         </Grid>

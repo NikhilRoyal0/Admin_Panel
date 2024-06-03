@@ -6,6 +6,7 @@ import { updatecourseData, selectcourseData, fetchcourseData, selectcourseError,
 import { fetchcategoryData, selectcategoryData, selectcategoryError } from '../../../app/Slices/categorySlice';
 import { getModulePermissions } from "../../../utils/permissions";
 import { BeatLoader } from "react-spinners";
+import TimeConversion  from '../../../utils/timeConversion';
 
 export default function EditableCourseDetails() {
     const dispatch = useDispatch();
@@ -323,10 +324,19 @@ export default function EditableCourseDetails() {
                     )}
                 </FormControl>
                 <FormControl>
+                    <FormLabel>Created On</FormLabel>
+                    <Input
+                        name="Created On"
+                        value={TimeConversion.unixTimeToRealTime(formData.createdOn)}
+                        readOnly
+                        bg='gray.100'
+                    />
+                </FormControl>
+                <FormControl>
                     <FormLabel>Updated On</FormLabel>
                     <Input
                         name="updatedOn"
-                        value={formData.updatedOn || ''}
+                        value={TimeConversion.unixTimeToRealTime(formData.updatedOn || '')}
                         onChange={(e) => handleInputChange(e, 'updatedOn')}
                         readOnly
                         bg='gray.100'

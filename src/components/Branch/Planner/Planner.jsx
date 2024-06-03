@@ -15,7 +15,6 @@ import {
   ModalBody,
   ModalFooter,
   useToast,
-  SimpleGrid,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { BeatLoader } from "react-spinners";
@@ -29,6 +28,7 @@ import {
 } from "../../../app/Slices/branchPlanner";
 import NetworkError from "../../NotFound/networkError";
 import { useParams } from "react-router-dom";
+import { getModulePermissions } from "../../../utils/permissions";
 
 
 export default function Planner() {
@@ -167,6 +167,14 @@ export default function Planner() {
 
   const selectedPlan = branchPlannerData.filter(branch => branch.branchId === parseInt(branchId));
 
+  const branchManagementPermissions = getModulePermissions('Branch');
+
+  if (!branchManagementPermissions) {
+    return <NetworkError />;
+  }
+
+  const canEditBranch = branchManagementPermissions.update;
+
   return (
     <Box p="0" width="100%">
       <Flex align="center" justify="space-between" >
@@ -201,14 +209,14 @@ export default function Planner() {
             {selectedPlan.map((branchPlanner, index) => (
               <Box
                 key={index}
-                width={["100%", "100%"]} // Adjust width based on screen size
+                width={["100%", "100%"]}
                 p="5"
                 bg="white"
                 boxShadow="md"
                 borderRadius="md"
                 borderBottom="1px"
                 borderColor="gray.200"
-                mb="20px" // Add margin for spacing between boxes
+                mb="20px"
               >
                 <Text >Admission Fee: {branchPlanner.admissionFee}</Text>
                 <Text >Admission Discount: {branchPlanner.admissionDiscount}%</Text>
@@ -222,7 +230,17 @@ export default function Planner() {
                     colorScheme="teal"
                     mr="1"
                     onClick={() => {
-                      handleEditbranchPlanner(branchPlanner);
+                      if (canEditBranch) {
+                        handleEditbranchPlanner(branchPlanner);
+                      } else {
+                        Toast({
+                          title: "You don't have permission to edit branch plan",
+                          status: "error",
+                          duration: 3000,
+                          isClosable: true,
+                          position: "top-right",
+                        });
+                      }
                     }}
                   >
                     Edit

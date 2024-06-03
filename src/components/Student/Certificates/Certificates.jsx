@@ -20,6 +20,7 @@ import {
   ModalBody,
   ModalFooter,
   useToast,
+  Select,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { BeatLoader } from "react-spinners";
@@ -30,8 +31,10 @@ import {
   selectCertificateError,
   AddCertificateData,
 } from "../../../app/Slices/certificateSlice";
+import { selecttempleteData, selecttempleteError, selecttempleteLoading, fetchtempleteData } from "../../../app/Slices/templete";
 import NetworkError from "../../NotFound/networkError";
 import { getModulePermissions } from "../../../utils/permissions";
+import TimeConversion from "../../../utils/timeConversion";
 
 
 export default function Certificate() {
@@ -50,6 +53,9 @@ export default function Certificate() {
   });
 
   const CertificateData = useSelector(selectCertificateData);
+  const templeteData = useSelector(selecttempleteData);
+  const tempeleteError = useSelector(selecttempleteError);
+  const templeteLoading = useSelector(selecttempleteLoading);
   const isLoading = useSelector(selectCertificateLoading);
   const error = useSelector(selectCertificateError);
   const dispatch = useDispatch();
@@ -61,6 +67,7 @@ export default function Certificate() {
 
   useEffect(() => {
     dispatch(fetchCertificateData());
+    dispatch(fetchtempleteData());
   }, [dispatch]);
 
   const handleAddCertificate = (e) => {
@@ -120,6 +127,18 @@ export default function Certificate() {
   }
 
   if (error) {
+    return <NetworkError />;
+  }
+
+  if (templeteLoading) {
+    return (
+      <Flex justify="center" align="center" h="100vh">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
+
+  if (tempeleteError) {
     return <NetworkError />;
   }
 
@@ -228,6 +247,7 @@ export default function Certificate() {
                 <Th>Certificate Title</Th>
                 <Th>Student Name</Th>
                 <Th>Issued By</Th>
+                <Th>Issued Date</Th>
                 <Th>Edit/Delete</Th>
 
               </Tr>
@@ -243,6 +263,9 @@ export default function Certificate() {
                   </Td>
                   <Td borderBottom="1px" borderColor="gray.200">
                     {Certificate.issueBy}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    {TimeConversion.unixTimeToRealTime(Certificate.issueDate)}
                   </Td>
                   <Td borderBottom="1px" borderColor="gray.200">
                     <Flex>
@@ -396,9 +419,9 @@ export default function Certificate() {
                 }
                 isRequired
               />
-              <Input
+              <Select
                 mb="3"
-                placeholder="Template Id"
+                placeholder="Select Templete"
                 value={newCertificateData.templeteId}
                 onChange={(e) =>
                   setNewCertificateData({
@@ -407,7 +430,13 @@ export default function Certificate() {
                   })
                 }
                 isRequired
-              />
+              >
+                {templeteData.map((templete) => (
+                  <option key={templete.templeteId} value={templete.templeteId}>
+                    {templete.title}
+                  </option>
+                ))}
+              </Select>
               <Input
                 mb="3"
                 placeholder="Certificate Number"

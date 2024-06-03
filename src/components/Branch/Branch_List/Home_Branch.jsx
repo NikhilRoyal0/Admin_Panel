@@ -15,6 +15,8 @@ import Planner from '../Planner/Planner';
 import { FaUserGraduate } from 'react-icons/fa';
 import { SiCoursera } from "react-icons/si";
 import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseData } from '../../../app/Slices/courseSlice';
+import TimeConversion from "../../../utils/timeConversion";
+import { getModulePermissions } from '../../../utils/permissions';
 
 export default function Home_Branch() {
   const { branchId } = useParams();
@@ -171,6 +173,14 @@ export default function Home_Branch() {
 
   const filteredStudentsCount = StudentData.filter(student => student.branchId === parseInt(branchId)).length;
 
+  const branchManagementPermissions = getModulePermissions('Branch');
+
+  if (!branchManagementPermissions) {
+    return <NetworkError />;
+  }
+
+  const canEditBranch = branchManagementPermissions.update;
+
   return (
     <Flex p="4" mt={2} direction={{ base: 'column', md: 'row' }}>
       <Box bg="white" boxShadow="md" p="4" borderRadius="md" w={{ base: '100%', md: '50%' }} height="1070px" overflow="auto" css={{
@@ -195,7 +205,21 @@ export default function Home_Branch() {
                 Cancel
               </Button>
             )}
-            <Button onClick={handleEditToggle} colorScheme="teal">
+            <Button
+              onClick={() => {
+                if (canEditBranch) {
+                  handleEditToggle
+                } else {
+                  Toast({
+                    title: "You don't have permission to edit branch",
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                    position: "top-right",
+                  });
+                }
+              }}
+              colorScheme="teal">
               {isEditable ? 'Save' : 'Edit'}
             </Button>
           </Flex>
@@ -349,7 +373,7 @@ export default function Home_Branch() {
             <FormLabel>Updated On</FormLabel>
             <Input
               name="updatedOn"
-              value={formData.updatedOn}
+              value={TimeConversion.unixTimeToRealTime(formData.updatedOn)}
               onChange={handleFormChange}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
@@ -359,7 +383,7 @@ export default function Home_Branch() {
             <FormLabel>Created On</FormLabel>
             <Input
               name="createdOn"
-              value={selectedBranch.createdOn}
+              value={TimeConversion.unixTimeToRealTime(selectedBranch.createdOn)}
               isReadOnly
               bg='gray.100'
             />
@@ -386,7 +410,7 @@ export default function Home_Branch() {
             <FormLabel>Last Active At</FormLabel>
             <Input
               name="lastActiveAt"
-              value={selectedBranch.lastActiveAt}
+              value={TimeConversion.unixTimeToRealTime(selectedBranch.lastActiveAt)}
               isReadOnly={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
