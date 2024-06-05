@@ -176,11 +176,11 @@ const RenderContent = () => {
             </Text>
           </Link>
         );
-      case "/enquiry":
+      case "/inquiry":
         return (
-          <Link to="/enquiry">
+          <Link to="/inquiry">
             <Text fontSize="xl" fontWeight="bold">
-              Enquiry
+              Inquiry
             </Text>
           </Link>
         );

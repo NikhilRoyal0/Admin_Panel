@@ -23,7 +23,7 @@ import Course_Content from "../components/CourseStuff/Course_Content/Course_Cont
 import Purchase_History from "../components/CourseStuff/Purchase_History/Purchase_History";
 import Media_Content from "../components/Media/Media_Content";
 import Documents from "../components/Docx/Documents";
-import Enquiry from "../components/Enquiry/Enquiry";
+import Inquiry from "../components/Inquiry/Inquiry";
 import Login from "../components/Login_Logout/Login";
 import Logout from "../components/Login_Logout/Logout";
 import EditRoles from "../components/Users/Role/EditRoles";
@@ -73,7 +73,7 @@ const routes = createBrowserRouter(
         <Route path="/staff/attendance" element={<StaffAttendance />} />
         <Route path="/student/attendance" element={<StudentAttendance />} />
         <Route path="/documents" element={<Documents />} />
-        <Route path="/enquiry" element={<Enquiry />} />
+        <Route path="/inquiry" element={<Inquiry />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </>
