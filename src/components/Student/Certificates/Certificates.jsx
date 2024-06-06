@@ -244,19 +244,26 @@ export default function Certificate() {
           <Table variant="simple" minWidth="100%">
             <Thead>
               <Tr>
+                <Th>Certificate Number</Th>
                 <Th>Certificate Title</Th>
+                <Th>Certificate Hash</Th>
                 <Th>Student Name</Th>
                 <Th>Issued By</Th>
+                <Th>Template Id</Th>
                 <Th>Issued Date</Th>
-                <Th>Edit/Delete</Th>
-
               </Tr>
             </Thead>
             <Tbody>
               {currentCertificate.map((Certificate, index) => (
                 <Tr key={index}>
                   <Td borderBottom="1px" borderColor="gray.200">
+                    {Certificate.certificateNumber}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
                     {Certificate.title}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    {Certificate.certificateHash}
                   </Td>
                   <Td borderBottom="1px" borderColor="gray.200">
                     {Certificate.studentName}
@@ -265,50 +272,10 @@ export default function Certificate() {
                     {Certificate.issueBy}
                   </Td>
                   <Td borderBottom="1px" borderColor="gray.200">
-                    {TimeConversion.unixTimeToRealTime(Certificate.issueDate)}
+                    {Certificate.templeteId}
                   </Td>
                   <Td borderBottom="1px" borderColor="gray.200">
-                    <Flex>
-                      <Button
-                        size="xs"
-                        colorScheme="teal"
-                        mr="1"
-                        onClick={() => {
-                          if (canEditData) {
-                            handleEditStudent(Student)
-                          } else {
-                            Toast({
-                              title: "You don't have permission to edit certificate",
-                              status: "error",
-                              duration: 3000,
-                              isClosable: true,
-                              position: "top-right",
-                            });
-                          }
-                        }}                        >
-                        Edit
-                      </Button>
-                      <Button
-                        size="xs"
-                        colorScheme="red"
-                        onClick={() => {
-                          if (canDeleteData) {
-                            setSelectedstudent_id(Student.student_id);
-                            setIsDeleteConfirmationModalOpen(true);
-                          } else {
-                            Toast({
-                              title: "You don't have permission to delete certificate",
-                              status: "error",
-                              duration: 3000,
-                              isClosable: true,
-                              position: "top-right",
-                            });
-                          }
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    </Flex>
+                    {TimeConversion.unixTimeToRealTime(Certificate.issueDate)}
                   </Td>
                 </Tr>
               ))}

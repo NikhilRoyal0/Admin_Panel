@@ -38,15 +38,14 @@ import { selectBranchData, selectBranchError, selectBranchLoading, fetchBranchDa
 import { selectrolesData, selectrolesError, selectrolesLoading, fetchrolesData } from "../../../app/Slices/roleSlice";
 import NetworkError from "../../NotFound/networkError";
 import { getModulePermissions } from "../../../utils/permissions";
+import { useNavigate } from "react-router-dom";
 
 
 export default function Student_List() {
+  const navigate = useNavigate();
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
-  const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] =
-    useState(false);
+  const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] = useState(false);
   const [selectedstudent_id, setSelectedstudent_id] = useState(null);
-  const [editedStudentData, setEditedStudentData] = useState(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
 
   const [newStudentData, setNewStudentData] = useState({
@@ -86,13 +85,20 @@ export default function Student_List() {
   const [currentPage, setCurrentPage] = useState(1);
   const [StudentsPerPage, setStudentsPerPage] = useState(10);
   const [selectedStatus, setSelectedStatus] = useState("");
-
+  const [filteredCount, setFilteredCount] = useState(0);
 
   useEffect(() => {
     dispatch(fetchStudentData());
     dispatch(fetchBranchData());
     dispatch(fetchrolesData());
   }, [dispatch]);
+
+  useEffect(() => {
+    const filteredStudents = StudentData.filter((student) => {
+      return selectedStatus ? student.status === selectedStatus : true;
+    });
+    setFilteredCount(filteredStudents.length);
+  }, [selectedStatus, StudentData]);
 
   const handleAddStudent = (e) => {
     e.preventDefault();
@@ -191,87 +197,14 @@ export default function Student_List() {
       });
   };
 
-  const handleEditStudent = (Student) => {
-    setSelectedstudent_id(Student.student_id);
-    setEditedStudentData(Student);
-    setIsEditModalOpen(true);
+  const handleViewStudent = (student_id) => {
+    navigate(`/student/dashboard/${student_id}`);
   };
 
   const handleStatusChange = (e) => {
     setSelectedStatus(e.target.value);
   };
 
-  const handleSaveChanges = () => {
-    setIsSaveLoading(true);
-
-    const formData = {
-      studentName: editedStudentData.studentName,
-      email: editedStudentData.email,
-      password: editedStudentData.password,
-      role: editedStudentData.role,
-      updatedOn: Date.now(),
-      status: editedStudentData.status,
-      branchId: editedStudentData.branchId,
-      handledBy: editedStudentData.handledBy,
-      currentCourseId: editedStudentData.currentCourseId,
-      walletAmount: editedStudentData.walletAmount,
-      referCode: editedStudentData.referCode,
-      parentCode: editedStudentData.parentCode,
-      primaryAddress: editedStudentData.primaryAddress,
-      state: editedStudentData.state,
-      city: editedStudentData.city,
-      interestIn: editedStudentData.interestIn,
-      admissionNo: editedStudentData.admissionNo,
-      profilePhoto: editedStudentData.profilePhoto,
-
-    };
-
-    dispatch(updateStudentData(editedStudentData.student_id, formData))
-      .then(() => {
-        setIsEditModalOpen(false);
-        setSelectedstudent_id(null);
-        dispatch(fetchStudentData());
-        setIsSaveLoading(false);
-        setNewStudentData({
-          studentName: "",
-          email: "",
-          password: "",
-          role: "",
-          updatedOn: Date.now(),
-          status: "",
-          branchId: "",
-          handledBy: "",
-          currentCourseId: "",
-          walletAmount: "",
-          referCode: "",
-          parentCode: "",
-          primaryAddress: "",
-          state: "",
-          city: "",
-          interestIn: "",
-          admissionNo: "",
-          profilePhoto: "",
-        });
-        Toast({
-          title: "Student updated successfully",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-          position: "top-right",
-        });
-      })
-      .catch((error) => {
-        setIsSaveLoading(false);
-        Toast({
-          title: "Failed to updating Student",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-          position: "top-right",
-        });
-        console.log("Error updating Student: ", error);
-      });
-  };
 
   if (isLoading) {
     return (
@@ -333,6 +266,8 @@ export default function Student_List() {
       setCurrentPage(pageNumber);
     }
   };
+
+
   const renderPagination = () => {
     const pageButtons = [];
     for (let i = 1; i <= totalPages; i++) {
@@ -362,7 +297,6 @@ export default function Student_List() {
   }
   const canAddData = studentManagementPermissions.create;
   const canDeleteData = studentManagementPermissions.delete;
-  const canEditData = studentManagementPermissions.update;
 
   return (
     <Box p="3" >
@@ -373,15 +307,18 @@ export default function Student_List() {
         <Grid
           templateColumns={{
             base: "repeat(1, 1fr)",
-            md: "repeat(2, 1fr)",
+            md: "repeat(3, 1fr)",
           }}
           gap={3}
           alignItems="center"
         >
+
+          <Text ml={0}>Total: {filteredCount}</Text>
           <Select
             placeholder="Filter by Status"
             value={selectedStatus}
             onChange={handleStatusChange}
+
           >
             <option value="Inactive">Inactive</option>
             <option value="Active">Active</option>
@@ -446,7 +383,7 @@ export default function Student_List() {
                 <Th>State</Th>
                 <Th>City </Th>
                 <Th>Interest In</Th>
-                <Th>Edit/Delete</Th>
+                <Th>View/Delete</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -496,19 +433,9 @@ export default function Student_List() {
                           colorScheme="teal"
                           mr="1"
                           onClick={() => {
-                            if (canEditData) {
-                              handleEditStudent(Student)
-                            } else {
-                              Toast({
-                                title: "You don't have permission to edit student",
-                                status: "error",
-                                duration: 3000,
-                                isClosable: true,
-                                position: "top-right",
-                              });
-                            }
+                            handleViewStudent(Student.student_id)
                           }}                        >
-                          Edit
+                          View
                         </Button>
                         <Button
                           size="xs"
@@ -828,338 +755,6 @@ export default function Student_List() {
               variant="ghost"
               onClick={() => setIsDeleteConfirmationModalOpen(false)}
             >
-              Cancel
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} size="3xl">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Edit Student</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={3}>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  Student Name
-                </Text>
-                <Input
-                  mb="3"
-                  placeholder="Student Name"
-                  value={editedStudentData?.studentName || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      studentName: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  Student Email
-                </Text>
-                <Input
-                  mb="3"
-                  placeholder="Student Email"
-                  value={editedStudentData?.email || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      email: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  Student Password
-                </Text>
-                <Input
-                  mb="3"
-                  placeholder="Student Password"
-                  value={editedStudentData?.password || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      password: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  Role
-                </Text>
-                <Select
-                  mb="3"
-                  placeholder="Select Role"
-                  value={editedStudentData?.role || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      role: e.target.value,
-                    })
-                  }
-                  isRequired
-                >
-                  {roleData.map((role) => (
-                    <option key={role.roleId} value={role.roleId}>
-                      {role.roleName}
-                    </option>
-                  ))}
-                </Select>
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  Status
-                </Text>
-                <Select
-                  mb="3"
-                  placeholder="Select status"
-                  value={editedStudentData?.status || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      status: e.target.value,
-                    })
-                  }
-                  isRequired
-                >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                  <option value="Disabled">Disabled</option>
-                  <option value="NeedKyc">Need KYC</option>
-                </Select>
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  Branch Id
-                </Text>
-                <Select
-                  mb="3"
-                  placeholder="Select Branch"
-                  value={editedStudentData?.branchId || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      branchId: e.target.value,
-                    })
-                  }
-                  isRequired
-                >
-                  {branchData.map((branch) => (
-                    <option key={branch.branchId} value={branch.branchId}>
-                      {branch.branchId}
-                    </option>
-                  ))}
-                </Select>
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  Handled By
-                </Text>
-                <Input
-                  mb="3"
-                  placeholder="Handled By"
-                  value={editedStudentData?.handledBy || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      handledBy: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  Current Course Id
-                </Text>
-                <Input
-                  mb="3"
-                  placeholder="Current Course Id"
-                  value={editedStudentData?.currentCourseId || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      currentCourseId: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  Wallet Amount
-                </Text>
-                <Input
-                  mb="3"
-                  placeholder="Wallet Amount"
-                  value={editedStudentData?.walletAmount || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      walletAmount: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  Refer Code
-                </Text>
-                <Input
-                  mb="3"
-                  placeholder="Refer Code"
-                  value={editedStudentData?.referCode || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      referCode: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  Parent Code
-                </Text>
-                <Input
-                  mb="3"
-                  placeholder="Parent Code"
-                  value={editedStudentData?.parentCode || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      parentCode: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  Primary Address
-                </Text>
-                <Input
-                  mb="3"
-                  placeholder="Primary Address"
-                  value={editedStudentData?.primaryAddress || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      primaryAddress: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  State
-                </Text>
-                <Input
-                  mb="3"
-                  placeholder="State"
-                  value={editedStudentData?.state || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      state: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  City
-                </Text>
-                <Input
-                  mb="3"
-                  placeholder="City"
-                  value={editedStudentData?.city || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      city: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  Interest In
-                </Text>
-                <Input
-                  mb="3"
-                  placeholder="Interest In"
-                  value={editedStudentData?.interestIn || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      interestIn: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  Admission Number
-                </Text>
-                <Input
-                  mb="3"
-                  placeholder="Admission Number"
-                  value={editedStudentData?.admissionNo || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      admissionNo: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </Box>
-              <Box>
-                <Text mb="1" color="gray.600">
-                  Profile Photo
-                </Text>
-                <Input
-                  mb="3"
-                  placeholder="Profile Photo"
-                  value={editedStudentData?.profilePhoto || ""}
-                  onChange={(e) =>
-                    setEditedStudentData({
-                      ...editedStudentData,
-                      profilePhoto: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </Box>
-            </Grid>
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              colorScheme="teal"
-              mr={3}
-              onClick={handleSaveChanges}
-              isLoading={isSaveLoading}
-              spinner={<BeatLoader size={8} color="white" />}
-            >
-              Save Changes
-            </Button>
-            <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
               Cancel
             </Button>
           </ModalFooter>

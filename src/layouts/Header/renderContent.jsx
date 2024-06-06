@@ -4,7 +4,9 @@ import { Link, useParams } from 'react-router-dom';
 
 const RenderContent = () => {
   const { branchId } = useParams();
-  const {courseId} = useParams();
+  const { courseId } = useParams();
+  const { userId } = useParams();
+  const { student_id } = useParams();
 
   const renderContent = (path) => {
     switch (path) {
@@ -29,6 +31,14 @@ const RenderContent = () => {
           <Link to="/user/user-list">
             <Text fontSize="xl" fontWeight="bold">
               User / User List
+            </Text>
+          </Link>
+        );
+      case `/user/dashboard/${userId}`:
+        return (
+          <Link to={`/user/user-list`}>
+            <Text fontSize="xl" fontWeight="bold">
+              User / Dashboard
             </Text>
           </Link>
         );
@@ -69,6 +79,14 @@ const RenderContent = () => {
           <Link to="/student/student-list">
             <Text fontSize="xl" fontWeight="bold">
               Student / Student List
+            </Text>
+          </Link>
+        );
+      case `/student/dashboard/${student_id}`:
+        return (
+          <Link to={`/student/student-list`}>
+            <Text fontSize="xl" fontWeight="bold">
+              Student / Dashboard
             </Text>
           </Link>
         );

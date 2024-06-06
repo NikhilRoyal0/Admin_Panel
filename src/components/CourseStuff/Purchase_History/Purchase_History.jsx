@@ -66,6 +66,7 @@ export default function purchaseList() {
   const [editedpurchaseData, setEditedpurchaseData] = useState({});
   const [selectedpurchaseId, setSelectedpurchaseId] = useState(null);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const purchaseData = useSelector(selectpurchaseData);
   const courseData = useSelector(selectcourseData);
@@ -173,10 +174,16 @@ export default function purchaseList() {
   };
 
   const handleEditpurchase = (purchase) => {
+    setIsEditing(true);
     setSelectedpurchaseId(purchase.purchaseId);
     setEditedpurchaseData(purchase);
-    setIsEditModalOpen(true);
   };
+
+  const handleCancel = () => {
+    setIsEditModalOpen(false);
+    setIsEditing(false);
+  };
+
 
   if (isLoading) {
     return (
@@ -241,7 +248,7 @@ export default function purchaseList() {
   const canEditData = purchaseManagementPermissions.update;
 
   return (
-    <Box p="3">
+    <Box p="3" m={5}>
       <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={{ base: 0, md: 5 }} mb={{ base: 4, md: 0 }}>
           Purchase List
@@ -249,7 +256,7 @@ export default function purchaseList() {
         <Grid
           templateColumns={{
             base: "repeat(1, 1fr)",
-            md: "repeat(3, 1fr)",
+            md: "repeat(2, 1fr)",
           }}
           gap={3}
           alignItems="center"
@@ -330,7 +337,8 @@ export default function purchaseList() {
                           mr="2"
                           onClick={() => {
                             if (canEditData) {
-                              handleEditpurchase(purchase);
+                              setIsEditModalOpen(true);
+                              setEditedpurchaseData(purchase);
                             } else {
                               Toast({
                                 title: "You don't have permission to edit purchase",
@@ -453,29 +461,30 @@ export default function purchaseList() {
           <ModalHeader>Edit Purchase</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-          <Box>
-                <Text mb="1" color="gray.600">
-                  Student
-                </Text>
-                <Select
-                  mb="3"
-                  placeholder="Select Student"
-                  value={editedpurchaseData?.student_id || ""}
-                  onChange={(e) =>
-                    setEditedpurchaseData({
-                      ...editedpurchaseData,
-                      student_id: e.target.value,
-                    })
-                  }
-                  isRequired
-                >
-                  {studentData.map((student) => (
-                    <option key={student.student_id} value={student.student_id}>
-                      {student.studentName}
-                    </option>
-                  ))}
-                </Select>
-              </Box>
+            <Box>
+              <Text mb="1" color="gray.600">
+                Student
+              </Text>
+              <Select
+                mb="3"
+                placeholder="Select Student"
+                value={editedpurchaseData?.student_id || ""}
+                onChange={(e) =>
+                  setEditedpurchaseData({
+                    ...editedpurchaseData,
+                    student_id: e.target.value,
+                  })
+                }
+                isRequired
+                isDisabled={!isEditing}
+              >
+                {studentData.map((student) => (
+                  <option key={student.student_id} value={student.student_id}>
+                    {student.studentName}
+                  </option>
+                ))}
+              </Select>
+            </Box>
             <Box>
               <Text mb="1" color="gray.600">
                 Course
@@ -488,6 +497,7 @@ export default function purchaseList() {
                   setEditedpurchaseData({ ...editedpurchaseData, courseId: e.target.value })
                 }
                 isRequired
+                isDisabled={!isEditing}
               >
                 {courseData.map((course) => (
                   <option key={course.courseId} value={course.courseId}>
@@ -509,6 +519,7 @@ export default function purchaseList() {
                   setEditedpurchaseData({ ...editedpurchaseData, amount: e.target.value })
                 }
                 isRequired
+                isDisabled={!isEditing}
               />
             </Box>
             <Box>
@@ -524,6 +535,7 @@ export default function purchaseList() {
                   setEditedpurchaseData({ ...editedpurchaseData, discount: e.target.value })
                 }
                 isRequired
+                isDisabled={!isEditing}
               />
             </Box>
             <Box>
@@ -539,20 +551,30 @@ export default function purchaseList() {
               />
             </Box>
           </ModalBody>
-          <ModalFooter>
-            <Button
-              colorScheme="teal"
-              mr={3}
-              onClick={handleSaveChanges}
-              isLoading={isSaveLoading}
-              spinner={<BeatLoader size={8} color="white" />}
-            >
-              Save Changes
-            </Button>
-            <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
+            <ModalFooter>
+              <Button
+                colorScheme="teal"
+                mr={3}
+                onClick={handleSaveChanges}
+                isLoading={isSaveLoading}
+                spinner={<BeatLoader size={8} color="white" />}
+                isDisabled={!isEditing}
+              >
+                Save Changes
+              </Button>
+              {isEditing ? (
+              <Button variant="ghost" onClick={handleCancel}>
               Cancel
-            </Button>
-          </ModalFooter>
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  onClick={() => handleEditpurchase(editedpurchaseData)}
+                >
+                  Edit
+                </Button>
+              )}
+            </ModalFooter>
         </ModalContent>
       </Modal>
 

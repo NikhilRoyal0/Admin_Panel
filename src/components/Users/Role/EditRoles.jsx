@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Checkbox, Divider, Heading, Table, Tbody, Td, Th, Thead, Tr, Button, Flex, Spinner } from '@chakra-ui/react';
+import { Box, Checkbox, Divider, Heading, Table, Tbody, Td, Th, Thead, Tr, Button, Flex, Spinner, Input, IconButton } from '@chakra-ui/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchrolesData, selectrolesData, updaterolesData, selectrolesError, selectrolesLoading } from '../../../app/Slices/roleSlice';
+import { EditIcon } from '@chakra-ui/icons';
 import NetworkError from "../../NotFound/networkError";
 
 export default function EditRoles() {
     const { roleId } = useParams();
     const dispatch = useDispatch();
-    const navigate =  useNavigate()
+    const navigate = useNavigate();
     const roleData = useSelector(selectrolesData);
     const loading = useSelector(selectrolesLoading);
     const error = useSelector(selectrolesError);
@@ -16,6 +17,7 @@ export default function EditRoles() {
     const [role, setRole] = useState(null);
     const [roleName, setRoleName] = useState('');
     const [permissions, setPermissions] = useState([]);
+    const [isEditingRoleName, setIsEditingRoleName] = useState(false);
 
     useEffect(() => {
         dispatch(fetchrolesData());
@@ -76,8 +78,9 @@ export default function EditRoles() {
             };
 
             await dispatch(updaterolesData(updatedRoleData));
-            navigate("/user/roles")
+            navigate("/user/roles");
             dispatch(fetchrolesData());
+            setIsEditingRoleName(false);
         }
     };
 
@@ -112,9 +115,28 @@ export default function EditRoles() {
                 backgroundColor: '#a0aec0',
             },
         }}>
-            <Heading mb="4">{roleName}</Heading>
+            <Flex alignItems="center" mb="4">
+                {isEditingRoleName ? (
+                    <Input
+                        value={roleName}
+                        onChange={(e) => setRoleName(e.target.value)}
+                        size="lg"
+                        maxWidth={250}
+                        mr={2}
+                    />
+                ) : (
+                    <Heading mb="0">{roleName}</Heading>
+                )}
+                <IconButton
+                    icon={<EditIcon />}
+                    size="sm"
+                    onClick={() => setIsEditingRoleName(!isEditingRoleName)}
+                    ml={2}
+                    mt={1}
+                />
+            </Flex>
             <Divider mb={5} borderWidth="1px" borderColor="black" />
-            <Table variant="striped" colorScheme="gray" >
+            <Table variant="striped" colorScheme="gray">
                 <Thead>
                     <Tr>
                         <Th>Module</Th>

@@ -32,6 +32,8 @@ import { useParams } from "react-router-dom";
 import StaffAttendance from "../components/Attendance/Staff/StaffAttendance";
 import StudentAttendance from "../components/Attendance/Student/StudentAttendance";
 import Course from "../components/CourseStuff/Course_List/Course";
+import View_Users from "../components/Users/Users_List/View_Users";
+import StudentDashboard from "../components/Student/Students_List/View_Student";
 
 
 const routes = createBrowserRouter(
@@ -53,12 +55,14 @@ const routes = createBrowserRouter(
         <Route index element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/user/user-list" element={<User_List />} />
+        <Route path="/user/dashboard/:userId" element={<View_Users />} />
         <Route path="/user/roles" element={<Role />} />
         <Route path="/user/roles/edit/:roleId" element={<EditRolesWithPermissionCheck />} />
         <Route path="/branch/branch-list" element={<Branch_List />} />
         <Route path="/branch/dashboard/:branchId" element={<Home_Branch />} />
         <Route path="/branch/plan" element={<Planner />} />
         <Route path="/student/student-list" element={<Student_List />} />
+        <Route path="/student/dashboard/:student_id" element={<StudentDashboard />} />
         <Route path="/student/qualifications" element={<Qualifications />} />
         <Route path="/student/certificates" element={<Certificate />} />
         <Route path="/certificate/template" element={<Templetes />} />

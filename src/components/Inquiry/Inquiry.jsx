@@ -428,7 +428,7 @@ export default function Inquiry() {
                 boxSizing="border-box"
                 transition="box-shadow 0.3s"
                 _hover={{
-                  boxShadow: "2xl",
+                  boxShadow: "xl",
                 }}
                 display="flex"
                 flexDirection="column"

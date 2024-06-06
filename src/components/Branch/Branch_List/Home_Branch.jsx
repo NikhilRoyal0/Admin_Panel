@@ -208,7 +208,7 @@ export default function Home_Branch() {
             <Button
               onClick={() => {
                 if (canEditBranch) {
-                  handleEditToggle
+                  handleEditToggle();
                 } else {
                   Toast({
                     title: "You don't have permission to edit branch",
@@ -222,6 +222,7 @@ export default function Home_Branch() {
               colorScheme="teal">
               {isEditable ? 'Save' : 'Edit'}
             </Button>
+
           </Flex>
         </Flex>
         <Divider my="4" />
