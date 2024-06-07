@@ -86,13 +86,13 @@ export const AddStudentData = (formData) => async (dispatch) => {
   }
 };
 
-export const updateStudentData = (student_id, formData) => async (dispatch) => {
+export const updateStudentData = (student_id, updatedFormData) => async (dispatch) => {
   try {
     const apiToken = sessionStorage.getItem("api-token");
 
     const response = await axios.put(
       import.meta.env.VITE_BASE_URL + `students/update/${student_id}`,
-      formData,
+      updatedFormData,
       {
         headers: {
           "Content-Type": "application/json",

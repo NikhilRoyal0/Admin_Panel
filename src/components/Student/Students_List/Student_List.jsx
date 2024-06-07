@@ -32,7 +32,6 @@ import {
   selectStudentError,
   AddStudentData,
   deleteStudentData,
-  updateStudentData,
 } from "../../../app/Slices/studentSlice";
 import { selectBranchData, selectBranchError, selectBranchLoading, fetchBranchData } from "../../../app/Slices/branchSlice";
 import { selectrolesData, selectrolesError, selectrolesLoading, fetchrolesData } from "../../../app/Slices/roleSlice";
