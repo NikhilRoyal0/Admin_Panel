@@ -83,12 +83,21 @@ export default function Inquiry() {
   const [inquiriesPerPage, setInquiriesPerPage] = useState(10);
 
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [filteredCount, setFilteredCount] = useState(0);
+
 
   useEffect(() => {
     dispatch(fetchinquiryData());
     dispatch(fetchBranchData());
     dispatch(fetchcourseData());
   }, [dispatch]);
+
+  useEffect(() => {
+    const filteredInquiry = inquiryData.filter((student) => {
+      return selectedStatus ? student.status === selectedStatus : true;
+    });
+    setFilteredCount(filteredInquiry.length);
+  }, [selectedStatus, inquiryData]);
 
   const handleAddInquiry = (e) => {
     e.preventDefault();
@@ -344,6 +353,7 @@ export default function Inquiry() {
       <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
           Inquiry List
+          ({filteredCount})
         </Text>
         <Grid
           templateColumns={{

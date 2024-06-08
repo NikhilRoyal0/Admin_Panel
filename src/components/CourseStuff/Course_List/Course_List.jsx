@@ -81,11 +81,21 @@ export default function Course_List() {
 
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [filteredCount, setFilteredCount] = useState(0);
+
 
   useEffect(() => {
     dispatch(fetchcourseData());
     dispatch(fetchcategoryData());
   }, [dispatch]);
+
+  useEffect(() => {
+    const filteredCourse = courseData.filter((student) => {
+      return selectedStatus ? student.status === selectedStatus : true;
+    });
+    setFilteredCount(filteredCourse.length);
+  }, [selectedStatus, courseData]);
+
 
   const handleAddcourse = (e) => {
     e.preventDefault();
@@ -286,6 +296,7 @@ export default function Course_List() {
       <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
           Course List
+          ({filteredCount})
         </Text>
         <Grid
           templateColumns={{
@@ -644,18 +655,6 @@ export default function Course_List() {
                 </Select>
                 <Input
                   mb="3"
-                  placeholder="HTML Info"
-                  value={newcourseData.htmlInfo}
-                  onChange={(e) =>
-                    setNewcourseData({
-                      ...newcourseData,
-                      htmlInfo: e.target.value,
-                    })
-                  }
-                  isRequired
-                />
-                <Input
-                  mb="3"
                   placeholder="Benefits"
                   value={newcourseData.benefits}
                   onChange={(e) =>
@@ -674,6 +673,18 @@ export default function Course_List() {
                     setNewcourseData({
                       ...newcourseData,
                       longInfo: e.target.value,
+                    })
+                  }
+                  isRequired
+                />
+                  <Textarea
+                  mb="3"
+                  placeholder="HTML Info"
+                  value={newcourseData.htmlInfo}
+                  onChange={(e) =>
+                    setNewcourseData({
+                      ...newcourseData,
+                      htmlInfo: e.target.value,
                     })
                   }
                   isRequired

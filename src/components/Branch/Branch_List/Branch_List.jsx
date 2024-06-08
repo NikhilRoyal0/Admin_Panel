@@ -75,6 +75,8 @@ export default function Branch_List() {
     position: "top-right",
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [filteredCount, setFilteredCount] = useState(0);
+
   const [BranchPerPage, setBranchPerPage] = useState(10);
 
 
@@ -82,6 +84,13 @@ export default function Branch_List() {
     dispatch(fetchBranchData());
     dispatch(fetchrolesData());
   }, [dispatch]);
+
+  useEffect(() => {
+    const filteredBranch = BranchData.filter((branch) => {
+      return selectedStatus ? branch.status === selectedStatus : true;
+    });
+    setFilteredCount(filteredBranch.length);
+  }, [selectedStatus, BranchData]);
 
   const handleAddBranch = (e) => {
     e.preventDefault();
@@ -260,6 +269,8 @@ export default function Branch_List() {
       <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
           Branch List
+          ({filteredCount})
+
         </Text>
         <Grid
           templateColumns={{

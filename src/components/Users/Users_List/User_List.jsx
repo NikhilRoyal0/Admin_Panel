@@ -64,6 +64,8 @@ export default function UserList() {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [filteredCount, setFilteredCount] = useState(0);
+
 
   const usersData = useSelector(selectUsersData);
   const roleData = useSelector(selectrolesData);
@@ -84,6 +86,14 @@ export default function UserList() {
     dispatch(fetchrolesData());
     dispatch(fetchBranchData());
   }, [dispatch]);
+
+  useEffect(() => {
+    const filteredUser = usersData.filter((user) => {
+      return selectedStatus ? user.status === selectedStatus : true;
+    });
+    setFilteredCount(filteredUser.length);
+  }, [selectedStatus, usersData]);
+
 
   const filteredUsers = usersData.filter(
     (user) =>
@@ -257,6 +267,7 @@ export default function UserList() {
       >
         <Text fontSize="2xl" fontWeight="bold" ml={{ base: 0, md: 5 }} mb={{ base: 4, md: 0 }}>
           User List
+          ({filteredCount})
         </Text>
         <Grid
           templateColumns={{

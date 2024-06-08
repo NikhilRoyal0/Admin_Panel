@@ -21,7 +21,7 @@ import Course_List from "../components/CourseStuff/Course_List/Course_List";
 import Course_Category from "../components/CourseStuff/Course_Category/Course_Category";
 import Course_Content from "../components/CourseStuff/Course_Content/Course_Content";
 import Purchase_History from "../components/CourseStuff/Purchase_History/Purchase_History";
-import Media_Content from "../components/Media/Media_Content";
+import Benefits from "../components/Benefits/Benefits";
 import Documents from "../components/Docx/Documents";
 import Inquiry from "../components/Inquiry/Inquiry";
 import Login from "../components/Login_Logout/Login";
@@ -73,7 +73,7 @@ const routes = createBrowserRouter(
         <Route path="/courses/categories" element={<Course_Category />} />
         <Route path="/course/contents" element={<Course_Content />} />
         <Route path="/course/purchase/history" element={<Purchase_History />} />
-        <Route path="/media-content" element={<Media_Content />} />
+        <Route path="/benefits" element={<Benefits />} />
         <Route path="/staff/attendance" element={<StaffAttendance />} />
         <Route path="/student/attendance" element={<StudentAttendance />} />
         <Route path="/documents" element={<Documents />} />

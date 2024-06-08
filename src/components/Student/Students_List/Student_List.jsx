@@ -302,17 +302,17 @@ export default function Student_List() {
       <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
           Student List
+          ({filteredCount})
         </Text>
         <Grid
           templateColumns={{
             base: "repeat(1, 1fr)",
-            md: "repeat(3, 1fr)",
+            md: "repeat(2, 1fr)",
           }}
           gap={3}
           alignItems="center"
         >
 
-          <Text ml={0}>Total: {filteredCount}</Text>
           <Select
             placeholder="Filter by Status"
             value={selectedStatus}
@@ -373,15 +373,10 @@ export default function Student_List() {
                 <Th>Student Id</Th>
                 <Th>Student Name</Th>
                 <Th>Student Email</Th>
-                <Th>Student Password</Th>
-                <Th>Role</Th>
                 <Th>Branch Id</Th>
                 <Th>Handled By</Th>
                 <Th>Current CourseId</Th>
-                <Th>Primary Address</Th>
-                <Th>State</Th>
-                <Th>City </Th>
-                <Th>Interest In</Th>
+                <Th>City</Th>
                 <Th>View/Delete</Th>
               </Tr>
             </Thead>
@@ -399,12 +394,6 @@ export default function Student_List() {
                       {Student.email}
                     </Td>
                     <Td borderBottom="1px" borderColor="gray.200">
-                      {Student.password}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Student.role}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
                       {Student.branchId}
                     </Td>
                     <Td borderBottom="1px" borderColor="gray.200">
@@ -414,16 +403,7 @@ export default function Student_List() {
                       {Student.currentCourseId}
                     </Td>
                     <Td borderBottom="1px" borderColor="gray.200">
-                      {Student.primaryAddress}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Student.state}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
                       {Student.city}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Student.interestIn}
                     </Td>
                     <Td borderBottom="1px" borderColor="gray.200">
                       <Flex>

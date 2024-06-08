@@ -17,14 +17,14 @@ const FullLayout = () => {
   };
 
   return (
-    <Flex flexDirection="column" minHeight="100vh" overflowX="hidden">
+    <Flex flexDirection="column" minHeight="100vh" overflow="hidden">
       <Header
         flexShrink={0}
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
         closeSidebar={closeSidebar}
       />
-      <Flex flex="1" overflowX="hidden">
+      <Flex flex="1" overflow="hidden">
         <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
         <Box
           ml={{ base: isSidebarOpen ? "240px" : "0", md: "72" }}
@@ -34,7 +34,7 @@ const FullLayout = () => {
           transition="margin-left 0.3s"
           overflowX="hidden"
         >
-          <Box minHeight="calc(100vh - 155px)" overflow="hidden">
+          <Box minHeight="calc(100vh - 155px)" overflow="hidden" >
             <Outlet />
           </Box>
           <Footer />

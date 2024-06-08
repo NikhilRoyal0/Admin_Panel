@@ -70,14 +70,21 @@ export default function Course_Category() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [courseCategoryPerPage, setcourseCategoryPerPage] = useState(10);
-
-
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [filteredCount, setFilteredCount] = useState(0);
+
 
   useEffect(() => {
     dispatch(fetchcategoryData());
     dispatch(fetchBranchData());
   }, [dispatch]);
+
+  useEffect(() => {
+    const filteredCategory = categoryData.filter((student) => {
+      return selectedStatus ? student.status === selectedStatus : true;
+    });
+    setFilteredCount(filteredCategory.length);
+  }, [selectedStatus, categoryData]);
 
   const handleAddcourseCategory = (e) => {
     e.preventDefault();
@@ -302,6 +309,7 @@ export default function Course_Category() {
       <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
           Category List
+          ({filteredCount})
         </Text>
         <Grid
           templateColumns={{

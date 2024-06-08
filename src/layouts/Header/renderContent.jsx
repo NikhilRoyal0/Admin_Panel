@@ -170,11 +170,11 @@ const RenderContent = () => {
             </Text>
           </Link>
         );
-      case "/media-content":
+      case "/benefits":
         return (
-          <Link to="/media-content">
+          <Link to="/benefits">
             <Text fontSize="xl" fontWeight="bold">
-              Media Content
+              Benefits
             </Text>
           </Link>
         );

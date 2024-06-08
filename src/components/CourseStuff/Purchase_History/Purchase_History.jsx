@@ -67,6 +67,8 @@ export default function purchaseList() {
   const [selectedpurchaseId, setSelectedpurchaseId] = useState(null);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  // const [filteredCount, setFilteredCount] = useState(0);
+
 
   const purchaseData = useSelector(selectpurchaseData);
   const courseData = useSelector(selectcourseData);
@@ -87,6 +89,14 @@ export default function purchaseList() {
     dispatch(fetchStudentData());
     dispatch(fetchcourseData());
   }, [dispatch]);
+
+
+  // useEffect(() => {
+  //   const filteredHistory = purchaseData.filter((purchase) => {
+  //     return selectedStatus ? purchase.status === selectedStatus : true;
+  //   });
+  //   setFilteredCount(filteredHistory.length);
+  // }, [selectedStatus, purchaseData]);
 
 
   const filteredpurchase = searchValue
@@ -252,6 +262,7 @@ export default function purchaseList() {
       <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={{ base: 0, md: 5 }} mb={{ base: 4, md: 0 }}>
           Purchase List
+          {/* ({filteredCount}) */}
         </Text>
         <Grid
           templateColumns={{

@@ -7,6 +7,7 @@ import { useParams } from 'react-router-dom';
 import fallbackImage from "../../../assets/images/StudentImage.png";
 import { EditIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { getModulePermissions } from "../../../utils/permissions";
+import NetworkError from "../../NotFound/networkError";
 import TimeConversion from "../../../utils/timeConversion";
 
 
@@ -435,15 +436,15 @@ export default function StudentDashboard() {
                                             ml="2"
                                             size="sm"
                                         >
-                                            {branchData.map(branch => (
+                                            {branchData && branchData.map(branch => (
                                                 <option key={branch.branchId} value={branch.branchId}>
-                                                    {branch.branchName} - {branch.branchId}
+                                                    {branch.branchName}
                                                 </option>
                                             ))}
                                         </Select>
                                     ) : (
                                         <span>
-                                            {formData.branchId}
+                                            {branchData && branchData.find(branch => branch.branchId == formData.branchId)?.branchName}
                                         </span>
                                     )}
                                 </Box>
