@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from "react-redux";
-import { Box, Grid, GridItem, Table, Thead, Badge, Tbody, Tr, Th, Td, Image, Flex, Spinner, Text, IconButton, Input, useToast, Stack, Tooltip, Checkbox, Select, Avatar } from '@chakra-ui/react';
+import { Box, Grid, GridItem, Table, Thead, Badge, Tbody, Tr, Th, Td, Image, Flex, Spinner, Text, IconButton, Input, useToast, Stack, Tooltip, Checkbox, Select, Avatar, Button } from '@chakra-ui/react';
 import { fetchUsersData, selectUsersData, selectUsersError, selectUsersLoading, updateUserData } from "../../../app/Slices/usersSlice";
 import { selectBranchData, selectBranchError, selectBranchLoading, fetchBranchData } from "../../../app/Slices/branchSlice";
 import { selectrolesData, selectrolesError, selectrolesLoading, fetchrolesData } from "../../../app/Slices/roleSlice";
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import fallbackImage from "../../../assets/images/StudentImage.png";
 import { EditIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { getModulePermissions } from "../../../utils/permissions";
 import NetworkError from "../../NotFound/networkError";
 import TimeConversion from "../../../utils/timeConversion";
+import { fetchuserWalletData, selectuserWalletData, selectuserWalletError, selectuserWalletLoading } from '../../../app/Slices/userWalletSlice';
 
 
 export default function View_Users() {
   const { userId } = useParams();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const userData = useSelector(selectUsersData);
   const branchData = useSelector(selectBranchData);
@@ -22,6 +24,9 @@ export default function View_Users() {
   const roleData = useSelector(selectrolesData);
   const roleError = useSelector(selectrolesError);
   const roleLoading = useSelector(selectrolesLoading);
+  const transData = useSelector(selectuserWalletData);
+  const transError = useSelector(selectuserWalletError);
+  const transLoading = useSelector(selectuserWalletLoading);
   const error = useSelector(selectUsersError);
   const isLoading = useSelector(selectUsersLoading);
   const Toast = useToast({
@@ -35,6 +40,7 @@ export default function View_Users() {
     dispatch(fetchUsersData());
     dispatch(fetchBranchData());
     dispatch(fetchrolesData());
+    dispatch(fetchuserWalletData());
   }, [dispatch]);
 
   useEffect(() => {
@@ -91,7 +97,11 @@ export default function View_Users() {
     }));
   };
 
-  if (isLoading || branchLoading || roleLoading) {
+  const handleViewAll = () => {
+    navigate(`/user/dashboard/alltransaction/${userId}`);
+  };
+
+  if (isLoading || branchLoading || roleLoading || transLoading) {
     return (
       <Flex justify="center" align="center" h="100vh">
         <Spinner size="xl" />
@@ -99,7 +109,7 @@ export default function View_Users() {
     );
   }
 
-  if (error || branchError || roleError) {
+  if (error || branchError || roleError || transError) {
     return (
       <NetworkError />
     );
@@ -115,16 +125,6 @@ export default function View_Users() {
   }
   const canEditData = userManagementPermissions.update;
 
-  const transactions = [
-    { id: 1, userName: 'John Doe', time: '2024-06-01', amount: 100 },
-    { id: 2, userName: 'John Doe', time: '2024-06-02', amount: -50 },
-    { id: 3, userName: 'John Doe', time: '2024-06-03', amount: 200 },
-    { id: 4, userName: 'John Doe', time: '2024-06-03', amount: -90 },
-    { id: 5, userName: 'John Doe', time: '2024-06-03', amount: 200 },
-    { id: 6, userName: 'John Doe', time: '2024-06-03', amount: -100 },
-    { id: 7, userName: 'John Doe', time: '2024-06-03', amount: 200 },
-    { id: 8, userName: 'John Doe', time: '2024-06-03', amount: -200 },
-  ];
 
   const toDoList = [
     { id: 1, task: 'Task 1', isChecked: false },
@@ -134,6 +134,10 @@ export default function View_Users() {
     { id: 5, task: 'Task 5', isChecked: true },
     { id: 6, task: 'Task 6', isChecked: true },
   ];
+
+  const transactions = transData.filter(student => student.userId === userId);
+  const transactionsToShow = transactions.slice(0, 5);
+
 
   return (
     <Box bg="white" p="4" maxHeight="auto">
@@ -157,8 +161,8 @@ export default function View_Users() {
             <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(2, 1fr)" }} gap={6}>
               {/* First Card */}
               <GridItem colSpan={1}>
-                <Box p="4" color="black" bgGradient="linear(to-b, blue.500 50%, blue.50 50%)" boxShadow="md" borderRadius="md" display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100%" mb={10} maxHeight={450}>
-                  <Box bg="white" borderRadius="full" overflow="hidden" boxSize="100px" marginBottom="20" >
+                <Box p="4" color="black" bgGradient="linear(to-b, blue.500 36%, blue.50 36%)" boxShadow="md" borderRadius="md" display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100%" mb={10} maxHeight={450}>
+                  <Box bg="white" borderRadius="full" overflow="hidden" boxSize="100px" marginBottom="10" marginTop={10}>
                     <Image
                       src={formData.profilePhoto}
                       alt="Fallback"
@@ -280,19 +284,33 @@ export default function View_Users() {
                 }}>
                   <Box mb="5" fontSize="xl" fontWeight="bold">
                     Your Transfers
+                    {transactionsToShow.map((transaction, index) => {
+                      const user = userData.find(user => user.userId === transaction.userId);
+
+                      return (
+                        <Flex key={transaction.trans_id} alignItems="center" mb="4">
+                          <Avatar src={user ? user.profilePhoto : fallbackImage} mr="4" />
+                          <Box>
+                            <Text fontWeight="bold">{user ? user.firstName : "Unknown User"}</Text>
+                            <Text>{TimeConversion.unixTimeToRealTime(transaction.createdOn)}</Text>
+                          </Box>
+                          <Badge
+                            ml="auto"
+                            colorScheme={transaction.type === 'credit' ? 'green' : 'red'}
+                            fontSize="md"
+                            borderRadius="8"
+                          >
+                            {transaction.type === 'credit' ? `+${transaction.amount}` : transaction.amount}
+                          </Badge>
+                        </Flex>
+                      );
+                    })}
+                    {transactions.length > 5 && (
+                      <Button onClick={handleViewAll} variant="link" color="blue.500" mt="4">
+                        View All
+                      </Button>
+                    )}
                   </Box>
-                  {transactions.map(transaction => (
-                    <Flex key={transaction.id} alignItems="center" mb="4">
-                      <Avatar src={transaction.profilePhoto} mr="4" />
-                      <Box>
-                        <Text fontWeight="bold">{transaction.userName}</Text>
-                        <Text>{transaction.time}</Text>
-                      </Box>
-                      <Badge ml="auto" colorScheme={transaction.amount > 0 ? 'green' : 'red'} fontSize="md" borderRadius="8">
-                        {transaction.amount > 0 ? `+${transaction.amount}` : transaction.amount}
-                      </Badge>
-                    </Flex>
-                  ))}
                 </Box>
               </GridItem>
 
@@ -301,7 +319,7 @@ export default function View_Users() {
 
           {/* Right Card */}
           <GridItem colSpan={{ base: 2, md: "3", lg: "2", xl: "1" }}>
-            <Box p="4" bg="blue.50" boxShadow="md" borderRadius="md" height="100%" position="relative" overflow="auto" css={{
+            <Box p="4" bg="blue.50" boxShadow="md" borderRadius="md" height="auto" overflow="auto" css={{
               '&::-webkit-scrollbar': {
                 width: '8px',
                 height: '8px',

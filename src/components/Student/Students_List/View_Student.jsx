@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from "react-redux";
-import { Box, Grid, GridItem, Table, Thead, Badge, Tbody, Tr, Th, Td, Image, Flex, Spinner, Text, IconButton, Input, useToast, Stack, Tooltip, Checkbox, Select, Avatar } from '@chakra-ui/react';
+import { Box, Grid, GridItem, Table, Thead, Badge, Tbody, Tr, Th, Td, Image, Flex, Spinner, Text, IconButton, Input, useToast, Stack, Tooltip, Checkbox, Select, Avatar, Button } from '@chakra-ui/react';
 import { fetchStudentData, selectStudentData, selectStudentError, selectStudentLoading, updateStudentData } from "../../../app/Slices/studentSlice";
 import { selectBranchData, selectBranchError, selectBranchLoading, fetchBranchData } from "../../../app/Slices/branchSlice";
-import { useParams } from 'react-router-dom';
+import { selectstudentWalletData, selectstudentWalletError, selectstudentWalletLoading, fetchstudentWalletData } from "../../../app/Slices/studentWalletSlice";
+import { useNavigate, useParams } from 'react-router-dom';
 import fallbackImage from "../../../assets/images/StudentImage.png";
 import { EditIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { getModulePermissions } from "../../../utils/permissions";
@@ -12,12 +13,16 @@ import TimeConversion from "../../../utils/timeConversion";
 
 
 export default function StudentDashboard() {
+    const navigate = useNavigate();
     const { student_id } = useParams();
     const dispatch = useDispatch();
     const studentData = useSelector(selectStudentData);
     const branchData = useSelector(selectBranchData);
     const branchError = useSelector(selectBranchError);
     const branchLoading = useSelector(selectBranchLoading);
+    const transData = useSelector(selectstudentWalletData);
+    const transError = useSelector(selectstudentWalletError);
+    const transLoading = useSelector(selectstudentWalletLoading);
     const error = useSelector(selectStudentError);
     const isLoading = useSelector(selectStudentLoading);
     const Toast = useToast({
@@ -49,6 +54,7 @@ export default function StudentDashboard() {
     useEffect(() => {
         dispatch(fetchStudentData());
         dispatch(fetchBranchData());
+        dispatch(fetchstudentWalletData());
     }, [dispatch]);
 
     useEffect(() => {
@@ -59,6 +65,8 @@ export default function StudentDashboard() {
             }
         }
     }, [studentData, student_id]);
+
+
 
     const handleEditClick = () => {
         setIsEditing(true);
@@ -105,7 +113,12 @@ export default function StudentDashboard() {
         }));
     };
 
-    if (isLoading || branchLoading) {
+    const handleViewAll = () => {
+        navigate(`/student/dashboard/alltransaction/${student_id}`);
+    };
+
+
+    if (isLoading || branchLoading || transLoading) {
         return (
             <Flex justify="center" align="center" h="100vh">
                 <Spinner size="xl" />
@@ -113,7 +126,7 @@ export default function StudentDashboard() {
         );
     }
 
-    if (error || branchError) {
+    if (error || branchError || transError) {
         return (
             <NetworkError />
         );
@@ -129,17 +142,6 @@ export default function StudentDashboard() {
     }
     const canEditData = studentManagementPermissions.update;
 
-    const transactions = [
-        { id: 1, studentName: 'John Doe', time: '2024-06-01', amount: 100 },
-        { id: 2, studentName: 'John Doe', time: '2024-06-02', amount: -50 },
-        { id: 3, studentName: 'John Doe', time: '2024-06-03', amount: 200 },
-        { id: 4, studentName: 'John Doe', time: '2024-06-03', amount: -90 },
-        { id: 5, studentName: 'John Doe', time: '2024-06-03', amount: 200 },
-        { id: 6, studentName: 'John Doe', time: '2024-06-03', amount: -100 },
-        { id: 7, studentName: 'John Doe', time: '2024-06-03', amount: 200 },
-        { id: 8, studentName: 'John Doe', time: '2024-06-03', amount: -200 },
-    ];
-
     const toDoList = [
         { id: 1, task: 'Task 1', isChecked: false },
         { id: 2, task: 'Task 2', isChecked: true },
@@ -148,6 +150,11 @@ export default function StudentDashboard() {
         { id: 5, task: 'Task 5', isChecked: true },
         { id: 6, task: 'Task 6', isChecked: true },
     ];
+
+
+    const transactions = transData.filter(student => student.student_id === student_id);
+    const transactionsToShow = transactions.slice(0, 5);
+
 
     return (
         <Box bg="white" p="4" maxHeight="auto">
@@ -171,8 +178,8 @@ export default function StudentDashboard() {
                         <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(2, 1fr)" }} gap={6}>
                             {/* First Card */}
                             <GridItem colSpan={1}>
-                                <Box p="4" color="black" bgGradient="linear(to-b, blue.500 50%, blue.50 50%)" boxShadow="md" borderRadius="md" display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100%" mb={10} maxHeight={450}>
-                                    <Box bg="white" borderRadius="full" overflow="hidden" boxSize="100px" marginBottom="20" >
+                                <Box p="4" color="black" bgGradient="linear(to-b, blue.500 36%, blue.50 36%)" boxShadow="md" borderRadius="md" display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100%" mb={10} maxHeight={450}>
+                                    <Box bg="white" borderRadius="full" overflow="hidden" boxSize="120px" marginBottom="10" marginTop={10} >
                                         <Image
                                             src={formData.profilePhoto}
                                             alt="Fallback"
@@ -293,28 +300,41 @@ export default function StudentDashboard() {
                                 }}>
                                     <Box mb="5" fontSize="xl" fontWeight="bold">
                                         Your Transfers
+                                        {transactionsToShow.map((transaction, index) => {
+                                            const student = studentData.find(student => student.student_id === transaction.student_id);
+
+                                            return (
+                                                <Flex key={transaction.trans_id} alignItems="center" mb="4">
+                                                    <Avatar src={student ? student.profilePhoto : fallbackImage} mr="4" />
+                                                    <Box>
+                                                        <Text fontWeight="bold">{student ? student.studentName : "Unknown Student"}</Text>
+                                                        <Text>{TimeConversion.unixTimeToRealTime(transaction.createdOn)}</Text>
+                                                    </Box>
+                                                    <Badge
+                                                        ml="auto"
+                                                        colorScheme={transaction.type === 'credit' ? 'green' : 'red'}
+                                                        fontSize="md"
+                                                        borderRadius="8"
+                                                    >
+                                                        {transaction.type === 'credit' ? `+${transaction.amount}` : `-${transaction.amount}`}
+                                                    </Badge>
+                                                </Flex>
+                                            );
+                                        })}
+                                        {transactions.length > 5 && (
+                                            <Button onClick={handleViewAll} variant="link" color="blue.500" mt="4">
+                                                View All
+                                            </Button>
+                                        )}
                                     </Box>
-                                    {transactions.map(transaction => (
-                                        <Flex key={transaction.id} alignItems="center" mb="4">
-                                            <Avatar src={transaction.profilePhoto} mr="4" />
-                                            <Box>
-                                                <Text fontWeight="bold">{transaction.studentName}</Text>
-                                                <Text>{transaction.time}</Text>
-                                            </Box>
-                                            <Badge ml="auto" colorScheme={transaction.amount > 0 ? 'green' : 'red'} fontSize="md" borderRadius="8">
-                                                {transaction.amount > 0 ? `+${transaction.amount}` : transaction.amount}
-                                            </Badge>
-                                        </Flex>
-                                    ))}
                                 </Box>
                             </GridItem>
-
                         </Grid>
                     </GridItem>
 
                     {/* Right Card */}
                     <GridItem colSpan={{ base: 2, md: "3", lg: "2", xl: "1" }}>
-                        <Box p="4" bg="blue.50" boxShadow="md" borderRadius="md" height="100%" position="relative" overflow="auto" css={{
+                        <Box p="4" bg="blue.50" boxShadow="md" borderRadius="md" height="auto" overflow="auto" css={{
                             '&::-webkit-scrollbar': {
                                 width: '8px',
                                 height: '8px',

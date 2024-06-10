@@ -34,6 +34,8 @@ import StudentAttendance from "../components/Attendance/Student/StudentAttendanc
 import Course from "../components/CourseStuff/Course_List/Course";
 import View_Users from "../components/Users/Users_List/View_Users";
 import StudentDashboard from "../components/Student/Students_List/View_Student";
+import User_Transactions from "../components/Users/Users_List/Transactions";
+import Student_Transactions from "../components/Student/Students_List/Transactions";
 
 
 const routes = createBrowserRouter(
@@ -58,11 +60,13 @@ const routes = createBrowserRouter(
         <Route path="/user/dashboard/:userId" element={<View_Users />} />
         <Route path="/user/roles" element={<Role />} />
         <Route path="/user/roles/edit/:roleId" element={<EditRolesWithPermissionCheck />} />
+        <Route path="/user/dashboard/alltransaction/:userId" element={<User_Transactions />} />
         <Route path="/branch/branch-list" element={<Branch_List />} />
         <Route path="/branch/dashboard/:branchId" element={<Home_Branch />} />
         <Route path="/branch/plan" element={<Planner />} />
         <Route path="/student/student-list" element={<Student_List />} />
         <Route path="/student/dashboard/:student_id" element={<StudentDashboard />} />
+        <Route path="/student/dashboard/alltransaction/:student_id" element={<Student_Transactions />} />
         <Route path="/student/qualifications" element={<Qualifications />} />
         <Route path="/student/certificates" element={<Certificate />} />
         <Route path="/certificate/template" element={<Templetes />} />

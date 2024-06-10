@@ -59,6 +59,7 @@ export default function purchaseList() {
     amount: "",
     discount: "",
     createdOn: "",
+    paymentMode: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [purchasePerPage, setpurchasePerPage] = useState(10);
@@ -114,6 +115,7 @@ export default function purchaseList() {
     formData.append("courseId", newpurchaseData.courseId);
     formData.append("amount", newpurchaseData.amount);
     formData.append("discount", newpurchaseData.discount);
+    formData.append("paymentMode", newpurchaseData.paymentMode);
     formData.append("createdOn", Date.now());
 
     dispatch(AddpurchaseData(formData))
@@ -148,6 +150,7 @@ export default function purchaseList() {
       courseId: editedpurchaseData.courseId,
       amount: editedpurchaseData.amount,
       discount: editedpurchaseData.discount,
+      paymentMode: editedpurchaseData.paymentMode,
     };
 
     dispatch(updatepurchaseData(editedpurchaseData.purchaseId, formData))
@@ -329,6 +332,7 @@ export default function purchaseList() {
                   <Th>Amount</Th>
                   <Th>Discount</Th>
                   <Th>Created On</Th>
+                  <Th>Payment Mode</Th>
                   <Th>Edit</Th>
                 </Tr>
               </Thead>
@@ -339,6 +343,7 @@ export default function purchaseList() {
                     <Td>{purchase.courseId}</Td>
                     <Td>{purchase.amount}</Td>
                     <Td>{purchase.discount}</Td>
+                    <Td>{purchase.paymentMode}</Td>
                     <Td>{TimeConversion.unixTimeToRealTime(purchase.createdOn)}</Td>
                     <Td>
                       <Flex>
@@ -408,7 +413,7 @@ export default function purchaseList() {
                 placeholder="Select Student"
                 value={newpurchaseData.student_id}
                 onChange={(e) =>
-                  setNewpurchaseData({ ...newpurchaseData, studentId: e.target.value })
+                  setNewpurchaseData({ ...newpurchaseData, student_id: e.target.value })
                 }
                 isRequired
               >
@@ -453,6 +458,19 @@ export default function purchaseList() {
                 }
                 isRequired
               />
+              <Select
+                mb="3"
+                placeholder="Payment Mode"
+                value={newpurchaseData.paymentMode}
+                onChange={(e) =>
+                  setNewpurchaseData({ ...newpurchaseData, paymentMode: e.target.value })
+                }
+                isRequired
+              >
+                <option value="emi">EMI</option>
+                <option value="oneTime">One Time</option>
+                <option value="N/A">N/A</option>
+              </Select>
             </ModalBody>
             <ModalFooter>
               <Button type="submit" colorScheme="teal">
@@ -551,6 +569,25 @@ export default function purchaseList() {
             </Box>
             <Box>
               <Text mb="1" color="gray.600">
+                Payment Mode
+              </Text>
+              <Select
+                mb="3"
+                placeholder="Select Payment Mode"
+                value={editedpurchaseData.paymentMode || ""}
+                onChange={(e) =>
+                  setEditedpurchaseData({ ...editedpurchaseData, paymentMode: e.target.value })
+                }
+                isRequired
+                isDisabled={!isEditing}
+              >
+                <option value="emi">EMI</option>
+                <option value="oneTime">One Time</option>
+                <option value="N/A">N/A</option>
+              </Select>
+            </Box>
+            <Box>
+              <Text mb="1" color="gray.600">
                 Created On
               </Text>
               <Input
@@ -562,30 +599,30 @@ export default function purchaseList() {
               />
             </Box>
           </ModalBody>
-            <ModalFooter>
-              <Button
-                colorScheme="teal"
-                mr={3}
-                onClick={handleSaveChanges}
-                isLoading={isSaveLoading}
-                spinner={<BeatLoader size={8} color="white" />}
-                isDisabled={!isEditing}
-              >
-                Save Changes
-              </Button>
-              {isEditing ? (
+          <ModalFooter>
+            <Button
+              colorScheme="teal"
+              mr={3}
+              onClick={handleSaveChanges}
+              isLoading={isSaveLoading}
+              spinner={<BeatLoader size={8} color="white" />}
+              isDisabled={!isEditing}
+            >
+              Save Changes
+            </Button>
+            {isEditing ? (
               <Button variant="ghost" onClick={handleCancel}>
-              Cancel
-                </Button>
-              ) : (
-                <Button
-                  variant="ghost"
-                  onClick={() => handleEditpurchase(editedpurchaseData)}
-                >
-                  Edit
-                </Button>
-              )}
-            </ModalFooter>
+                Cancel
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                onClick={() => handleEditpurchase(editedpurchaseData)}
+              >
+                Edit
+              </Button>
+            )}
+          </ModalFooter>
         </ModalContent>
       </Modal>
 

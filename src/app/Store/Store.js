@@ -12,6 +12,8 @@ import categoryReducer from "../Slices/categorySlice";
 import templeteReducer from "../Slices/templete";
 import inquiryReducer from "../Slices/inquirySlice";
 import purchaseReducer from "../Slices/purchaseSlice";
+import studentWalletReducer from "../Slices/studentWalletSlice";
+import userWalletReducer from "../Slices/userWalletSlice";
 
 const Store = configureStore({
   reducer: {
@@ -28,6 +30,8 @@ const Store = configureStore({
     templete: templeteReducer,
     inquiry: inquiryReducer,
     purchase: purchaseReducer,
+    studentWallet: studentWalletReducer,
+    userWallet: userWalletReducer,
   },
 });
 
