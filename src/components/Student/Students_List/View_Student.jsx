@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from "react-redux";
-import { Box, Grid, GridItem, Table, Thead, Badge, Tbody, Tr, Th, Td, Image, Flex, Spinner, Text, IconButton, Input, useToast, Stack, Tooltip, Checkbox, Select, Avatar, Button } from '@chakra-ui/react';
+import { Box, Grid, GridItem, Table, Thead, Badge, Tbody, Heading, Tr, Th, Td, Image, Flex, Spinner, Text, IconButton, Input, useToast, Stack, Tooltip, Checkbox, Select, Avatar, Button } from '@chakra-ui/react';
 import { fetchStudentData, selectStudentData, selectStudentError, selectStudentLoading, updateStudentData } from "../../../app/Slices/studentSlice";
 import { selectBranchData, selectBranchError, selectBranchLoading, fetchBranchData } from "../../../app/Slices/branchSlice";
 import { selectstudentWalletData, selectstudentWalletError, selectstudentWalletLoading, fetchstudentWalletData } from "../../../app/Slices/studentWalletSlice";
@@ -157,7 +157,7 @@ export default function StudentDashboard() {
 
 
     return (
-        <Box bg="white" p="4" maxHeight="auto">
+        <Box p="4" maxHeight="auto">
             <Box bg="white" boxShadow="md" borderRadius="md" p="4" overflow="auto" css={{
                 '&::-webkit-scrollbar': {
                     width: '8px',
@@ -299,34 +299,44 @@ export default function StudentDashboard() {
                                     },
                                 }}>
                                     <Box mb="5" fontSize="xl" fontWeight="bold">
-                                        Your Transfers
-                                        {transactionsToShow.map((transaction, index) => {
-                                            const student = studentData.find(student => student.student_id === transaction.student_id);
-
-                                            return (
-                                                <Flex key={transaction.trans_id} alignItems="center" mb="4">
-                                                    <Avatar src={student ? student.profilePhoto : fallbackImage} mr="4" />
-                                                    <Box>
-                                                        <Text fontWeight="bold">{student ? student.studentName : "Unknown Student"}</Text>
-                                                        <Text>{TimeConversion.unixTimeToRealTime(transaction.createdOn)}</Text>
-                                                    </Box>
-                                                    <Badge
-                                                        ml="auto"
-                                                        colorScheme={transaction.type === 'credit' ? 'green' : 'red'}
-                                                        fontSize="md"
-                                                        borderRadius="8"
-                                                    >
-                                                        {transaction.type === 'credit' ? `+${transaction.amount}` : `-${transaction.amount}`}
-                                                    </Badge>
-                                                </Flex>
-                                            );
-                                        })}
-                                        {transactions.length > 5 && (
-                                            <Button onClick={handleViewAll} variant="link" color="blue.500" mt="4">
-                                                View All
-                                            </Button>
+                                        <Heading fontSize={25} mb={5}>Your Transfer</Heading>
+                                        {transactionsToShow.length === 0 ? (
+                                            <Flex justify="center" align="center" height="100%">
+                                                <Box textAlign="center" mt={50}>
+                                                    <Text fontSize="xl" fontWeight="bold">No transaction available</Text>
+                                                </Box>
+                                            </Flex>
+                                        ) : (
+                                            <>
+                                                {transactionsToShow.map((transaction, index) => {
+                                                    const student = studentData.find(student => student.student_id === transaction.student_id);
+                                                    return (
+                                                        <Flex key={transaction.trans_id} alignItems="center" mb="3">
+                                                            <Avatar src={student ? student.profilePhoto : fallbackImage} mr="4" />
+                                                            <Box>
+                                                                <Text fontWeight="bold">{student ? student.studentName : "Unknown Student"}</Text>
+                                                                <Text>{TimeConversion.unixTimeToRealTime(transaction.createdOn)}</Text>
+                                                            </Box>
+                                                            <Badge
+                                                                ml="auto"
+                                                                colorScheme={transaction.type === 'credit' ? 'green' : 'red'}
+                                                                fontSize="md"
+                                                                borderRadius="8"
+                                                            >
+                                                                {transaction.type === 'credit' ? `+${transaction.amount}` : `-${transaction.amount}`}
+                                                            </Badge>
+                                                        </Flex>
+                                                    );
+                                                })}
+                                                {transactions.length > 5 && (
+                                                    <Button onClick={handleViewAll} variant="link" color="blue.500" mt="3">
+                                                        View All
+                                                    </Button>
+                                                )}
+                                            </>
                                         )}
                                     </Box>
+
                                 </Box>
                             </GridItem>
                         </Grid>

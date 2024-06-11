@@ -374,7 +374,6 @@ export default function Student_List() {
                 <Th>Student Name</Th>
                 <Th>Student Email</Th>
                 <Th>Branch Id</Th>
-                <Th>Handled By</Th>
                 <Th>Current CourseId</Th>
                 <Th>City</Th>
                 <Th>View/Delete</Th>
@@ -395,9 +394,6 @@ export default function Student_List() {
                     </Td>
                     <Td borderBottom="1px" borderColor="gray.200">
                       {Student.branchId}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Student.handledBy}
                     </Td>
                     <Td borderBottom="1px" borderColor="gray.200">
                       {Student.currentCourseId}

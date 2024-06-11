@@ -306,7 +306,7 @@ export default function EditableCourseDetails() {
                                 rating={formData.overAllRating || 0}
                                 starRatedColor="gold"
                                 starHoverColor="gold"
-                                onChange={(newRating) => handleInputChange({ target: { name: 'overAllRating', value: newRating } }, 'overAllRating')}
+                                changeRating={(newRating) => handleInputChange({ target: { name: 'overAllRating', value: newRating } }, 'overAllRating')}
                                 numberOfStars={5}
                                 starDimension="40px"
                                 starSpacing="5px"

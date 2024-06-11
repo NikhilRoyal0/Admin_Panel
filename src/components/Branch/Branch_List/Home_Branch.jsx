@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Spinner, Select, Text, Flex, SimpleGrid, Input, FormControl, FormLabel, Table, Thead, Tbody, Tr, Th, Td, Button, Divider, useToast } from '@chakra-ui/react';
+import { Box, Spinner, Select, Text, Flex, SimpleGrid, Input, FormControl, FormLabel, Table, Thead, Tbody, Tr, Th, Td, Button, Divider, useToast, Stack, Checkbox } from '@chakra-ui/react';
 import { useNavigate, useParams } from "react-router-dom";
 import {
   fetchBranchData,
@@ -15,6 +15,7 @@ import Planner from '../Planner/Planner';
 import { FaUserGraduate } from 'react-icons/fa';
 import { SiCoursera } from "react-icons/si";
 import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseData } from '../../../app/Slices/courseSlice';
+import { fetchrolesData, selectrolesData, selectrolesError, selectrolesLoading } from "../../../app/Slices/roleSlice";
 import TimeConversion from "../../../utils/timeConversion";
 import { getModulePermissions } from '../../../utils/permissions';
 
@@ -25,6 +26,9 @@ export default function Home_Branch() {
   const courseError = useSelector(selectcourseError);
   const courseLoading = useSelector(selectcourseLoading);
   const StudentData = useSelector(selectStudentData);
+  const roleData = useSelector(selectrolesData);
+  const roleError = useSelector(selectrolesError);
+  const roleLoading = useSelector(selectrolesLoading);
   const isLoading = useSelector(selectBranchLoading);
   const error = useSelector(selectBranchError);
   const dispatch = useDispatch();
@@ -32,6 +36,7 @@ export default function Home_Branch() {
   const Toast = useToast();
   const [isEditable, setIsEditable] = useState(false);
   const [searchInput, setSearchInput] = useState('');
+  const [selectedCourses, setSelectedCourses] = useState([]);
   const [formData, setFormData] = useState({
     branchName: "",
     branchAdmin: "",
@@ -50,6 +55,7 @@ export default function Home_Branch() {
     dispatch(fetchBranchData());
     dispatch(fetchStudentData());
     dispatch(fetchcourseData());
+    dispatch(fetchrolesData());
   }, [dispatch]);
 
   useEffect(() => {
@@ -73,7 +79,7 @@ export default function Home_Branch() {
     }
   }, [BranchData, branchId]);
 
-  if (isLoading) {
+  if (isLoading || roleLoading) {
     return (
       <Flex justify="center" align="center" h="100vh">
         <Spinner size="xl" />
@@ -81,7 +87,7 @@ export default function Home_Branch() {
     );
   }
 
-  if (error) {
+  if (error || roleError) {
     return (
       <NetworkError />
     );
@@ -107,6 +113,18 @@ export default function Home_Branch() {
     } else {
       setIsEditable(!isEditable);
     }
+  };
+
+
+  const handleCheckboxChange = (event) => {
+    const { value } = event.target;
+    setSelectedCourses((prevSelected) => {
+      if (prevSelected.includes(value)) {
+        return prevSelected.filter((item) => item !== value);
+      } else {
+        return [...prevSelected, value];
+      }
+    });
   };
 
   const handleCancel = () => {
@@ -231,7 +249,7 @@ export default function Home_Branch() {
             <FormLabel fontWeight="bold">Branch Id</FormLabel>
             <Input
               value={selectedBranch.branchId}
-              isReadOnly
+              isDisabled
               bg="gray.100"
             />
           </FormControl>
@@ -241,7 +259,7 @@ export default function Home_Branch() {
               name="branchName"
               value={formData.branchName}
               onChange={handleFormChange}
-              readOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
@@ -251,7 +269,7 @@ export default function Home_Branch() {
               name="branchAdmin"
               value={formData.branchAdmin}
               onChange={handleFormChange}
-              isReadOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
@@ -261,7 +279,7 @@ export default function Home_Branch() {
               name="branchAddress"
               value={formData.branchAddress}
               onChange={handleFormChange}
-              readOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
@@ -287,7 +305,7 @@ export default function Home_Branch() {
             ) : (
               <Input
                 value={formData.status || selectedBranch.status}
-                isReadOnly
+                isDisabled
                 bg="gray.100"
               />
             )}
@@ -297,7 +315,7 @@ export default function Home_Branch() {
             <Input
               name="branchIp"
               value={selectedBranch.branchIp}
-              isReadOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
@@ -307,7 +325,7 @@ export default function Home_Branch() {
               name="branchPassword"
               value={formData.branchPassword}
               onChange={handleFormChange}
-              isReadOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
@@ -317,7 +335,7 @@ export default function Home_Branch() {
               name="branchEmail"
               value={formData.branchEmail}
               onChange={handleFormChange}
-              isReadOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
@@ -327,18 +345,27 @@ export default function Home_Branch() {
               name="branchPhone"
               value={formData.branchPhone}
               onChange={handleFormChange}
-              isReadOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
           <FormControl>
             <FormLabel>Course List</FormLabel>
-            <Input
-              name="courseList"
-              value={selectedBranch.courseList}
-              isReadOnly={!isEditable}
+            <Select
+              mb="3"
+              placeholder="Select Course List"
+              value={formData.courseList}
+              onChange={handleFormChange}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
-            />
+              isRequired
+            >
+              {courseData.map((course) => (
+                <option key={course.courseId} value={course.courseId} disabled={!isEditable}   >
+                  {course.courseName}
+                </option>
+              ))}
+            </Select>
           </FormControl>
           <FormControl>
             <FormLabel>Wallet Amount</FormLabel>
@@ -346,7 +373,7 @@ export default function Home_Branch() {
               name="walletAmount"
               value={formData.walletAmount}
               onChange={handleFormChange}
-              isReadOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
@@ -356,19 +383,27 @@ export default function Home_Branch() {
               name="commission"
               value={formData.commission}
               onChange={handleFormChange}
-              isReadOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
           <FormControl>
             <FormLabel>Role</FormLabel>
-            <Input
-              name="role"
+            <Select
+              mb="3"
+              placeholder="Select Role"
               value={formData.role}
               onChange={handleFormChange}
-              isReadOnly={!isEditable}
+              isRequired
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
-            />
+            >
+              {roleData.map((role) => (
+                <option key={role.roleId} value={role.roleId}>
+                  {role.roleName}
+                </option>
+              ))}
+            </Select>
           </FormControl>
           <FormControl>
             <FormLabel>Updated On</FormLabel>
@@ -376,7 +411,7 @@ export default function Home_Branch() {
               name="updatedOn"
               value={TimeConversion.unixTimeToRealTime(formData.updatedOn)}
               onChange={handleFormChange}
-              isReadOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
@@ -385,7 +420,7 @@ export default function Home_Branch() {
             <Input
               name="createdOn"
               value={TimeConversion.unixTimeToRealTime(selectedBranch.createdOn)}
-              isReadOnly
+              isDisabled
               bg='gray.100'
             />
           </FormControl>
@@ -394,7 +429,7 @@ export default function Home_Branch() {
             <Input
               name="primaryDeviceId"
               value={selectedBranch.primaryDeviceId}
-              isReadOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
@@ -403,7 +438,7 @@ export default function Home_Branch() {
             <Input
               name="deviceIds"
               value={selectedBranch.deviceIds}
-              isReadOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
@@ -412,7 +447,7 @@ export default function Home_Branch() {
             <Input
               name="lastActiveAt"
               value={TimeConversion.unixTimeToRealTime(selectedBranch.lastActiveAt)}
-              isReadOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
@@ -421,7 +456,7 @@ export default function Home_Branch() {
             <Input
               name="reason"
               value={selectedBranch.reason}
-              isReadOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
@@ -430,7 +465,7 @@ export default function Home_Branch() {
             <Input
               name="branchUsers"
               value={selectedBranch.branchUsers}
-              isReadOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
@@ -439,7 +474,7 @@ export default function Home_Branch() {
             <Input
               name="branchMedia"
               value={selectedBranch.branchMedia}
-              isReadOnly={!isEditable}
+              isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>

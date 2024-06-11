@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const API_TOKEN = "123";
 
@@ -8,6 +9,7 @@ export const isAuthenticated = () => {
 };
 
 export const login = async (email, password) => {
+    try {
         const response = await axios.post(
             import.meta.env.VITE_BASE_URL + "users/login",
             { email, password },
@@ -18,6 +20,7 @@ export const login = async (email, password) => {
                 },
             }
         );
+
 
         const { authToken } = response.data.data;
 
@@ -39,12 +42,46 @@ export const login = async (email, password) => {
             sessionStorage.setItem("authToken", authToken);
             sessionStorage.setItem("userId", userDetails.userId);
             sessionStorage.setItem("api-token", API_TOKEN);
+            const expiresIn = userDetails.expiryTimestamp;
+            const expiryTimestamp = expiresIn * 1000;
+            const now = Date.now();
+            const timeUntilExpiry = expiryTimestamp - now;
+
+            setTimeout(logout, timeUntilExpiry);
+
             return true;
         } else {
             throw new Error("Invalid credentials");
         }
-
+    } catch (error) {
+        console.error("Login error:", error);
+        throw error;
+    }
 };
+
+export const checkTokenExpiry = () => {
+    const authToken = sessionStorage.getItem("authToken");
+    if (authToken) {
+        try {
+            const userDetails = getUserDetailsFromToken(authToken);
+            if (!userDetails) {
+                throw new Error("Error decoding token");
+            }
+
+            const expiryTimestamp = userDetails.expiryTimestamp * 1000;
+            const now = Date.now();
+
+            if (expiryTimestamp < now) {
+                logout();
+            } else {
+                setTimeout(checkTokenExpiry, expiryTimestamp - now);
+            }
+        } catch (error) {
+            console.error("Error checking token expiry:", error);
+        }
+    }
+};
+checkTokenExpiry();
 
 export const logout = () => {
     sessionStorage.removeItem("authToken");
@@ -65,11 +102,13 @@ export const getUserDetailsFromToken = (authToken) => {
         }
 
         const payload = JSON.parse(atob(tokenParts[1]));
+        const expiryTimestamp = payload.exp;
 
         return {
             userId: payload.userData.userId,
             status: payload.userData.status,
             role: payload.userData.roleAttribute[0].status,
+            expiryTimestamp: expiryTimestamp
         };
     } catch (error) {
         console.error("Error decoding token:", error);

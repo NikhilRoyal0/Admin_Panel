@@ -154,6 +154,14 @@ const RenderContent = () => {
             </Text>
           </Link>
         );
+        case `/courses/${branchId}`:
+          return (
+            <Link to={`/branch/dashboard/${branchId}`}>
+              <Text fontSize="xl" fontWeight="bold">
+                Course / Branch Course
+              </Text>
+            </Link>
+          );
       case `/course/info/${courseId}`:
         return (
           <Link to="/courses">

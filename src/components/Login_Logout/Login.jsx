@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
-import { login, isAuthenticated } from "../../utils/auth";
+import { login, isAuthenticated, checkTokenExpiry } from "../../utils/auth";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -23,7 +23,8 @@ export default function Login() {
 
   useEffect(() => {
     if (isAuthenticated()) {
-      navigate("/dashboard");
+      window.location.replace("/dashboard");
+      checkTokenExpiry();
     }
   }, [navigate]);
 
@@ -33,7 +34,7 @@ export default function Login() {
     try {
       const loginSuccessful = await login(email, password);
       if (loginSuccessful && isAuthenticated()) {
-        window.location.replace("/dashboard")
+        navigate("/dashboard")
       } else {
         setError("Authentication failed. Please check your credentials.");
       }
