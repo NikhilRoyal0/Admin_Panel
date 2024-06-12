@@ -42,6 +42,7 @@ import { useNavigate } from "react-router-dom";
 
 
 export default function UserList() {
+  const branchId = sessionStorage.getItem('BranchId');
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
@@ -52,6 +53,7 @@ export default function UserList() {
     password: "",
     primaryPhone: "",
     secondaryPhone: "",
+    walletAmount: "",
     role: "",
     status: "",
     createdOn: Date.now(),
@@ -87,15 +89,18 @@ export default function UserList() {
     dispatch(fetchBranchData());
   }, [dispatch]);
 
+  const DataByBranch = branchId == 0 ? usersData : usersData.filter(user => user.branchId == branchId);
+
+
   useEffect(() => {
-    const filteredUser = usersData.filter((user) => {
+    const filteredUser = DataByBranch.filter((user) => {
       return selectedStatus ? user.status === selectedStatus : true;
     });
     setFilteredCount(filteredUser.length);
   }, [selectedStatus, usersData]);
 
 
-  const filteredUsers = usersData.filter(
+  const filteredUsers = DataByBranch.filter(
     (user) =>
       user.email.toLowerCase().includes(searchValue.toLowerCase()) ||
       user.primaryPhone.toLowerCase().includes(searchValue.toLowerCase()) ||
@@ -112,6 +117,7 @@ export default function UserList() {
           lastName: "",
           email: "",
           password: "",
+          walletAmount: "0",
           primaryPhone: "",
           secondaryPhone: "",
           role: "",
@@ -208,6 +214,8 @@ export default function UserList() {
     );
   }
 
+
+
   const FilterUsers = filteredUsers.filter((users) => {
 
     const statusMatch = selectedStatus ? users.status == selectedStatus : true;
@@ -255,6 +263,8 @@ export default function UserList() {
   }
   const canAddData = UserManagementPermissions.create;
   const canDeleteData = UserManagementPermissions.delete;
+
+
 
 
   return (

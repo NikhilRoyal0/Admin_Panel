@@ -76,7 +76,6 @@ const routes = createBrowserRouter(
         <Route path="/course/info/:courseId" element={<Course />} />
         <Route path="/courses/categories" element={<Course_Category />} />
         <Route path="/course/contents" element={<Course_Content />} />
-        <Route path="/course/purchase/history" element={<Purchase_History />} />
         <Route path="/benefits" element={<Benefits />} />
         <Route path="/staff/attendance" element={<StaffAttendance />} />
         <Route path="/student/attendance" element={<StudentAttendance />} />

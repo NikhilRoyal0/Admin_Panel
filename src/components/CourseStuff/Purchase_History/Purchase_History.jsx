@@ -48,9 +48,11 @@ import { BeatLoader } from "react-spinners";
 import NetworkError from "../../NotFound/networkError";
 import { getModulePermissions } from "../../../utils/permissions";
 import TimeConversion from '../../../utils/timeConversion';
+import { useParams } from "react-router-dom";
 
 
 export default function purchaseList() {
+  const { courseId } = useParams();
   const [searchValue, setSearchValue] = useState("");
   const [isAddpurchaseModalOpen, setIsAddpurchaseModalOpen] = useState(false);
   const [newpurchaseData, setNewpurchaseData] = useState({
@@ -99,13 +101,13 @@ export default function purchaseList() {
   //   setFilteredCount(filteredHistory.length);
   // }, [selectedStatus, purchaseData]);
 
+  const DataByCourse = purchaseData.filter(course => course.courseId == courseId);
 
   const filteredpurchase = searchValue
-    ? purchaseData.filter((purchase) =>
+    ? DataByCourse.filter((purchase) =>
       purchase.student_id.toString().toLowerCase().includes(searchValue.toLowerCase())
     )
-    : purchaseData;
-
+    : DataByCourse;
 
   const handleAddpurchase = (e) => {
     e.preventDefault();
@@ -260,12 +262,13 @@ export default function purchaseList() {
   const canAddData = purchaseManagementPermissions.create;
   const canEditData = purchaseManagementPermissions.update;
 
+  const filteredCount = currentpurchase.length;
   return (
     <Box p="3" m={5}>
       <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={{ base: 0, md: 5 }} mb={{ base: 4, md: 0 }}>
           Purchase List
-          {/* ({filteredCount}) */}
+          ({filteredCount})
         </Text>
         <Grid
           templateColumns={{

@@ -41,6 +41,7 @@ import { useNavigate } from "react-router-dom";
 
 
 export default function Student_List() {
+  const branchId = sessionStorage.getItem('BranchId');
   const navigate = useNavigate();
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
   const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] = useState(false);
@@ -92,8 +93,10 @@ export default function Student_List() {
     dispatch(fetchrolesData());
   }, [dispatch]);
 
+  const DataByBranch = branchId == 0 ? StudentData : StudentData.filter(user => user.branchId == branchId);
+
   useEffect(() => {
-    const filteredStudents = StudentData.filter((student) => {
+    const filteredStudents = DataByBranch.filter((student) => {
       return selectedStatus ? student.status === selectedStatus : true;
     });
     setFilteredCount(filteredStudents.length);
@@ -248,7 +251,7 @@ export default function Student_List() {
   }
 
 
-  const filteredStudent = StudentData.filter((student) => {
+  const filteredStudent = DataByBranch.filter((student) => {
 
     const statusMatch = selectedStatus ? student.status == selectedStatus : true;
     return statusMatch;

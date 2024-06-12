@@ -41,6 +41,7 @@ export const login = async (email, password) => {
 
             sessionStorage.setItem("authToken", authToken);
             sessionStorage.setItem("userId", userDetails.userId);
+            sessionStorage.setItem("BranchId", userDetails.branchId);
             sessionStorage.setItem("api-token", API_TOKEN);
             const expiresIn = userDetails.expiryTimestamp;
             const expiryTimestamp = expiresIn * 1000;
@@ -108,7 +109,8 @@ export const getUserDetailsFromToken = (authToken) => {
             userId: payload.userData.userId,
             status: payload.userData.status,
             role: payload.userData.roleAttribute[0].status,
-            expiryTimestamp: expiryTimestamp
+            expiryTimestamp: expiryTimestamp,
+            branchId: payload.userData.branchId
         };
     } catch (error) {
         console.error("Error decoding token:", error);

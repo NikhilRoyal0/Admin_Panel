@@ -40,6 +40,7 @@ import TimeConversion from '../../utils/timeConversion';
 
 
 export default function Inquiry() {
+  const branchId = sessionStorage.getItem('BranchId');
   const [isAddInquiryModalOpen, setIsAddInquiryModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] = useState(false);
@@ -92,12 +93,15 @@ export default function Inquiry() {
     dispatch(fetchcourseData());
   }, [dispatch]);
 
+  const DataByBranch = branchId == 0 ? inquiryData : inquiryData.filter(user => user.branchId == branchId);
+
+
   useEffect(() => {
-    const filteredInquiry = inquiryData.filter((student) => {
+    const filteredInquiry = DataByBranch.filter((student) => {
       return selectedStatus ? student.status === selectedStatus : true;
     });
     setFilteredCount(filteredInquiry.length);
-  }, [selectedStatus, inquiryData]);
+  }, [selectedStatus, DataByBranch]);
 
   const handleAddInquiry = (e) => {
     e.preventDefault();
@@ -297,7 +301,7 @@ export default function Inquiry() {
     return <NetworkError />;
   }
 
-  const filteredInquiries = inquiryData.filter((inquiry) => {
+  const filteredInquiries = DataByBranch.filter((inquiry) => {
     const statusMatch = selectedStatus ? inquiry.status === selectedStatus : true;
     return statusMatch;
   });

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import StarRatings from 'react-star-ratings';
 import { Box, Input, Button, Grid, Select, FormControl, FormLabel, SimpleGrid, Flex, Text, Divider, Textarea, Spinner, useToast, Image } from '@chakra-ui/react';
 import { useSelector, useDispatch } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { updatecourseData, selectcourseData, fetchcourseData, selectcourseError, selectcourseLoading } from "../../../app/Slices/courseSlice";
 import { fetchcategoryData, selectcategoryData, selectcategoryError } from '../../../app/Slices/categorySlice';
 import { getModulePermissions } from "../../../utils/permissions";
@@ -13,6 +13,7 @@ import fallbackVideo from "../../../assets/images/errorVideo.jpg";
 
 export default function EditableCourseDetails() {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const [isEditable, setIsEditable] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('');
     const [isSaveLoading, setIsSaveLoading] = useState(false);
@@ -93,6 +94,10 @@ export default function EditableCourseDetails() {
         }
         setIsEditable(false);
     };
+
+    const handleClick = () => {
+        navigate(`/course/info/purchaseHistory/${courseId}`)
+    }
 
     const handleCategoryChange = (e) => {
         const selectedCategoryId = e.target.value;
@@ -188,6 +193,7 @@ export default function EditableCourseDetails() {
                         )}
                     </Flex>
                 </Flex>
+                <Text fontSize="sm" cursor="pointer" color="blue" ml={6} fontWeight="bold" onClick={handleClick}>Purchase History</Text>
                 <Divider my="4" />
                 <Grid templateColumns={{ base: "1fr", md: "3fr 1fr" }} gap={4}>
                     <SimpleGrid

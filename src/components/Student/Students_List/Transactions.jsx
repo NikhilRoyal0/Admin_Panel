@@ -1,22 +1,35 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Table, Thead, Tbody, Tr, Th, Td, Box, Flex, Spinner, Heading, Input, FormControl, FormLabel, Select, Grid, Divider, Text } from '@chakra-ui/react';
+import { Table, Thead, Tbody, useToast, Modal, ModalBody, ModalFooter, ModalHeader, ModalContent, ModalCloseButton, ModalOverlay, Button, Tr, GridItem, Th, Td, Box, Flex, Spinner, Heading, Input, FormControl, FormLabel, Select, Grid, Divider, Text, Textarea } from '@chakra-ui/react';
 import NetworkError from '../../NotFound/networkError';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import TimeConversion from '../../../utils/timeConversion';
-import { selectstudentWalletData, selectstudentWalletError, selectstudentWalletLoading, fetchstudentWalletData } from "../../../app/Slices/studentWalletSlice";
+import { selectstudentWalletData, selectstudentWalletError, selectstudentWalletLoading, fetchstudentWalletData, AddstudentWalletData } from "../../../app/Slices/studentWalletSlice";
+import { BeatLoader } from "react-spinners";
 
 export default function Student_Transactions() {
     const { student_id } = useParams();
     const dispatch = useDispatch();
-    const startDateRef = useRef(null);
-    const endDateRef = useRef(null);
+    const Toast = useToast({
+        position: "top-right",
+    });
     const transactionsData = useSelector(selectstudentWalletData);
     const error = useSelector(selectstudentWalletError);
     const isLoading = useSelector(selectstudentWalletLoading);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [filterType, setFilterType] = useState('All');
+    const [isNewTransactionModalOpen, setIsNewTransactionModalOpen] = useState(false);
+    const [isSaveLoading, setIsSaveLoading] = useState(false);
+    const [newTransactionData, setNewTransactionData] = useState({
+        student_id: "",
+        amount: "",
+        type: "",
+        createdOn: Date.now(),
+        status: "inprogress",
+        reason: "",
+    });
+
 
     useEffect(() => {
         dispatch(fetchstudentWalletData());
@@ -37,10 +50,55 @@ export default function Student_Transactions() {
         setFilterType(selectedFilterType);
     };
 
+    const handleNewTransaction = (e) => {
+        e.preventDefault();
+        setIsSaveLoading(true);
+
+        const formData = new FormData();
+        formData.append("student_id", student_id);
+        formData.append("amount", newTransactionData.amount);
+        formData.append("type", newTransactionData.type);
+        formData.append("createdOn", Date.now());
+        formData.append("status", "inprogress");
+        formData.append("reason", newTransactionData.reason);
+
+        dispatch(AddstudentWalletData(formData))
+            .then(() => {
+                setIsSaveLoading(false);
+                Toast({
+                    title: "Transaction added successfully",
+                    status: "success",
+                    duration: 3000,
+                    isClosable: true,
+                    position: "top-right",
+                });
+                setNewTransactionData({
+                    student_id: "",
+                    amount: "",
+                    type: "",
+                    createdOn: Date.now(),
+                    status: "",
+                    reason: "",
+                });
+                setIsNewTransactionModalOpen(false);
+                dispatch(fetchstudentWalletData());
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+                Toast({
+                    title: "Failed to add transaction",
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                    position: "top-right",
+                });
+            });
+    };
+
     const filteredTransactions = transactionsData.filter((transaction) => {
         const matchesStudentId = transaction.student_id === student_id;
-        const startDateUnix = startDate ? new Date(startDate).getTime() / 1000 : 0;
-        const endDateUnix = endDate ? new Date(endDate).getTime() / 1000 : Number.MAX_SAFE_INTEGER;
+        const startDateUnix = startDate ? new Date(startDate).getTime() / 1 : 0;
+        const endDateUnix = endDate ? new Date(endDate).getTime() / 1 : Number.MAX_SAFE_INTEGER;
 
         const isWithinDateRange = transaction.createdOn >= startDateUnix && transaction.createdOn <= endDateUnix;
 
@@ -66,15 +124,35 @@ export default function Student_Transactions() {
 
     return (
         <Box p="4">
-            <Heading fontWeight="bold" fontSize="30" mb="4">All Transactions({filteredCount}) </Heading>
+            <Grid templateColumns={{ base: "1fr", sm: "1fr auto" }}
+                alignItems="center" mb="4" >
+                <GridItem>
+                    <Heading fontWeight="bold" fontSize="30">
+                        All Transactions({filteredCount})
+                    </Heading>
+                </GridItem>
+                <GridItem>
+                    <Button
+                        mr={5}
+                        ml="4"
+                        mt={5}
+                        colorScheme="teal"
+                        onClick={() => {
+                            setIsNewTransactionModalOpen(true);
+                        }}
+                    >
+                        New Transaction
+                    </Button>
+                </GridItem>
+            </Grid>
             <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }} gap={{ base: 2, md: 4 }} mb="4">
                 <FormControl>
                     <FormLabel>Start Date</FormLabel>
-                    <Input type="date" ref={startDateRef} value={startDate} onChange={handleStartDateChange} size="sm" maxW={300} cursor="pointer" />
+                    <Input type="date" value={startDate} onChange={handleStartDateChange} size="sm" maxW={300} cursor="pointer" />
                 </FormControl>
                 <FormControl>
                     <FormLabel>End Date</FormLabel>
-                    <Input type="date" ref={endDateRef} value={endDate} onChange={handleEndDateChange} size="sm" maxW={300} cursor="pointer" />
+                    <Input type="date" value={endDate} onChange={handleEndDateChange} size="sm" maxW={300} cursor="pointer" />
                 </FormControl>
                 <FormControl>
                     <FormLabel>Filter By Type</FormLabel>
@@ -123,6 +201,82 @@ export default function Student_Transactions() {
                     </Table>
                 )}
             </Box>
+            <Modal
+                isOpen={isNewTransactionModalOpen}
+                onClose={() => setIsNewTransactionModalOpen(false)}
+                size="md"
+            >
+                <ModalOverlay />
+                <form onSubmit={handleNewTransaction}>
+                    {" "}
+                    <ModalContent>
+                        <ModalHeader>New Transaction</ModalHeader>
+                        <ModalCloseButton />
+                        <ModalBody>
+                            <Grid templateColumns={{ base: "1fr", md: "repeat(1, 1fr)" }} gap={3}>
+                                <Input
+                                    mb="3"
+                                    placeholder="Amount"
+                                    value={newTransactionData.amount}
+                                    onChange={(e) =>
+                                        setNewTransactionData({
+                                            ...newTransactionData,
+                                            amount: e.target.value,
+                                        })
+                                    }
+                                    isRequired
+                                />
+                                <Select
+                                    mb="3"
+                                    placeholder="Select type"
+                                    value={newTransactionData.type}
+                                    onChange={(e) =>
+                                        setNewTransactionData({
+                                            ...newTransactionData,
+                                            type: e.target.value,
+                                        })
+                                    }
+                                    isRequired
+                                >
+                                    <option value="credit">Credit</option>
+                                    <option value="debit">Debit</option>
+                                </Select>
+                                <Textarea
+                                    mb="3"
+                                    placeholder="Reason"
+                                    value={newTransactionData.reason}
+                                    onChange={(e) =>
+                                        setNewTransactionData({
+                                            ...newTransactionData,
+                                            reason: e.target.value,
+                                        })
+                                    }
+                                    isRequired
+                                />
+                            </Grid>
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button
+                                mr={2}
+                                type="submit"
+                                colorScheme="teal"
+                                isLoading={isSaveLoading}
+                                spinner={<BeatLoader size={8} color="white" />}
+                            >
+                                Submit
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setIsNewTransactionModalOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                        </ModalFooter>
+                    </ModalContent>
+                </form>{" "}
+                {/* Close form tag */}
+            </Modal>
         </Box>
+
     );
 }

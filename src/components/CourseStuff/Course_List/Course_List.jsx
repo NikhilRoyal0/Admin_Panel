@@ -38,6 +38,7 @@ import { fetchcategoryData, selectcategoryData, selectcategoryError, selectcateg
 
 
 export default function Course_List() {
+  const id = sessionStorage.getItem('BranchId');
   const [isAddcourseModalOpen, setIsAddcourseModalOpen] = useState(false);
   const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] = useState(false);
   const [selectedcourseId, setSelectedcourseId] = useState(null);
@@ -89,12 +90,14 @@ export default function Course_List() {
     dispatch(fetchcategoryData());
   }, [dispatch]);
 
+  const DataByBranch = id == 0 ? courseData : courseData.filter(user => user.branchId == id);
+
   useEffect(() => {
-    const filteredCourse = courseData.filter((student) => {
+    const filteredCourse = DataByBranch.filter((student) => {
       return selectedStatus ? student.status === selectedStatus : true;
     });
     setFilteredCount(filteredCourse.length);
-  }, [selectedStatus, courseData]);
+  }, [selectedStatus, DataByBranch]);
 
 
   const handleAddcourse = (e) => {
@@ -238,7 +241,7 @@ export default function Course_List() {
     return <NetworkError />;
   }
 
-  const filteredCourses = courseData.filter((course) => {
+  const filteredCourses = DataByBranch.filter((course) => {
     const categoryMatch = selectedCategory
       ? course.categoryId == selectedCategory
       : true;
@@ -677,7 +680,7 @@ export default function Course_List() {
                   }
                   isRequired
                 />
-                  <Textarea
+                <Textarea
                   mb="3"
                   placeholder="HTML Info"
                   value={newcourseData.htmlInfo}

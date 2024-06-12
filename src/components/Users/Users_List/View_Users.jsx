@@ -179,13 +179,14 @@ export default function View_Users() {
                   </Text>
                   <Flex justify="space-between" mt="4" width="80%">
                     <Box>
-                      <Text fontWeight="bold" textAlign="center" color="black">
-                        Branch
-                      </Text>
-                      <Text textAlign="center">
-                        {branchData && branchData.find(branch => branch.branchId == formData.branchId)?.branchName}
-
-                      </Text>
+                      <Box>
+                        <Text fontWeight="bold" textAlign="center" color="black">
+                          Wallet Amount
+                        </Text>
+                        <Text textAlign="center">
+                          Rs. {formData.walletAmount}
+                        </Text>
+                      </Box>
                     </Box>
                     <Box>
                       <Text fontWeight="bold" textAlign="center" color="black">
@@ -433,6 +434,20 @@ export default function View_Users() {
                     />
                   ) : (
                     <span>{formData.password}</span>
+                  )}
+                </Box>
+                <Box mb="2">
+                  <strong>Wallet Amount: </strong>
+                  {isEditing ? (
+                    <Input
+                      name="walletAmount"
+                      value={formData.walletAmount}
+                      onChange={handleChange}
+                      ml="2"
+                      size="sm"
+                    />
+                  ) : (
+                    <span>{formData.walletAmount}</span>
                   )}
                 </Box>
                 <Box mb="2">

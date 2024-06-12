@@ -42,8 +42,8 @@ const RenderContent = () => {
             </Text>
           </Link>
         );
-        case `/user/dashboard/alltransaction/${userId}`:
-          return (
+      case `/user/dashboard/alltransaction/${userId}`:
+        return (
           <Link to={`/user/dashboard/${userId}`}>
             <Text fontSize="xl" fontWeight="bold">
               User / Wallet History
@@ -154,14 +154,14 @@ const RenderContent = () => {
             </Text>
           </Link>
         );
-        case `/courses/${branchId}`:
-          return (
-            <Link to={`/branch/dashboard/${branchId}`}>
-              <Text fontSize="xl" fontWeight="bold">
-                Course / Branch Course
-              </Text>
-            </Link>
-          );
+      case `/courses/${branchId}`:
+        return (
+          <Link to={`/branch/dashboard/${branchId}`}>
+            <Text fontSize="xl" fontWeight="bold">
+              Course / Branch Course
+            </Text>
+          </Link>
+        );
       case `/course/info/${courseId}`:
         return (
           <Link to="/courses">
@@ -183,6 +183,14 @@ const RenderContent = () => {
           <Link to="/courses">
             <Text fontSize="xl" fontWeight="bold">
               Course / Course Content
+            </Text>
+          </Link>
+        );
+      case `/course/info/purchaseHistory/${courseId}`:
+        return (
+          <Link to={`/course/info/${courseId}`}>
+            <Text fontSize="xl" fontWeight="bold">
+              Course / Purchase History
             </Text>
           </Link>
         );
