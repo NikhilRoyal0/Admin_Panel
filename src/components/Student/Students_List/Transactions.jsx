@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom';
 import TimeConversion from '../../../utils/timeConversion';
 import { selectstudentWalletData, selectstudentWalletError, selectstudentWalletLoading, fetchstudentWalletData, AddstudentWalletData } from "../../../app/Slices/studentWalletSlice";
 import { BeatLoader } from "react-spinners";
+import { selectStudentData, selectStudentError, selectStudentLoading, fetchStudentData } from "../../../app/Slices/studentSlice";
 
 export default function Student_Transactions() {
     const { student_id } = useParams();
@@ -16,6 +17,9 @@ export default function Student_Transactions() {
     const transactionsData = useSelector(selectstudentWalletData);
     const error = useSelector(selectstudentWalletError);
     const isLoading = useSelector(selectstudentWalletLoading);
+    const studentData = useSelector(selectStudentData);
+    const studentError = useSelector(selectStudentError);
+    const studentLoading = useSelector(selectStudentLoading);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [filterType, setFilterType] = useState('All');
@@ -33,6 +37,7 @@ export default function Student_Transactions() {
 
     useEffect(() => {
         dispatch(fetchstudentWalletData());
+        dispatch(fetchStudentData());
     }, [dispatch]);
 
     const handleStartDateChange = (e) => {
@@ -110,7 +115,7 @@ export default function Student_Transactions() {
     });
     const filteredCount = filteredTransactions.length;
 
-    if (isLoading) {
+    if (isLoading || studentLoading) {
         return (
             <Flex justify="center" align="center" h="100vh">
                 <Spinner size="xl" />
@@ -118,9 +123,11 @@ export default function Student_Transactions() {
         );
     }
 
-    if (error) {
+    if (error || studentError) {
         return <NetworkError />;
     }
+
+    const studentAmount = studentData.find(student => student.student_id == student_id);
 
     return (
         <Box p="4">
