@@ -74,6 +74,7 @@ const routes = createBrowserRouter(
         <Route path="/courses" element={<Course_List />} />
         <Route path="/courses/:branchId" element={<Course_List />} />
         <Route path="/course/info/:courseId" element={<Course />} />
+        <Route path="/course/info/purchaseHistory/:courseId" element={<Purchase_History />} />
         <Route path="/courses/categories" element={<Course_Category />} />
         <Route path="/course/contents" element={<Course_Content />} />
         <Route path="/benefits" element={<Benefits />} />

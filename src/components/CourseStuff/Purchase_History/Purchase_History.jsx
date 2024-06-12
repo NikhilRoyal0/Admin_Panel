@@ -254,14 +254,6 @@ export default function purchaseList() {
   const indexOfFirstpurchase = indexOfLastpurchase - purchasePerPage;
   const currentpurchase = filteredpurchase.slice(indexOfFirstpurchase, indexOfLastpurchase);
 
-  const purchaseManagementPermissions = getModulePermissions("Course Purchase History");
-
-  if (!purchaseManagementPermissions) {
-    return <NetworkError />;
-  }
-  const canAddData = purchaseManagementPermissions.create;
-  const canEditData = purchaseManagementPermissions.update;
-
   const filteredCount = currentpurchase.length;
   return (
     <Box p="3" m={5}>
@@ -288,17 +280,7 @@ export default function purchaseList() {
           <Button
             colorScheme="teal"
             onClick={() => {
-              if (canAddData) {
-                setIsAddpurchaseModalOpen(true);
-              } else {
-                Toast({
-                  title: "You don't have permission to add purchase",
-                  status: "error",
-                  duration: 3000,
-                  isClosable: true,
-                  position: "top-right",
-                });
-              }
+              setIsAddpurchaseModalOpen(true);
             }}
           >
             Add Purchase
@@ -355,18 +337,8 @@ export default function purchaseList() {
                           colorScheme="teal"
                           mr="2"
                           onClick={() => {
-                            if (canEditData) {
-                              setIsEditModalOpen(true);
-                              setEditedpurchaseData(purchase);
-                            } else {
-                              Toast({
-                                title: "You don't have permission to edit purchase",
-                                status: "error",
-                                duration: 3000,
-                                isClosable: true,
-                                position: "top-right",
-                              });
-                            }
+                            setIsEditModalOpen(true);
+                            setEditedpurchaseData(purchase);
                           }}
                         >
                           Edit
