@@ -14,6 +14,7 @@ import inquiryReducer from "../Slices/inquirySlice";
 import purchaseReducer from "../Slices/purchaseSlice";
 import studentWalletReducer from "../Slices/studentWalletSlice";
 import userWalletReducer from "../Slices/userWalletSlice";
+import leadReducer from "../Slices/leadSlice";
 
 const Store = configureStore({
   reducer: {
@@ -32,6 +33,7 @@ const Store = configureStore({
     purchase: purchaseReducer,
     studentWallet: studentWalletReducer,
     userWallet: userWalletReducer,
+    lead: leadReducer,
   },
 });
 

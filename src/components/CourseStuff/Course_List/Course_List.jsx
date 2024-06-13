@@ -82,7 +82,6 @@ export default function Course_List() {
 
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
-  const [filteredCount, setFilteredCount] = useState(0);
 
 
   useEffect(() => {
@@ -96,7 +95,6 @@ export default function Course_List() {
     const filteredCourse = DataByBranch.filter((student) => {
       return selectedStatus ? student.status === selectedStatus : true;
     });
-    setFilteredCount(filteredCourse.length);
   }, [selectedStatus, DataByBranch]);
 
 
@@ -293,7 +291,8 @@ export default function Course_List() {
   const canAddData = courseManagementPermissions.create;
   const canDeleteData = courseManagementPermissions.delete;
 
-
+  const filteredCount = currentcourse.length;
+  
   return (
     <Box p="3">
       <Flex align="center" justify="space-between" mb="6" mt={5}>

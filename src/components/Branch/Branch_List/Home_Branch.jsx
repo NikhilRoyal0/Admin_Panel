@@ -248,7 +248,7 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel fontWeight="bold">Branch Id</FormLabel>
             <Input
-              value={selectedBranch.branchId}
+              value={formData.branchId}
               isDisabled
               bg="gray.100"
             />
@@ -314,7 +314,7 @@ export default function Home_Branch() {
             <FormLabel>Branch IP</FormLabel>
             <Input
               name="branchIp"
-              value={selectedBranch.branchIp}
+              value={formData.branchIp}
               isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />
@@ -349,24 +349,7 @@ export default function Home_Branch() {
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
-          <FormControl>
-            <FormLabel>Course List</FormLabel>
-            <Select
-              mb="3"
-              placeholder="Select Course List"
-              value={formData.courseList}
-              onChange={handleFormChange}
-              isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
-              isRequired
-            >
-              {courseData.map((course) => (
-                <option key={course.courseId} value={course.courseId} disabled={!isEditable}   >
-                  {course.courseName}
-                </option>
-              ))}
-            </Select>
-          </FormControl>
+        
           <FormControl>
             <FormLabel>Wallet Amount</FormLabel>
             <Input
@@ -455,7 +438,7 @@ export default function Home_Branch() {
             <FormLabel>Reason</FormLabel>
             <Input
               name="reason"
-              value={selectedBranch.reason}
+              value={formData.reason}
               isDisabled={!isEditable}
               bg={isEditable ? 'white' : 'gray.100'}
             />

@@ -34,6 +34,9 @@ export default function Student_Transactions() {
         reason: "",
     });
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const purchasePerPage = 10;
+
 
     useEffect(() => {
         dispatch(fetchstudentWalletData());
@@ -58,6 +61,22 @@ export default function Student_Transactions() {
     const handleNewTransaction = (e) => {
         e.preventDefault();
         setIsSaveLoading(true);
+
+        const amount = parseFloat(newTransactionData.amount);
+        const student = studentData.find(student => student.student_id === student_id);
+        const studentWalletAmount = student.walletAmount;
+
+        if (newTransactionData.type === 'debit' && amount > studentWalletAmount) {
+            setIsSaveLoading(false);
+            Toast({
+                title: "Insufficient balance",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+                position: "top-right",
+            });
+            return;
+        }
 
         const formData = new FormData();
         formData.append("student_id", student_id);
@@ -113,7 +132,6 @@ export default function Student_Transactions() {
             return matchesStudentId && isWithinDateRange && transaction.type === filterType;
         }
     });
-    const filteredCount = filteredTransactions.length;
 
     if (isLoading || studentLoading) {
         return (
@@ -127,7 +145,44 @@ export default function Student_Transactions() {
         return <NetworkError />;
     }
 
-    const studentAmount = studentData.find(student => student.student_id == student_id);
+    const totalPages = Math.ceil(filteredTransactions.length / purchasePerPage);
+
+    const paginate = (pageNumber) => {
+        if (pageNumber < 1) {
+            setCurrentPage(1);
+        } else if (pageNumber > totalPages) {
+            setCurrentPage(totalPages);
+        } else {
+            setCurrentPage(pageNumber);
+        }
+    };
+
+    const renderPagination = () => {
+        const pageButtons = [];
+        for (let i = 1; i <= totalPages; i++) {
+            pageButtons.push(
+                <Button
+                    key={i}
+                    onClick={() => paginate(i)}
+                    variant={currentPage === i ? 'solid' : 'outline'}
+                    colorScheme={currentPage === i ? 'blue' : undefined}
+                    mr={2}
+                >
+                    {i}
+                </Button>
+            );
+        }
+        return pageButtons;
+    };
+
+    const indexOfLastTransaction = currentPage * purchasePerPage;
+    const indexOfFirstTransaction = indexOfLastTransaction - purchasePerPage;
+    const currentTransactions = filteredTransactions.slice(
+        indexOfFirstTransaction,
+        indexOfLastTransaction
+    );
+
+    const filteredCount = currentTransactions.length
 
     return (
         <Box p="4">
@@ -135,7 +190,7 @@ export default function Student_Transactions() {
                 alignItems="center" mb="4" >
                 <GridItem>
                     <Heading fontWeight="bold" fontSize="30">
-                        All Transactions({filteredCount})
+                        All Transactions ({filteredCount})
                     </Heading>
                 </GridItem>
                 <GridItem>
@@ -173,7 +228,7 @@ export default function Student_Transactions() {
             <Divider py="0.45" borderWidth="1" bg="black" />
 
             <Box overflow="auto">
-                {filteredTransactions.length === 0 ? (
+                {currentTransactions.length === 0 ? (
                     <Flex justify="center" align="center" height="100%">
                         <Box textAlign="center" mt={50}>
                             <Text fontSize="xl" fontWeight="bold">No transaction available</Text>
@@ -186,14 +241,14 @@ export default function Student_Transactions() {
                                 <Th>Transaction ID</Th>
                                 <Th>Student ID</Th>
                                 <Th>Amount</Th>
-                                <Th>Last Amount</Th>
+                                <Th>Current Amount</Th>
                                 <Th>Type</Th>
                                 <Th>Status</Th>
                                 <Th>Date</Th>
                             </Tr>
                         </Thead>
                         <Tbody>
-                            {filteredTransactions.map((transaction) => (
+                            {currentTransactions.map((transaction) => (
                                 <Tr key={transaction.trans_id}>
                                     <Td>{transaction.trans_id}</Td>
                                     <Td>{transaction.student_id}</Td>
@@ -206,6 +261,23 @@ export default function Student_Transactions() {
                             ))}
                         </Tbody>
                     </Table>
+                )}
+                {currentTransactions.length > 0 && (
+                    <Flex justify="flex-end" mt="4">
+                        <Button onClick={() => paginate(1)} mr={2}>
+                            &lt;&lt;
+                        </Button>
+                        <Button onClick={() => paginate(currentPage - 1)} mr={2}>
+                            &lt;
+                        </Button>
+                        {renderPagination()}
+                        <Button onClick={() => paginate(currentPage + 1)} mr={2}>
+                            &gt;
+                        </Button>
+                        <Button onClick={() => paginate(totalPages)} mr={2}>
+                            &gt;&gt;
+                        </Button>
+                    </Flex>
                 )}
             </Box>
             <Modal
