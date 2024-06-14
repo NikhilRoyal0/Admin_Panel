@@ -104,6 +104,7 @@ export const updateleadData = (lead_id, updatedFormData) => async (dispatch) => 
     const updatedleadData = response.data;
 
     dispatch(updatelead(updatedleadData));
+    dispatch(fetchleadData());
   } catch (error) {
     console.error("Error updating lead:", error);
   }
@@ -123,6 +124,7 @@ export const deleteleadData = (lead_id) => async (dispatch) => {
     );
 
     dispatch(deletelead(lead_id));
+    dispatch(fetchleadData());
   } catch (error) {
     console.error("Error deleting lead:", error);
   }

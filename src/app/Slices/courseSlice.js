@@ -98,6 +98,8 @@ export const updatecourseData = (updatedFormData, courseId) => async (dispatch) 
     const updatedcourseData = response.data;
 
     dispatch(updatecourse(updatedcourseData));
+    dispatch(fetchcourseData());
+
   } catch (error) {
     console.error('Error:', error);
   }
@@ -115,6 +117,8 @@ export const deletecourseData = (courseId) => async (dispatch) => {
     });
 
     dispatch(deletecourse(courseId));
+    dispatch(fetchcourseData());
+
   } catch (error) {
     console.error('Error:', error);
   }

@@ -70,6 +70,8 @@ export const AdduserWalletData = (formData) => async (dispatch) => {
         );
 
         console.log("Response:", response.data);
+        dispatch(fetchuserWalletData());
+
     } catch (error) {
         console.error("Error:", error);
     }
@@ -93,6 +95,8 @@ export const updateuserWalletData = (trans_id, formData) => async (dispatch) => 
         const updateduserWalletData = response.data;
 
         dispatch(updateuserWallet(updateduserWalletData));
+        dispatch(fetchuserWalletData());
+
     } catch (error) {
         console.error("Error updating userWallet:", error);
     }

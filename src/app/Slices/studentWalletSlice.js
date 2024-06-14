@@ -70,6 +70,8 @@ export const AddstudentWalletData = (formData) => async (dispatch) => {
     );
 
     console.log("Response:", response.data);
+    dispatch(fetchstudentWalletData());
+
   } catch (error) {
     console.error("Error:", error);
   }
@@ -93,6 +95,8 @@ export const updatestudentWalletData = (trans_id, formData) => async (dispatch) 
     const updatedstudentWalletData = response.data;
 
     dispatch(updatestudentWallet(updatedstudentWalletData));
+    dispatch(fetchstudentWalletData());
+
   } catch (error) {
     console.error("Error updating studentWallet:", error);
   }

@@ -104,6 +104,8 @@ export const updatecategoryData = (categoryId, formData) => async (dispatch) => 
     const updatedcategoryData = response.data;
 
     dispatch(updatecategory(updatedcategoryData));
+    dispatch(fetchcategoryData());
+
   } catch (error) {
     console.error("Error updating category:", error);
   }
@@ -123,6 +125,8 @@ export const deletecategoryData = (categoryId) => async (dispatch) => {
     );
 
     dispatch(deletecategory(categoryId));
+    dispatch(fetchcategoryData());
+
   } catch (error) {
     console.error("Error deleting category:", error);
   }

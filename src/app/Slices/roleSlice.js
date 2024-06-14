@@ -77,11 +77,13 @@ export const addrolesData = ({ roleName, permissions, createdBy, createdOn }) =>
       },
     });
     console.log('Response:', response.data);
+    dispatch(fetchrolesData());
+
   } catch (error) {
     console.error('Error:', error);
     throw error;
   }
-}
+};
 
 export const updaterolesData = ({ roleId, roleName, permissions, updatedOn }) => async (dispatch) => {
   try {
@@ -101,6 +103,8 @@ export const updaterolesData = ({ roleId, roleName, permissions, updatedOn }) =>
     const updatedRoleData = response.data;
 
     dispatch(updateroles(updatedRoleData));
+    dispatch(fetchrolesData());
+
   } catch (error) {
     console.error('Error:', error);
   }
@@ -118,6 +122,8 @@ export const deleterolesData = (roleId) => async (dispatch) => {
     });
 
     dispatch(deleteroles(roleId));
+    dispatch(fetchrolesData());
+
   } catch (error) {
     console.error('Error:', error);
   }

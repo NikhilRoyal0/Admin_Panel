@@ -78,6 +78,8 @@ export const AddpurchaseData = (newpurchaseData) => async (dispatch) => {
     );
 
     console.log("Response:", response.data);
+    dispatch(fetchpurchaseData());
+
   } catch (error) {
     console.error("Error:", error);
   }
@@ -101,6 +103,7 @@ export const updatepurchaseData = (purchaseId, formData) => async (dispatch) => 
     const updatedpurchaseData = response.data;
 
     dispatch(updatepurchase(updatedpurchaseData));
+    dispatch(fetchpurchaseData());
   } catch (error) {
     console.error("Error updating purchase:", error);
   }

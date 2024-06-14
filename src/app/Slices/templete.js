@@ -78,6 +78,8 @@ export const AddtempleteData = (formData) => async (dispatch) => {
     );
 
     console.log("Response:", response.data);
+    dispatch(fetchtempleteData());
+
   } catch (error) {
     console.error("Error:", error);
   }
@@ -101,6 +103,8 @@ export const updatetempleteData = (templeteId, formData) => async (dispatch) => 
     const updatedtempleteData = response.data;
 
     dispatch(updatetemplete(updatedtempleteData));
+    dispatch(fetchtempleteData());
+
   } catch (error) {
     console.error("Error updating templete:", error);
   }
@@ -120,6 +124,8 @@ export const deletetempleteData = (templeteId) => async (dispatch) => {
     );
 
     dispatch(deletetemplete(deletetempleteData));
+    dispatch(fetchtempleteData());
+
   } catch (error) {
     console.error("Error deleting templete:", error);
   }

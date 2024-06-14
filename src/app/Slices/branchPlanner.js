@@ -101,6 +101,8 @@ export const updatebranchPlannerData = (planerId, formData) => async (dispatch) 
     const updatedbranchPlannerData = response.data;
 
     dispatch(updatebranchPlanner(updatedbranchPlannerData));
+    dispatch(fetchbranchPlannerData());
+
   } catch (error) {
     console.error("Error updating branch plan:", error);
   }
@@ -120,6 +122,8 @@ export const deletebranchPlannerData = (planerId) => async (dispatch) => {
     );
 
     dispatch(deletebranchPlanner(deletebranchPlannerData));
+    dispatch(fetchbranchPlannerData());
+
   } catch (error) {
     console.error("Error deleting branch plan:", error);
   }

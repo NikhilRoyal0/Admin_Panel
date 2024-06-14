@@ -78,6 +78,8 @@ export const AddinquiryData = (newinquiryData) => async (dispatch) => {
     );
 
     console.log("Response:", response.data);
+    dispatch(fetchinquiryData());
+
   } catch (error) {
     console.error("Error:", error);
   }
@@ -101,6 +103,8 @@ export const updateinquiryData = (inquiryId, formData) => async (dispatch) => {
     const updatedinquiryData = response.data;
 
     dispatch(updateinquiry(updatedinquiryData));
+    dispatch(fetchinquiryData());
+
   } catch (error) {
     console.error("Error updating inquiry:", error);
   }
@@ -120,6 +124,8 @@ export const deleteinquiryData = (inquiryId) => async (dispatch) => {
     );
 
     dispatch(deleteinquiry(deleteinquiryData));
+    dispatch(fetchinquiryData());
+
   } catch (error) {
     console.error("Error deleting inquiry:", error);
   }

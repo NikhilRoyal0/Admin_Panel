@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, Thead, Tbody, useToast, Modal, ModalBody, ModalFooter, ModalHeader, ModalContent, ModalCloseButton, ModalOverlay, Button, Tr, GridItem, Th, Td, Box, Flex, Spinner, Heading, Input, FormControl, FormLabel, Select, Grid, Divider, Text, Textarea } from '@chakra-ui/react';
 import NetworkError from '../../NotFound/networkError';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import TimeConversion from '../../../utils/timeConversion';
-import { selectstudentWalletData, selectstudentWalletError, selectstudentWalletLoading, fetchstudentWalletData, AddstudentWalletData } from "../../../app/Slices/studentWalletSlice";
+import { selectstudentWalletData, selectstudentWalletError, selectstudentWalletLoading, fetchstudentWalletData, AddstudentWalletData, updatestudentWalletData } from "../../../app/Slices/studentWalletSlice";
 import { BeatLoader } from "react-spinners";
 import { selectStudentData, selectStudentError, selectStudentLoading, fetchStudentData } from "../../../app/Slices/studentSlice";
 
@@ -24,6 +24,7 @@ export default function Student_Transactions() {
     const [endDate, setEndDate] = useState('');
     const [filterType, setFilterType] = useState('All');
     const [isNewTransactionModalOpen, setIsNewTransactionModalOpen] = useState(false);
+    const [isEditTransactionModalOpen, setIsEditTransactionModalOpen] = useState(false);
     const [isSaveLoading, setIsSaveLoading] = useState(false);
     const [newTransactionData, setNewTransactionData] = useState({
         student_id: "",
@@ -33,10 +34,18 @@ export default function Student_Transactions() {
         status: "inprogress",
         reason: "",
     });
+    const [editTransactionData, setEditTransactionData] = useState({
+        trans_id: "",
+        student_id: "",
+        amount: "",
+        type: "",
+        createdOn: "",
+        status: "",
+        reason: "",
+    });
 
     const [currentPage, setCurrentPage] = useState(1);
     const purchasePerPage = 10;
-
 
     useEffect(() => {
         dispatch(fetchstudentWalletData());
@@ -119,6 +128,43 @@ export default function Student_Transactions() {
             });
     };
 
+    const handleEditTransaction = (e) => {
+        e.preventDefault();
+        setIsSaveLoading(true);
+
+        const formData = new FormData();
+        formData.append("student_id", editTransactionData.student_id);
+        formData.append("amount", editTransactionData.amount);
+        formData.append("type", editTransactionData.type);
+        formData.append("createdOn", editTransactionData.createdOn);
+        formData.append("status", editTransactionData.status);
+        formData.append("reason", editTransactionData.reason);
+
+        dispatch(updatestudentWalletData(editTransactionData.trans_id, formData))
+            .then(() => {
+                setIsSaveLoading(false);
+                Toast({
+                    title: "Transaction updated successfully",
+                    status: "success",
+                    duration: 3000,
+                    isClosable: true,
+                    position: "top-right",
+                });
+                setIsEditTransactionModalOpen(false);
+                dispatch(fetchstudentWalletData());
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+                Toast({
+                    title: "Failed to update transaction",
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                    position: "top-right",
+                });
+            });
+    };
+
     const filteredTransactions = transactionsData.filter((transaction) => {
         const matchesStudentId = transaction.student_id === student_id;
         const startDateUnix = startDate ? new Date(startDate).getTime() / 1 : 0;
@@ -182,7 +228,12 @@ export default function Student_Transactions() {
         indexOfLastTransaction
     );
 
-    const filteredCount = currentTransactions.length
+    const filteredCount = filteredTransactions.length;
+
+    const openEditModal = (transaction) => {
+        setEditTransactionData(transaction);
+        setIsEditTransactionModalOpen(true);
+    };
 
     return (
         <Box p="4">
@@ -249,7 +300,7 @@ export default function Student_Transactions() {
                         </Thead>
                         <Tbody>
                             {currentTransactions.map((transaction) => (
-                                <Tr key={transaction.trans_id}>
+                                <Tr key={transaction.trans_id} onClick={() => openEditModal(transaction)}>
                                     <Td>{transaction.trans_id}</Td>
                                     <Td>{transaction.student_id}</Td>
                                     <Td>{transaction.type === 'credit' ? `+${transaction.amount}` : `-${transaction.amount}`}</Td>
@@ -287,7 +338,6 @@ export default function Student_Transactions() {
             >
                 <ModalOverlay />
                 <form onSubmit={handleNewTransaction}>
-                    {" "}
                     <ModalContent>
                         <ModalHeader>New Transaction</ModalHeader>
                         <ModalCloseButton />
@@ -352,10 +402,98 @@ export default function Student_Transactions() {
                             </Button>
                         </ModalFooter>
                     </ModalContent>
-                </form>{" "}
-                {/* Close form tag */}
+                </form>
+            </Modal>
+
+            <Modal
+                isOpen={isEditTransactionModalOpen}
+                onClose={() => setIsEditTransactionModalOpen(false)}
+                size="md"
+            >
+                <ModalOverlay />
+                <form onSubmit={handleEditTransaction}>
+                    <ModalContent>
+                        <ModalHeader>Edit Transaction</ModalHeader>
+                        <ModalCloseButton />
+                        <ModalBody>
+                            <Grid templateColumns={{ base: "1fr", md: "repeat(1, 1fr)" }} gap={3}>
+                                <Input
+                                    mb="3"
+                                    placeholder="Amount"
+                                    value={editTransactionData.amount}
+                                    onChange={(e) =>
+                                        setEditTransactionData({
+                                            ...editTransactionData,
+                                            amount: e.target.value,
+                                        })
+                                    }
+                                    isRequired
+                                />
+                                <Select
+                                    mb="3"
+                                    placeholder="Select type"
+                                    value={editTransactionData.type}
+                                    onChange={(e) =>
+                                        setEditTransactionData({
+                                            ...editTransactionData,
+                                            type: e.target.value,
+                                        })
+                                    }
+                                    isRequired
+                                >
+                                    <option value="credit">Credit</option>
+                                    <option value="debit">Debit</option>
+                                </Select>
+                                <Select
+                                    mb="3"
+                                    placeholder="Select status"
+                                    value={editTransactionData.status}
+                                    onChange={(e) =>
+                                        setEditTransactionData({
+                                            ...editTransactionData,
+                                            status: e.target.value,
+                                        })
+                                    }
+                                    isRequired
+                                >
+                                    <option value="inprogress">In Progress</option>
+                                    <option value="success">Completed</option>
+                                    <option value="failed">Failed</option>
+                                </Select>
+                                <Textarea
+                                    mb="3"
+                                    placeholder="Reason"
+                                    value={editTransactionData.reason}
+                                    onChange={(e) =>
+                                        setEditTransactionData({
+                                            ...editTransactionData,
+                                            reason: e.target.value,
+                                        })
+                                    }
+                                    isRequired
+                                />
+                            </Grid>
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button
+                                mr={2}
+                                type="submit"
+                                colorScheme="teal"
+                                isLoading={isSaveLoading}
+                                spinner={<BeatLoader size={8} color="white" />}
+                            >
+                                Update
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setIsEditTransactionModalOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                        </ModalFooter>
+                    </ModalContent>
+                </form>
             </Modal>
         </Box>
-
     );
 }

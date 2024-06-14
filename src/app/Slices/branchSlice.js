@@ -101,6 +101,8 @@ export const updateBranchData = (branchId, formData) => async (dispatch) => {
     const updatedBranchData = response.data;
 
     dispatch(updateBranch(updatedBranchData));
+    dispatch(fetchBranchData());
+
   } catch (error) {
     console.error("Error updating branch :", error);
   }
@@ -120,6 +122,8 @@ export const deleteBranchData = (branchId) => async (dispatch) => {
     );
 
     dispatch(deleteBranch(deleteBranchData));
+    dispatch(fetchBranchData());
+
   } catch (error) {
     console.error("Error deleting branch:", error);
   }

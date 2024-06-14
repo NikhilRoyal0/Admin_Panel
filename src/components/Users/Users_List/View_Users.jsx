@@ -284,7 +284,14 @@ export default function View_Users() {
                   },
                 }}>
                   <Box mb="5" fontSize="xl" fontWeight="bold">
-                    <Heading fontSize={25} mb={5}>Your Transfer</Heading>
+                    <Flex alignItems="center" justifyContent="space-between">
+                      <Heading fontSize={25} mb={5}>Your Transfer</Heading>
+                      {transactions.length < 6 && (
+                        <Button onClick={handleViewAll} variant="link" color="blue.500" mt="-5">
+                          Add Transaction
+                        </Button>
+                      )}
+                    </Flex>
                     {transactionsToShow.length === 0 ? (
                       <Flex justify="center" align="center" height="100%">
                         <Box textAlign="center" mt={50}>

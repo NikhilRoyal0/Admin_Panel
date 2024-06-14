@@ -36,6 +36,8 @@ import View_Users from "../components/Users/Users_List/View_Users";
 import StudentDashboard from "../components/Student/Students_List/View_Student";
 import User_Transactions from "../components/Users/Users_List/Transactions";
 import Student_Transactions from "../components/Student/Students_List/Transactions";
+import View from "../components/Inquiry/View";
+import Data from "../components/Inquiry/Data";
 
 
 const routes = createBrowserRouter(
@@ -81,7 +83,9 @@ const routes = createBrowserRouter(
         <Route path="/staff/attendance" element={<StaffAttendance />} />
         <Route path="/student/attendance" element={<StudentAttendance />} />
         <Route path="/documents" element={<Documents />} />
-        <Route path="/inquiry" element={<Inquiry />} />
+        <Route path="/leads" element={<View />} />
+        <Route path="/leads/addLead" element={<Inquiry />} />
+        <Route path="/leads/viewLeads" element={<Data />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </>

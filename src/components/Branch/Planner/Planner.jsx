@@ -152,7 +152,7 @@ export default function Planner() {
 
   if (isLoading) {
     return (
-      <Flex justify="center" align="center" h="100vh">
+      <Flex justify="center" align="center" h="32vh">
         <Spinner size="xl" />
       </Flex>
     );
@@ -165,7 +165,7 @@ export default function Planner() {
   }
 
 
-  const selectedPlan = branchPlannerData.filter(branch => branch.branchId === parseInt(branchId));
+  const selectedPlan = branchPlannerData.filter(branch => branch.branchId === (branchId));
 
   const branchManagementPermissions = getModulePermissions('Branch');
 

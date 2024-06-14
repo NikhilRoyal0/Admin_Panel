@@ -104,6 +104,8 @@ export const updateStudentData = (student_id, updatedFormData) => async (dispatc
     const updatedStudentData = response.data;
 
     dispatch(updateStudent(updatedStudentData));
+    dispatch(fetchStudentData());
+
   } catch (error) {
     console.error("Error updating student:", error);
   }
@@ -123,6 +125,8 @@ export const deleteStudentData = (student_id) => async (dispatch) => {
     );
 
     dispatch(deleteStudent(student_id));
+    dispatch(fetchStudentData());
+
   } catch (error) {
     console.error("Error deleting student:", error);
   }

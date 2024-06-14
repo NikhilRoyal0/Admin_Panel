@@ -78,6 +78,8 @@ export const AddUserData = (newUserData) => async (dispatch) => {
     );
 
     console.log("Response:", response.data);
+    dispatch(fetchUsersData());
+
   } catch (error) {
     console.error("Error:", error);
   }
@@ -101,6 +103,8 @@ export const updateUserData = (userId, formData) => async (dispatch) => {
     const updatedUserData = response.data;
 
     dispatch(updateUser(updatedUserData));
+    dispatch(fetchUsersData());
+
   } catch (error) {
     console.error("Error updating user:", error);
   }
@@ -120,6 +124,8 @@ export const deleteUserData = (userId) => async (dispatch) => {
     );
 
     dispatch(deleteUser(deleteUserData));
+    dispatch(fetchUsersData());
+
   } catch (error) {
     console.error("Error deleting user:", error);
   }

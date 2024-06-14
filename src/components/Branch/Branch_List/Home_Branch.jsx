@@ -60,7 +60,7 @@ export default function Home_Branch() {
 
   useEffect(() => {
     if (BranchData.length > 0) {
-      const selectedBranch = BranchData.find(branch => branch.branchId === parseInt(branchId));
+      const selectedBranch = BranchData.find(branch => branch.branchId === (branchId));
       if (selectedBranch) {
         setFormData({
           branchName: selectedBranch.branchName,
@@ -167,7 +167,7 @@ export default function Home_Branch() {
   }
 
 
-  const selectedCourse = courseData.filter(course => course.branchId === parseInt(branchId)).length;
+  const selectedCourse = courseData.filter(course => course.branchId === (branchId)).length;
 
   const selectedBranch = BranchData.find(branch => branch.branchId === (branchId));
 
@@ -180,7 +180,7 @@ export default function Home_Branch() {
   }
 
   const filteredStudents = StudentData.filter(student => {
-    const matchBranchId = student.branchId === parseInt(branchId);
+    const matchBranchId = student.branchId === (branchId);
     const searchString = searchInput ? searchInput.toLowerCase() : '';
     return matchBranchId && (
       (student.admissionNo && student.admissionNo.toLowerCase().includes(searchString)) ||
@@ -189,7 +189,7 @@ export default function Home_Branch() {
     );
   });
 
-  const filteredStudentsCount = StudentData.filter(student => student.branchId === parseInt(branchId)).length;
+  const filteredStudentsCount = StudentData.filter(student => student.branchId === (branchId)).length;
 
   const branchManagementPermissions = getModulePermissions('Branch');
 
@@ -248,7 +248,7 @@ export default function Home_Branch() {
           <FormControl>
             <FormLabel fontWeight="bold">Branch Id</FormLabel>
             <Input
-              value={formData.branchId}
+              value={selectedBranch.branchId}
               isDisabled
               bg="gray.100"
             />
@@ -349,7 +349,7 @@ export default function Home_Branch() {
               bg={isEditable ? 'white' : 'gray.100'}
             />
           </FormControl>
-        
+
           <FormControl>
             <FormLabel>Wallet Amount</FormLabel>
             <Input

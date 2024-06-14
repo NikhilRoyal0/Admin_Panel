@@ -226,11 +226,27 @@ const RenderContent = () => {
             </Text>
           </Link>
         );
-      case "/inquiry":
+      case "/leads":
         return (
-          <Link to="/inquiry">
+          <Link to="/leads">
             <Text fontSize="xl" fontWeight="bold">
-              Inquiry
+              Leads
+            </Text>
+          </Link>
+        );
+      case "/leads/addLead":
+        return (
+          <Link to="/leads">
+            <Text fontSize="xl" fontWeight="bold">
+              Leads / Add Lead
+            </Text>
+          </Link>
+        );
+      case "/leads/viewLeads":
+        return (
+          <Link to="/leads">
+            <Text fontSize="xl" fontWeight="bold">
+              Leads / View Leads
             </Text>
           </Link>
         );
