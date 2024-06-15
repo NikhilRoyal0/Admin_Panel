@@ -7,6 +7,7 @@ const RenderContent = () => {
   const { courseId } = useParams();
   const { userId } = useParams();
   const { student_id } = useParams();
+  const { lead_id } = useParams();
 
   const renderContent = (path) => {
     switch (path) {
@@ -242,11 +243,11 @@ const RenderContent = () => {
             </Text>
           </Link>
         );
-      case "/leads/viewLeads":
-        return (
+        case `/leads/editLead/${lead_id}`:
+          return (
           <Link to="/leads">
             <Text fontSize="xl" fontWeight="bold">
-              Leads / View Leads
+              Leads / Edit Lead
             </Text>
           </Link>
         );

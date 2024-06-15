@@ -246,14 +246,6 @@ export default function Home_Branch() {
         <Divider my="4" />
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
           <FormControl>
-            <FormLabel fontWeight="bold">Branch Id</FormLabel>
-            <Input
-              value={selectedBranch.branchId}
-              isDisabled
-              bg="gray.100"
-            />
-          </FormControl>
-          <FormControl>
             <FormLabel>Branch Name</FormLabel>
             <Input
               name="branchName"
@@ -570,7 +562,7 @@ export default function Home_Branch() {
             />
           </Flex>
           {filteredStudents.length === 0 ? (
-            <Flex justify="center" align="center" height="100%">
+            <Flex justify="center" align="center" height="80%">
               <Box textAlign="center">
                 <Text fontSize="xl" fontWeight="bold">No student available</Text>
               </Box>

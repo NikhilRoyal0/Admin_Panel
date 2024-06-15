@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Text,
@@ -24,7 +24,6 @@ import {
   FormLabel,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
-import { BeatLoader } from "react-spinners";
 import {
   selectleadData,
   selectleadError,
@@ -35,7 +34,6 @@ import {
 } from "../../app/Slices/leadSlice";
 import NetworkError from "../NotFound/networkError";
 import { getModulePermissions } from "../../utils/permissions";
-import { useNavigate } from "react-router-dom";
 import {
   fetchBranchData,
   selectBranchData,
@@ -52,35 +50,9 @@ import TimeConversion from "../../utils/timeConversion";
 
 export default function Data() {
   const branchId = sessionStorage.getItem("BranchId");
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] = useState(false);
   const [selectedLeadId, setSelectedLeadId] = useState(null);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
-  const [editedLeadData, setEditedLeadData] = useState({});
-  const [isEditing, setIsEditing] = useState(false);
-
-  const [newLeadData, setNewLeadData] = useState({
-    studentName: "",
-    email: "",
-    qualification: "",
-    phoneNumber: "",
-    updatedOn: "",
-    branchId: "",
-    primaryAddress: "",
-    state: "",
-    city: "",
-    status: "",
-    highestQualification: "",
-    collegeName: "",
-    boardUniversityName: "",
-    hasCertificate: false,
-    certificateNo: "",
-    issuedBy: "",
-    issueDate: "",
-    otherQualifications: "",
-    courses: "",
-    paymentMethods: ""
-  });
 
   const leadData = useSelector(selectleadData);
   const isLoading = useSelector(selectleadLoading);
@@ -99,7 +71,7 @@ export default function Data() {
   const [currentPage, setCurrentPage] = useState(1);
   const [inquiriesPerPage, setInquiriesPerPage] = useState(10);
 
-  const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("pending");
   const [filteredCount, setFilteredCount] = useState(0);
 
   useEffect(() => {
@@ -147,96 +119,9 @@ export default function Data() {
       });
   };
 
-  const handleSaveChanges = () => {
-    if (isEditing) {
-      setIsSaveLoading(true);
-    }
-    const formData = {
-      studentName: editedLeadData.studentName,
-      email: editedLeadData.email,
-      qualification: editedLeadData.qualification,
-      phoneNumber: editedLeadData.phoneNumber,
-      updatedOn: Date.now(),
-      branchId: editedLeadData.branchId,
-      primaryAddress: editedLeadData.primaryAddress,
-      state: editedLeadData.state,
-      city: editedLeadData.city,
-      status: editedLeadData.status,
-      highestQualification: editedLeadData.highestQualification,
-      collegeName: editedLeadData.collegeName,
-      boardUniversityName: editedLeadData.boardUniversityName,
-      hasCertificate: editedLeadData.hasCertificate,
-      certificateNo: editedLeadData.certificateNo,
-      issuedBy: editedLeadData.issuedBy,
-      issueDate: editedLeadData.issueDate,
-      otherQualifications: editedLeadData.otherQualifications,
-      courses: editedLeadData.courses,
-      paymentMethods: editedLeadData.paymentMethods
-    };
-
-    dispatch(updateleadData(editedLeadData.lead_id, formData))
-      .then(() => {
-        setIsEditModalOpen(false);
-        setSelectedLeadId(null);
-        dispatch(fetchleadData());
-        setIsSaveLoading(false);
-        setNewLeadData({
-          studentName: "",
-          email: "",
-          qualification: "",
-          phoneNumber: "",
-          updatedOn: "",
-          branchId: "",
-          primaryAddress: "",
-          state: "",
-          city: "",
-          status: "",
-          highestQualification: "",
-          collegeName: "",
-          boardUniversityName: "",
-          hasCertificate: false,
-          certificateNo: "",
-          issuedBy: "",
-          issueDate: "",
-          otherQualifications: "",
-          courses: "",
-          paymentMethods: ""
-        });
-        Toast({
-          title: "Lead updated successfully",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-          position: "top-right",
-        });
-      })
-      .catch((error) => {
-        setIsSaveLoading(false);
-        Toast({
-          title: "Failed to update Lead",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-          position: "top-right",
-        });
-        console.log("Error updating Lead: ", error);
-      });
-  };
-
   const handleStatusChange = (e) => {
     setSelectedStatus(e.target.value);
   };
-  const handleCancel = () => {
-    setIsEditModalOpen(false);
-    setIsEditing(false);
-  }
-
-  const handleEditLead = (Lead) => {
-    setIsEditing(true);
-    setSelectedLeadId(Lead.lead_id);
-    setEditedLeadData(Lead);
-  };
-
 
   if (isLoading || branchLoading || courseLoading) {
     return (
@@ -296,7 +181,11 @@ export default function Data() {
   }
 
   const canDeleteData = LeadManagementPermissions.delete;
-  const canEditData = LeadManagementPermissions.update;
+  const canAddData = LeadManagementPermissions.create;
+
+  const handleAddLead = () => {
+    navigate('/leads/addLead');
+  };
 
   return (
     <Box p="3">
@@ -308,21 +197,37 @@ export default function Data() {
         <Grid
           templateColumns={{
             base: "repeat(1, 1fr)",
-            md: "repeat(1, 1fr)",
+            md: "repeat(2, 1fr)",
           }}
           gap={3}
           alignItems="center"
-          mr={2}
         >
           <Select
-            mr={5}
             placeholder="Filter by Status"
             value={selectedStatus}
             onChange={handleStatusChange}
           >
-            <option value="Active">Active</option>
-            <option value="Inactive">InActive</option>
+            <option value="accepted">Accepted</option>
+            <option value="pending">Pending</option>
+            <option value="rejected">Rejected</option>
+            <option value="converted">Converted</option>
           </Select>
+          <Button
+            colorScheme="blue"
+            onClick={() => {
+              if (canAddData) { handleAddLead() } else {
+                Toast({
+                  title: "You don't have permission to add lead",
+                  status: "error",
+                  duration: 3000,
+                  isClosable: true,
+                  position: "top-right",
+                });
+              }
+            }}
+          >
+            Add Lead
+          </Button>
         </Grid>
       </Flex>
       <Box>
@@ -357,21 +262,17 @@ export default function Data() {
                     {Lead.studentName}
                   </Text>
                   <Flex>
-                    {canEditData && (
-                      <Button
-                        variant="outline"
-                        colorScheme="blue"
-                        size="sm"
-                        mr={2}
-                        onClick={() => {
-                          setIsEditModalOpen(true);
-                          setEditedLeadData(Lead);
-
-                        }}
-                      >
-                        View
-                      </Button>
-                    )}
+                    <Button
+                      variant="outline"
+                      colorScheme="blue"
+                      size="sm"
+                      mr={2}
+                      onClick={() => {
+                        navigate(`/leads/editLead/${Lead.lead_id}`);
+                      }}
+                    >
+                      View
+                    </Button>
                     {canDeleteData && (
                       <Button
                         variant="outline"
@@ -387,357 +288,45 @@ export default function Data() {
                     )}
                   </Flex>
                 </Flex>
-
-                <Box mt={2}>
-                  <Text>Email: {Lead.email}</Text>
-                  <Text>Phone Number: {Lead.phoneNumber}</Text>
-                  <Text>Status: {Lead.status}</Text>
-                  <Text>Created On: {TimeConversion.unixTimeToRealTime(Lead.createdOn)}</Text>
-                </Box>
+                <Text fontSize="sm" color="gray.500">
+                  Email: {Lead.email}
+                </Text>
+                <Text fontSize="sm" color="gray.500">
+                  Phone: {Lead.phoneNumber}
+                </Text>
+                <Text fontSize="sm" color="gray.500">
+                  Status: {Lead.status}
+                </Text>
+                <Text fontSize="sm" color="gray.500">
+                  Branch: {Lead.branchId}
+                </Text>
+                <Text fontSize="sm" color="gray.500">
+                  Created On: {TimeConversion.unixTimeToRealTime(Lead.createdOn)}
+                </Text>
               </Box>
             ))
           )}
         </Grid>
-      </Box >
-
-      <Flex justify="flex-end" mt="4">
-        {currentInquiries.length > 0 && (
-          <Flex justify="flex-end" mt="4">
-            <Button onClick={() => paginate(1)} mr={2}>
-              &lt;&lt;
-            </Button>
-            <Button onClick={() => paginate(currentPage - 1)} mr={2}>
-              &lt;
-            </Button>
-            {renderPagination()}
-            <Button onClick={() => paginate(currentPage + 1)} mr={2}>
-              &gt;
-            </Button>
-            <Button onClick={() => paginate(totalPages)} mr={2}>
-              &gt;&gt;
-            </Button>
-          </Flex>
-        )}
-      </Flex>
-
-      <Modal size="5xl" isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Edit Lead</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }} gap={3}>
-              <FormControl mb={4}>
-                <FormLabel>Student Name</FormLabel>
-                <Input
-                  value={editedLeadData.studentName}
-                  isDisabled={!isEditing}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      studentName: e.target.value,
-                    })
-                  }
-                />
-              </FormControl>
-
-              <FormControl mb={4}>
-                <FormLabel>Email</FormLabel>
-                <Input
-                  isDisabled={!isEditing}
-                  value={editedLeadData.email}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      email: e.target.value,
-                    })
-                  }
-                />
-              </FormControl>
-
-              <FormControl mb={4}>
-                <FormLabel>Phone Number</FormLabel>
-                <Input
-                  isDisabled={!isEditing}
-                  value={editedLeadData.phoneNumber}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      phoneNumber: e.target.value,
-                    })
-                  }
-                />
-              </FormControl>
-
-              <FormControl mb={4}>
-                <FormLabel>Qualification</FormLabel>
-                <Input
-                  isDisabled={!isEditing}
-                  value={editedLeadData.qualification}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      qualification: e.target.value,
-                    })
-                  }
-                />
-              </FormControl>
-
-              <FormControl mb={4}>
-                <FormLabel>Branch ID</FormLabel>
-                <Input
-                  isDisabled={!isEditing}
-                  value={editedLeadData.branchId}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      branchId: e.target.value,
-                    })
-                  }
-                />
-              </FormControl>
-
-              <FormControl mb={4}>
-                <FormLabel>Primary Address</FormLabel>
-                <Input
-                  isDisabled={!isEditing}
-                  value={editedLeadData.primaryAddress}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      primaryAddress: e.target.value,
-                    })
-                  }
-                />
-              </FormControl>
-
-              <FormControl mb={4}>
-                <FormLabel>State</FormLabel>
-                <Input
-                  isDisabled={!isEditing}
-                  value={editedLeadData.state}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      state: e.target.value,
-                    })
-                  }
-                />
-              </FormControl>
-
-              <FormControl mb={4}>
-                <FormLabel>City</FormLabel>
-                <Input
-                  isDisabled={!isEditing}
-                  value={editedLeadData.city}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      city: e.target.value,
-                    })
-                  }
-                />
-              </FormControl>
-
-              <FormControl mb={4}>
-                <FormLabel>Status</FormLabel>
-                <Select
-                  isDisabled={!isEditing}
-                  value={editedLeadData.status}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      status: e.target.value,
-                    })
-                  }
-                >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">InActive</option>
-                </Select>
-              </FormControl>
-
-              <FormControl mb={4}>
-                <FormLabel>Highest Qualification</FormLabel>
-                <Input
-                  isDisabled={!isEditing}
-                  value={editedLeadData.highestQualification}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      highestQualification: e.target.value,
-                    })
-                  }
-                />
-              </FormControl>
-
-              <FormControl mb={4}>
-                <FormLabel>College Name</FormLabel>
-                <Input
-                  isDisabled={!isEditing}
-                  value={editedLeadData.collegeName}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      collegeName: e.target.value,
-                    })
-                  }
-                />
-              </FormControl>
-
-              <FormControl mb={4}>
-                <FormLabel>Board/University Name</FormLabel>
-                <Input
-                  isDisabled={!isEditing}
-                  value={editedLeadData.boardUniversityName}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      boardUniversityName: e.target.value,
-                    })
-                  }
-                />
-              </FormControl>
-
-              <FormControl mb={4}>
-                <FormLabel>Has Certificate?</FormLabel>
-                <Checkbox
-                  isDisabled={!isEditing}
-                  isChecked={editedLeadData.hasCertificate}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      hasCertificate: e.target.checked,
-                    })
-                  }
-                >
-                  Has Certificate
-                </Checkbox>
-              </FormControl>
-
-              {editedLeadData.hasCertificate && (
-                <>
-                  <FormControl mb={4}>
-                    <FormLabel>Certificate Number</FormLabel>
-                    <Input
-                      isDisabled={!isEditing}
-                      value={editedLeadData.certificateNo}
-                      onChange={(e) =>
-                        setEditedLeadData({
-                          ...editedLeadData,
-                          certificateNo: e.target.value,
-                        })
-                      }
-                    />
-                  </FormControl>
-
-                  <FormControl mb={4}>
-                    <FormLabel>Issued By</FormLabel>
-                    <Input
-                      isDisabled={!isEditing}
-                      value={editedLeadData.issuedBy}
-                      onChange={(e) =>
-                        setEditedLeadData({
-                          ...editedLeadData,
-                          issuedBy: e.target.value,
-                        })
-                      }
-                    />
-                  </FormControl>
-
-                  <FormControl mb={4}>
-                    <FormLabel>Issue Date</FormLabel>
-                    <Input
-                      isDisabled={!isEditing}
-                      type="date"
-                      value={editedLeadData.issueDate}
-                      onChange={(e) =>
-                        setEditedLeadData({
-                          ...editedLeadData,
-                          issueDate: e.target.value,
-                        })
-                      }
-                    />
-                  </FormControl>
-                </>
-              )}
-
-              <FormControl mb={4}>
-                <FormLabel>Other Qualifications</FormLabel>
-                <Textarea
-                  isDisabled={!isEditing}
-                  value={editedLeadData.otherQualifications}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      otherQualifications: e.target.value,
-                    })
-                  }
-                />
-              </FormControl>
-
-              <FormControl mb={4}>
-                <FormLabel>Courses</FormLabel>
-                <Select
-                  isDisabled={!isEditing}
-                  value={editedLeadData.courses}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      courses: e.target.value,
-                    })
-                  }
-                >
-                  {/* Populate options based on available courses */}
-                  {courseData.map((course) => (
-                    <option key={course.courseId} value={course.courseId}>
-                      {course.courseTitle}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl mb={4}>
-                <FormLabel>Payment Methods</FormLabel>
-                <Input
-                  value={editedLeadData.paymentMethods}
-                  onChange={(e) =>
-                    setEditedLeadData({
-                      ...editedLeadData,
-                      paymentMethods: e.target.value,
-                    })
-                  }
-                  isDisabled={!isEditing}
-                />
-              </FormControl>
-            </Grid>
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              colorScheme="teal"
-              mr={3}
-              onClick={handleSaveChanges}
-              isLoading={isSaveLoading}
-              spinner={<BeatLoader size={8} color="white" />}
-              isDisabled={!isEditing}
-            >
-              Save Changes
-            </Button>
-            {isEditing ? (
-              <Button variant="ghost" onClick={handleCancel}>
-                Cancel
+        <Flex justify="flex-end" mt="4">
+          {currentInquiries.length > 0 && (
+            <Flex justify="flex-end" mt="4">
+              <Button onClick={() => paginate(1)} mr={2}>
+                &lt;&lt;
               </Button>
-            ) : (
-              <Button
-                variant="ghost"
-                onClick={() => handleEditLead(editedLeadData)}
-              >
-                Edit
+              <Button onClick={() => paginate(currentPage - 1)} mr={2}>
+                &lt;
               </Button>
-            )}
-          </ModalFooter>
-
-        </ModalContent>
-      </Modal>
+              {renderPagination()}
+              <Button onClick={() => paginate(currentPage + 1)} mr={2}>
+                &gt;
+              </Button>
+              <Button onClick={() => paginate(totalPages)} mr={2}>
+                &gt;&gt;
+              </Button>
+            </Flex>
+          )}
+        </Flex>
+      </Box>
 
       <Modal
         isOpen={isDeleteConfirmationModalOpen}
@@ -745,21 +334,30 @@ export default function Data() {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Confirm Delete</ModalHeader>
+          <ModalHeader>Delete Lead</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            Are you sure you want to delete this lead?
+            <Text>Are you sure you want to delete this lead?</Text>
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" onClick={() => setIsDeleteConfirmationModalOpen(false)}>
+            <Button
+              variant="outline"
+              colorScheme="red"
+              mr={3}
+              onClick={() => setIsDeleteConfirmationModalOpen(false)}
+            >
               Cancel
             </Button>
-            <Button colorScheme="red" isLoading={isSaveLoading} onClick={handleDeleteConfirmation}>
+            <Button
+              colorScheme="red"
+              onClick={handleDeleteConfirmation}
+              isLoading={isSaveLoading}
+            >
               Delete
             </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </Box >
+    </Box>
   );
 }

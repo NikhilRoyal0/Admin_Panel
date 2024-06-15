@@ -9,12 +9,6 @@ import {
   Select,
   Checkbox,
   Textarea,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Grid,
   GridItem,
   Heading,
@@ -35,12 +29,14 @@ import {
   CheckboxGroup,
   Text,
   useToast,
+  Image,
 } from '@chakra-ui/react';
 import { CheckCircleIcon, EditIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
 import NetworkError from "../NotFound/networkError";
+import fallbackImage from "../../assets/images/imageError.png";
 import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseData } from '../../app/Slices/courseSlice';
-import { selectleadData, selectleadError, selectleadLoading, fetchleadData, AddleadData } from "../../app/Slices/leadSlice";
+import { selectleadData, selectleadError, selectleadLoading, fetchleadData, AddleadData, updateleadData } from "../../app/Slices/leadSlice";
 
 export default function InquiryForm() {
   const branchId = sessionStorage.getItem("BranchId");
@@ -60,23 +56,32 @@ export default function InquiryForm() {
   const [formData, setFormData] = useState({
     studentName: '',
     email: '',
-    qualification: '',
-    phoneNumber: "",
+    phoneNumber: '',
+    referCode: '',
+    parentCode: '',
     createdOn: Date.now(),
+    updatedOn: Date.now(),
     branchId: branchId,
-    primaryAddress: "",
-    state: "",
-    status: "Active",
-    city: "",
-    highestQualification: '',
-    collegeName: '',
-    boardUniversityName: '',
-    hasCertificate: false,
-    certificateNo: '',
-    issuedBy: '',
-    issueDate: '',
-    otherQualifications: '',
-    courses: "",
+    primaryAddress: '',
+    state: '',
+    status: 'pending',
+    city: '',
+    courses: '',
+    qualifications: [
+      {
+        qualification: '',
+        highestQualification: '',
+        collegeName: '',
+        boardUniversityName: '',
+        hasCertificate: false,
+        startDate: '',
+        endDate: '',
+        gradeMarks: '',
+        certificateNo: '',
+        issuedBy: '',
+        issueDate: '',
+      }
+    ],
     paymentMethods: {
       creditCard: false,
       debitCard: false,
@@ -103,6 +108,41 @@ export default function InquiryForm() {
     }
   };
 
+  const handleQualificationChange = (index, e) => {
+    const { name, value, type, checked } = e.target;
+    const updatedQualifications = [...formData.qualifications];
+    updatedQualifications[index][name] = type === 'checkbox' ? checked : value;
+    setFormData({ ...formData, qualifications: updatedQualifications });
+  };
+
+  const addQualification = () => {
+    if (formData.qualifications.length < 5) {
+      setFormData({
+        ...formData,
+        qualifications: [
+          ...formData.qualifications,
+          {
+            qualification: '',
+            highestQualification: '',
+            collegeName: '',
+            boardUniversityName: '',
+            startDate: '',
+            endDate: '',
+            gradeMarks: '',
+            hasCertificate: false,
+            certificateNo: '',
+            issuedBy: '',
+            issueDate: '',
+          },
+        ],
+      });
+    }
+  };
+
+  const removeQualification = (index) => {
+    const updatedQualifications = formData.qualifications.filter((_, i) => i !== index);
+    setFormData({ ...formData, qualifications: updatedQualifications });
+  };
 
   const handleCourseSelection = (courseId) => {
     if (!courseData) {
@@ -128,8 +168,6 @@ export default function InquiryForm() {
       }
     });
   };
-
-
 
   const handlePaymentMethodChange = (e) => {
     const { name, checked } = e.target;
@@ -158,56 +196,48 @@ export default function InquiryForm() {
 
     const formDataToSend = {
       ...formData,
+      qualifications: JSON.stringify(formData.qualifications),
       courses: JSON.stringify(selectedCourses),
       paymentMethods: JSON.stringify(formData.paymentMethods),
     };
 
     try {
-      dispatch(AddleadData(formDataToSend));
+      if (formData.lead_id) {
+        const response = await dispatch(updateleadData(formData.lead_id, formDataToSend));
+        console.log('UpdateleadData response:', response);
+      } else {
+        const response = await dispatch(AddleadData(formDataToSend));
+        console.log('AddleadData response:', response);
 
-      setShowSuccessDialog(true);
+        const { lead_id, student_id } = response.data;
 
-      setFormData({
-        studentName: '',
-        email: '',
-        qualification: '',
-        phoneNumber: '',
-        createdOn: Date.now(),
-        branchId: branchId,
-        primaryAddress: '',
-        state: '',
-        status: 'Active',
-        city: '',
-        highestQualification: '',
-        collegeName: '',
-        boardUniversityName: '',
-        hasCertificate: false,
-        certificateNo: '',
-        issuedBy: '',
-        issueDate: '',
-        otherQualifications: '',
-        courses: '',
-        paymentMethods: {
-          creditCard: false,
-          debitCard: false,
-          emi: false,
-          netBanking: false,
-          upi: false,
-          cash: false,
-        },
-      });
-
-      setSelectedCourses([]);
-
-      setTimeout(() => {
-        navigate("/leads")
-      }, 2000);
+        setFormData(prevState => ({
+          ...prevState,
+          lead_id: lead_id,
+          student_id: student_id,
+        }));
+      }
 
     } catch (error) {
-      console.error('Error adding lead:', error);
+      console.error('Error handling form submission:', error);
     }
   };
 
+  const handleUpdate = async () => {
+    const formDataToSend = {
+      ...formData,
+      qualifications: JSON.stringify(formData.qualifications),
+      courses: JSON.stringify(selectedCourses),
+      paymentMethods: JSON.stringify(formData.paymentMethods),
+    };
+
+    try {
+      await dispatch(updateleadData(formData.lead_id, formDataToSend));
+      nextStep();
+    } catch (error) {
+      console.error('Error updating lead:', error);
+    }
+  };
 
   const validateStep = () => {
     switch (step) {
@@ -222,20 +252,21 @@ export default function InquiryForm() {
         );
       case 2:
         return (
-          formData.qualification !== '' &&
-          (formData.qualification !== 'Other' || formData.highestQualification !== '') &&
-          formData.collegeName !== '' &&
-          formData.boardUniversityName !== ''
+          formData.qualifications[0].qualification !== '' &&
+          (formData.qualifications[0].qualification !== 'Other' || formData.qualifications[0].highestQualification !== '') &&
+          formData.qualifications[0].collegeName !== '' &&
+          formData.qualifications[0].boardUniversityName !== ''
         );
       case 3:
         return selectedCourses.length > 0;
       case 4:
+        return selectedCourses.length > 0;
+      case 5:
         return Object.values(formData.paymentMethods).some((method) => method);
       default:
         return true;
     }
   };
-
 
   const calculateTotalAmount = () => {
     let totalAmount = 0;
@@ -256,7 +287,6 @@ export default function InquiryForm() {
     return { totalAmount: totalAmount.toFixed(2), selectedCourseDetails };
   };
 
-
   if (isLoading || courseLoading) {
     return (
       <Flex justify="center" align="center" h="100vh">
@@ -273,6 +303,7 @@ export default function InquiryForm() {
     e.stopPropagation();
   };
 
+
   return (
     <Box bg="gray.100" minHeight="100vh" p="4">
       <Flex alignItems="center" justifyContent="center" minHeight="100%">
@@ -282,7 +313,7 @@ export default function InquiryForm() {
               {step > 1 ? (
                 <CheckCircleIcon color="green.500" boxSize="2em" />
               ) : (
-                <EditIcon color="gray.500" boxSize="2em" />
+                <EditIcon color={step === 1 ? 'blue.500' : 'gray.500'} boxSize="2em" />
               )}
               <Box mt={2}>Basic Details</Box>
             </Flex>
@@ -290,7 +321,7 @@ export default function InquiryForm() {
               {step > 2 ? (
                 <CheckCircleIcon color="green.500" boxSize="2em" />
               ) : (
-                <EditIcon color="gray.500" boxSize="2em" />
+                <EditIcon color={step === 2 ? 'blue.500' : 'gray.500'} boxSize="2em" />
               )}
               <Box mt={2}>Educational Details</Box>
             </Flex>
@@ -298,7 +329,7 @@ export default function InquiryForm() {
               {step > 3 ? (
                 <CheckCircleIcon color="green.500" boxSize="2em" />
               ) : (
-                <EditIcon color="gray.500" boxSize="2em" />
+                <EditIcon color={step === 3 ? 'blue.500' : 'gray.500'} boxSize="2em" />
               )}
               <Box mt={2}>Course Selection</Box>
             </Flex>
@@ -306,7 +337,15 @@ export default function InquiryForm() {
               {step > 4 ? (
                 <CheckCircleIcon color="green.500" boxSize="2em" />
               ) : (
-                <EditIcon color="gray.500" boxSize="2em" />
+                <EditIcon color={step === 4 ? 'blue.500' : 'gray.500'} boxSize="2em" />
+              )}
+              <Box mt={2}>Review</Box>
+            </Flex>
+            <Flex direction="column" alignItems="center">
+              {step > 5 ? (
+                <CheckCircleIcon color="green.500" boxSize="2em" />
+              ) : (
+                <EditIcon color={step === 5 ? 'blue.500' : 'gray.500'} boxSize="2em" />
               )}
               <Box mt={2}>Payment Mode</Box>
             </Flex>
@@ -317,7 +356,8 @@ export default function InquiryForm() {
                 {step === 1 ? 'Basic Details' : ''}
                 {step === 2 ? 'Educational Details' : ''}
                 {step === 3 ? 'Course Selection' : ''}
-                {step === 4 ? 'Payment Mode' : ''}
+                {step === 4 ? 'Review' : ''}
+                {step === 5 ? 'Payment Mode' : ''}
               </Heading>
             </CardHeader>
             <CardBody>
@@ -366,6 +406,18 @@ export default function InquiryForm() {
                       </GridItem>
                       <GridItem>
                         <FormControl>
+                          <FormLabel>Refer Code</FormLabel>
+                          <Input
+                            type="text"
+                            name="referCode"
+                            value={formData.referCode}
+                            onChange={handleChange}
+                            required
+                          />
+                        </FormControl>
+                      </GridItem>
+                      <GridItem>
+                        <FormControl>
                           <FormLabel>State</FormLabel>
                           <Input
                             type="text"
@@ -407,7 +459,7 @@ export default function InquiryForm() {
                           Previous
                         </Button>
                       )}
-                      <Button colorScheme="blue" onClick={nextStep} type="submit">
+                      <Button colorScheme="blue" onClick={(e) => { nextStep(); handleSubmit(e); }} type="submit">
                         Next
                       </Button>
                     </HStack>
@@ -416,19 +468,16 @@ export default function InquiryForm() {
               )}
 
               {step === 2 && (
-                <form onSubmit={handleSubmit}>
-                  <VStack spacing={4} align="stretch">
-                    <Grid
-                      templateColumns={{ base: 'repeat(1, 1fr)', sm: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' }}
-                      gap={4}
-                    >
-                      <GridItem>
+                <form>
+                  {formData.qualifications.map((qualification, index) => (
+                    <VStack key={index} spacing={4} align="stretch">
+                      <Grid templateColumns={{ base: 'repeat(1, 1fr)', sm: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' }} gap={4}>
                         <FormControl>
                           <FormLabel>Qualification</FormLabel>
                           <Select
                             name="qualification"
-                            value={formData.qualification}
-                            onChange={handleChange}
+                            value={qualification.qualification}
+                            onChange={(e) => handleQualificationChange(index, e)}
                             required
                           >
                             <option value="">Select</option>
@@ -438,153 +487,207 @@ export default function InquiryForm() {
                             <option value="Other">Other</option>
                           </Select>
                         </FormControl>
-                      </GridItem>
-                      {formData.qualification === 'Other' && (
-                        <GridItem>
+                        {qualification.qualification === 'Other' && (
                           <FormControl>
                             <FormLabel>Highest Qualification</FormLabel>
                             <Input
                               type="text"
                               name="highestQualification"
-                              value={formData.highestQualification}
-                              onChange={handleChange}
+                              value={qualification.highestQualification}
+                              onChange={(e) => handleQualificationChange(index, e)}
                               required
                             />
                           </FormControl>
-                        </GridItem>
-                      )}
-                      <GridItem>
+                        )}
                         <FormControl>
-                          <FormLabel>College/School Name</FormLabel>
+                          <FormLabel>College Name</FormLabel>
                           <Input
                             type="text"
                             name="collegeName"
-                            value={formData.collegeName}
-                            onChange={handleChange}
-                            required
+                            value={qualification.collegeName}
+                            onChange={(e) => handleQualificationChange(index, e)}
                           />
                         </FormControl>
-                      </GridItem>
-                      <GridItem>
                         <FormControl>
-                          <FormLabel>Board/University Name</FormLabel>
+                          <FormLabel>Board University Name</FormLabel>
                           <Input
                             type="text"
                             name="boardUniversityName"
-                            value={formData.boardUniversityName}
-                            onChange={handleChange}
-                            required
+                            value={qualification.boardUniversityName}
+                            onChange={(e) => handleQualificationChange(index, e)}
                           />
                         </FormControl>
-                      </GridItem>
-                      <GridItem>
                         <FormControl>
-                          <FormLabel>Have Certificate?</FormLabel>
+                          <FormLabel>Start Date</FormLabel>
+                          <Input
+                            type="date"
+                            name="startDate"
+                            value={qualification.startDate}
+                            onChange={(e) => handleQualificationChange(index, e)}
+                          />
+                        </FormControl>
+                        <FormControl>
+                          <FormLabel>End Date</FormLabel>
+                          <Input
+                            type="date"
+                            name="endDate"
+                            value={qualification.endDate}
+                            onChange={(e) => handleQualificationChange(index, e)}
+                          />
+                        </FormControl>
+                        <FormControl>
+                          <FormLabel>Grade/Marks</FormLabel>
+                          <Input
+                            type="text"
+                            name="gradeMarks"
+                            value={qualification.gradeMarks}
+                            onChange={(e) => handleQualificationChange(index, e)}
+                          />
+                        </FormControl>
+                        <FormControl>
+                          <FormLabel>Has Certificate?</FormLabel>
                           <Checkbox
                             name="hasCertificate"
-                            isChecked={formData.hasCertificate}
-                            onChange={handleChange}
+                            isChecked={qualification.hasCertificate}
+                            onChange={(e) => handleQualificationChange(index, e)}
                           />
                         </FormControl>
-                      </GridItem>
-                      {formData.hasCertificate && (
-                        <>
-                          <GridItem>
+                        {qualification.hasCertificate && (
+                          <>
                             <FormControl>
                               <FormLabel>Certificate No.</FormLabel>
                               <Input
                                 type="text"
                                 name="certificateNo"
-                                value={formData.certificateNo}
-                                onChange={handleChange}
+                                value={qualification.certificateNo}
+                                onChange={(e) => handleQualificationChange(index, e)}
                               />
                             </FormControl>
-                          </GridItem>
-                          <GridItem>
                             <FormControl>
                               <FormLabel>Issued By</FormLabel>
                               <Input
                                 type="text"
                                 name="issuedBy"
-                                value={formData.issuedBy}
-                                onChange={handleChange}
+                                value={qualification.issuedBy}
+                                onChange={(e) => handleQualificationChange(index, e)}
                               />
                             </FormControl>
-                          </GridItem>
-                          <GridItem>
                             <FormControl>
                               <FormLabel>Issue Date</FormLabel>
                               <Input
                                 type="date"
                                 name="issueDate"
-                                value={formData.issueDate}
-                                onChange={handleChange}
+                                value={qualification.issueDate}
+                                onChange={(e) => handleQualificationChange(index, e)}
                               />
                             </FormControl>
-                          </GridItem>
-                        </>
+                          </>
+                        )}
+                      </Grid>
+                      {formData.qualifications.length > 1 && (
+                        <HStack>
+                          <Button colorScheme="red" onClick={() => removeQualification(index)}>
+                            Remove
+                          </Button>
+                        </HStack>
                       )}
-                      <GridItem colSpan={2}>
-                        <FormControl>
-                          <FormLabel>Other Qualifications</FormLabel>
-                          <Textarea
-                            name="otherQualifications"
-                            value={formData.otherQualifications}
-                            onChange={handleChange}
-                          />
-                        </FormControl>
-                      </GridItem>
-                    </Grid>
-                    <HStack mt={8} spacing={4} justify="center">
-                      {step > 1 && (
-                        <Button colorScheme="blue" onClick={prevStep}>
-                          Previous
-                        </Button>
-                      )}
-                      <Button colorScheme="blue" onClick={nextStep}>
-                        Next
-                      </Button>
-                    </HStack>
-                  </VStack>
-                </form>
-              )}
-
-              {step === 3 && (
-                <VStack spacing={4} align="stretch" overflow="auto">
-                  <Table >
-                    <Thead>
-                      <Tr>
-                        <Th>Course Name</Th>
-                        <Th>Duration</Th>
-                        <Th>Price</Th>
-                        <Th>Select</Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {courseData.map((course) => (
-                        <Tr key={course.courseId}>
-                          <Td>{course.courseTitle}</Td>
-                          <Td>{course.duration}</Td>
-                          <Td>{course.price}</Td>
-                          <Td>
-                            <Checkbox
-                              key={course.courseId}
-                              isChecked={selectedCourses.some(selected => selected.courseId === course.courseId)}
-                              onChange={() => {
-                                handleCourseSelection(course.courseId.toString());
-                              }} />
-                          </Td>
-                        </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
+                    </VStack>
+                  ))}
+                  {formData.qualifications.length < 5 && (
+                    <Button mt={4} colorScheme="green" onClick={addQualification}>
+                      Add Qualification
+                    </Button>
+                  )}
                   <HStack mt={8} spacing={4} justify="center">
                     {step > 1 && (
                       <Button colorScheme="blue" onClick={prevStep}>
                         Previous
                       </Button>
                     )}
-                    <Button colorScheme="blue" onClick={nextStep}>
+                    <Button colorScheme="blue" onClick={(e) => handleUpdate(e)}>
+                      Next
+                    </Button>
+                  </HStack>
+                </form>
+              )}
+
+              {step === 3 && (
+                <VStack spacing={4} align="stretch" overflow="auto">
+                  <Grid
+                    templateColumns={{ base: "repeat(1, 1fr)", sm: "repeat(2, 1fr)", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }}
+                    gap={6}
+                    mb={4}
+                  >
+                    {courseData.length === 0 ? (
+                      <Flex justify="center" align="center" height="100%">
+                        <Box textAlign="center">
+                          <Text fontSize="xl" fontWeight="bold">No course available</Text>
+                        </Box>
+                      </Flex>
+                    ) : (
+                      courseData
+                        .map((course, index) => (
+                          <Box
+                            key={index}
+                            bg="white"
+                            p="4"
+                            borderRadius="lg"
+                            boxShadow="md"
+                            maxWidth="300px"
+                            boxSizing="border-box"
+                            transition="box-shadow 0.3s"
+                            _hover={{
+                              boxShadow: "2xl",
+                            }}
+                            display="flex"
+                            flexDirection="column"
+                            justifyContent="space-between"
+                            height="100%"
+                          >
+                            <Box>
+                              <Image
+                                src={course.smallThumbnail}
+                                alt={course.courseName}
+                                borderRadius="lg"
+                                mb="4"
+                                height="200px"
+                                width="100%"
+                                objectFit="cover"
+                                onError={(e) => (e.target.src = fallbackImage)}
+                              />
+                              <Text fontWeight="bold" mb="2">
+                                {course.courseName}
+                              </Text>
+                              <Text mb="2">
+                                <b>Duration:</b> {course.duration}
+                              </Text>
+                              <Text mb="2">
+                                <b>Price:</b> {course.price}
+                              </Text>
+                              <Text mb="2">
+                                <b>Short Info:</b> {course.shortInfo}
+                              </Text>
+                              <Checkbox
+                                key={course.courseId}
+                                isChecked={selectedCourses.some(selected => selected.courseId === course.courseId)}
+                                onChange={() => {
+                                  handleCourseSelection(course.courseId.toString());
+                                }} />
+                            </Box>
+                            <Flex alignItems="center" mt="auto">
+                            </Flex>
+                          </Box>
+
+                        ))
+                    )}
+                  </Grid>
+                  <HStack mt={8} spacing={4} justify="center">
+                    {step > 1 && (
+                      <Button colorScheme="blue" onClick={prevStep}>
+                        Previous
+                      </Button>
+                    )}
+                    <Button colorScheme="blue" onClick={(e) => { handleUpdate(e); }}>
                       Next
                     </Button>
                   </HStack>
@@ -592,6 +695,80 @@ export default function InquiryForm() {
               )}
 
               {step === 4 && (
+                <Grid gap={4} templateColumns="repeat(2, 1fr)" overflow="auto">
+                  <Box gridColumn="span 2">
+                    <Heading size="lg" mb={4}>Review Details</Heading>
+                  </Box>
+                  <Box>
+                    <Text fontSize="lg">
+                      <strong>Student Name:</strong> {formData.studentName}
+                    </Text>
+                    <Text fontSize="lg">
+                      <strong>Email:</strong> {formData.email}
+                    </Text>
+                    <Text fontSize="lg">
+                      <strong>Primary Phone:</strong> {formData.phoneNumber}
+                    </Text>
+                    <Text fontSize="lg">
+                      <strong>Refer Code:</strong> {formData.referCode}
+                    </Text>
+                    <Text fontSize="lg">
+                      <strong>Address:</strong> {formData.primaryAddress}, {formData.city}, {formData.state}
+                    </Text>
+                  </Box>
+                  <Box>
+                    <Text fontSize="lg">
+                      <strong>Qualification:</strong> {formData.qualifications.qualification === 'Other' ? formData.qualifications.highestQualification : formData.qualifications.qualification}
+                    </Text>
+                    <Text fontSize="lg">
+                      <strong>College/School Name:</strong> {formData.collegeName}
+                    </Text>
+                    <Text fontSize="lg">
+                      <strong>Board/University Name:</strong> {formData.boardUniversityName}
+                    </Text>
+                    {formData.hasCertificate && (
+                      <>
+                        <Text fontSize="lg">
+                          <strong>Certificate No.:</strong> {formData.certificateNo}
+                        </Text>
+                        <Text fontSize="lg">
+                          <strong>Issued By:</strong> {formData.issuedBy}
+                        </Text>
+                        <Text fontSize="lg">
+                          <strong>Issue Date:</strong> {formData.issueDate}
+                        </Text>
+                      </>
+                    )}
+                  </Box>
+                  <Box gridColumn="span 2">
+                    <Text fontSize="lg">
+                      <strong>Selected Courses:</strong>
+                    </Text>
+                    <ul>
+                      {selectedCourses.map((course) => (
+                        <li key={course.courseId} style={{ fontSize: '1.5rem' }}>
+                          <Heading size="md">{course.courseTitle}</Heading>
+                          <Text>Rs. {course.price}</Text>
+                        </li>
+                      ))}
+                    </ul>
+                  </Box>
+                  <Box gridColumn="span 2">
+                    <HStack mt={8} spacing={4} justify="center">
+                      {step > 1 && (
+                        <Button colorScheme="blue" size="lg" onClick={prevStep}>
+                          Previous
+                        </Button>
+                      )}
+                      <Button colorScheme="blue" size="lg" onClick={(e) => { handleUpdate(e); }}>
+                        Next
+                      </Button>
+                    </HStack>
+                  </Box>
+                </Grid>
+              )}
+
+              {step === 5 && (
                 <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={8}>
                   {/* Left Side: Course Summary Card */}
                   <Card>
@@ -675,7 +852,7 @@ export default function InquiryForm() {
                           Previous
                         </Button>
                       )}
-                      <Button colorScheme="blue" onClick={handleSubmit}>
+                      <Button colorScheme="blue" onClick={handleUpdate}>
                         Submit
                       </Button>
                     </HStack>

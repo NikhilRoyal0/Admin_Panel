@@ -36,7 +36,7 @@ import View_Users from "../components/Users/Users_List/View_Users";
 import StudentDashboard from "../components/Student/Students_List/View_Student";
 import User_Transactions from "../components/Users/Users_List/Transactions";
 import Student_Transactions from "../components/Student/Students_List/Transactions";
-import View from "../components/Inquiry/View";
+import Edit_Leads from "../components/Inquiry/EditLeads";
 import Data from "../components/Inquiry/Data";
 
 
@@ -83,9 +83,9 @@ const routes = createBrowserRouter(
         <Route path="/staff/attendance" element={<StaffAttendance />} />
         <Route path="/student/attendance" element={<StudentAttendance />} />
         <Route path="/documents" element={<Documents />} />
-        <Route path="/leads" element={<View />} />
+        <Route path="/leads" element={<Data />} />
         <Route path="/leads/addLead" element={<Inquiry />} />
-        <Route path="/leads/viewLeads" element={<Data />} />
+        <Route path="/leads/editLead/:lead_id" element={<Edit_Leads />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </>

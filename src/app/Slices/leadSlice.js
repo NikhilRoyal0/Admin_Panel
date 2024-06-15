@@ -79,20 +79,28 @@ export const AddleadData = (formData) => async (dispatch) => {
         },
       }
     );
+
     console.log("Response:", response.data);
+
+    // Dispatch an action if needed
     dispatch(fetchleadData());
+
+    // Return the response data to be accessible in your component
+    return response.data;
   } catch (error) {
     console.error("Error adding lead:", error);
+    throw error; // Optional: rethrow the error to handle it in your component
   }
 };
 
-export const updateleadData = (lead_id, updatedFormData) => async (dispatch) => {
+
+export const updateleadData = (lead_id, formDataToSend) => async (dispatch) => {
   try {
     const apiToken = sessionStorage.getItem("api-token");
 
     const response = await axios.put(
       import.meta.env.VITE_BASE_URL + `leads/update/${lead_id}`,
-      updatedFormData,
+      formDataToSend,
       {
         headers: {
           "Content-Type": "application/json",

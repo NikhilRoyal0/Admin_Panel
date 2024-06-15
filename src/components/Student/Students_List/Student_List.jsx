@@ -112,7 +112,7 @@ export default function Student_List() {
     formData.append("password", newStudentData.password);
     formData.append("role", newStudentData.role);
     formData.append("createdOn", Date.now());
-    formData.append("status", newStudentData.status);
+    formData.append("status", "NeedKyc");
     formData.append("branchId", newStudentData.branchId);
     formData.append("handledBy", newStudentData.handledBy);
     formData.append("currentCourseId", newStudentData.currentCourseId);
@@ -530,24 +530,6 @@ export default function Student_List() {
                       {role.roleName}
                     </option>
                   ))}
-                </Select>
-                <Select
-                  mb="3"
-                  placeholder="Select status"
-                  value={newStudentData.status}
-                  onChange={(e) =>
-                    setNewStudentData({
-                      ...newStudentData,
-                      status: e.target.value,
-                    })
-                  }
-                  isRequired
-                >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                  <option value="Disabled">Disabled</option>
-                  <option value="NeedKyc">Need KYC</option>
-                  <option value="NeedKyc">Empty</option>
                 </Select>
                 <Select
                   mb="3"
