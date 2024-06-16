@@ -38,6 +38,7 @@ import { selectrolesData, selectrolesError, selectrolesLoading, fetchrolesData }
 import NetworkError from "../../NotFound/networkError";
 import { getModulePermissions } from "../../../utils/permissions";
 import { useNavigate } from "react-router-dom";
+import passwordGenerator from "../../../utils/passwordGenerator";
 
 
 export default function Student_List() {
@@ -109,7 +110,7 @@ export default function Student_List() {
     const formData = new FormData();
     formData.append("studentName", newStudentData.studentName);
     formData.append("email", newStudentData.email);
-    formData.append("password", newStudentData.password);
+    formData.append("password", passwordGenerator.password());
     formData.append("role", newStudentData.role);
     formData.append("createdOn", Date.now());
     formData.append("status", "NeedKyc");
@@ -138,7 +139,7 @@ export default function Student_List() {
         setNewStudentData({
           studentName: "",
           email: "",
-          password: "",
+          password: passwordGenerator.password(),
           role: "",
           createdOn: Date.now(),
           status: "",
@@ -497,18 +498,6 @@ export default function Student_List() {
                     setNewStudentData({
                       ...newStudentData,
                       email: e.target.value,
-                    })
-                  }
-                  isRequired
-                />
-                <Input
-                  mb="3"
-                  placeholder="Student Password"
-                  value={newStudentData.password}
-                  onChange={(e) =>
-                    setNewStudentData({
-                      ...newStudentData,
-                      password: e.target.value,
                     })
                   }
                   isRequired
