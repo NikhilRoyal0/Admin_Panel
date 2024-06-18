@@ -4,6 +4,7 @@ import { Box, Grid, GridItem, Table, Thead, Badge, Tbody, Heading, Tr, Th, Td, I
 import { fetchStudentData, selectStudentData, selectStudentError, selectStudentLoading, updateStudentData } from "../../../app/Slices/studentSlice";
 import { selectBranchData, selectBranchError, selectBranchLoading, fetchBranchData } from "../../../app/Slices/branchSlice";
 import { selectstudentWalletData, selectstudentWalletError, selectstudentWalletLoading, fetchstudentWalletData } from "../../../app/Slices/studentWalletSlice";
+import { selectrolesData, selectrolesError, selectrolesLoading, fetchrolesData } from "../../../app/Slices/roleSlice";
 import { useNavigate, useParams } from 'react-router-dom';
 import fallbackImage from "../../../assets/images/StudentImage.png";
 import { EditIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons';
@@ -23,6 +24,9 @@ export default function StudentDashboard() {
     const transData = useSelector(selectstudentWalletData);
     const transError = useSelector(selectstudentWalletError);
     const transLoading = useSelector(selectstudentWalletLoading);
+    const roleData = useSelector(selectrolesData);
+    const roleError = useSelector(selectrolesError);
+    const roleLoading = useSelector(selectrolesLoading);
     const error = useSelector(selectStudentError);
     const isLoading = useSelector(selectStudentLoading);
     const Toast = useToast({
@@ -48,13 +52,17 @@ export default function StudentDashboard() {
         city: "",
         interestIn: "",
         admissionNo: "",
-        profilePhoto: ""
+        profilePhoto: "",
+        courses: "",
+        paymentMethods: "",
+        qualifications: "",
     });
 
     useEffect(() => {
         dispatch(fetchStudentData());
         dispatch(fetchBranchData());
         dispatch(fetchstudentWalletData());
+        dispatch(fetchrolesData());
     }, [dispatch]);
 
     useEffect(() => {
@@ -118,7 +126,7 @@ export default function StudentDashboard() {
     };
 
 
-    if (isLoading || branchLoading || transLoading) {
+    if (isLoading || branchLoading || transLoading || roleLoading) {
         return (
             <Flex justify="center" align="center" h="100vh">
                 <Spinner size="xl" />
@@ -126,7 +134,7 @@ export default function StudentDashboard() {
         );
     }
 
-    if (error || branchError || transError) {
+    if (error || branchError || transError || roleError) {
         return (
             <NetworkError />
         );
@@ -482,6 +490,28 @@ export default function StudentDashboard() {
                                     ) : (
                                         <span>
                                             {branchData && branchData.find(branch => branch.branchId == formData.branchId)?.branchName}
+                                        </span>
+                                    )}
+                                </Box>
+                                <Box mb="2">
+                                    <strong>Role: </strong>
+                                    {isEditing ? (
+                                        <Select
+                                            name="role"
+                                            value={formData.role}
+                                            onChange={handleChange}
+                                            ml="2"
+                                            size="sm"
+                                        >
+                                            {roleData && roleData.map(role => (
+                                                <option key={role.branchId} value={role.roleId}>
+                                                    {role.roleName}
+                                                </option>
+                                            ))}
+                                        </Select>
+                                    ) : (
+                                        <span>
+                                            {roleData && roleData.find(role => role.roleId == formData.role)?.roleName}
                                         </span>
                                     )}
                                 </Box>

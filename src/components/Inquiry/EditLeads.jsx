@@ -10,52 +10,65 @@ import {
     useToast,
     Select,
     Textarea,
-    Checkbox,
     Grid,
     GridItem,
-    Divider,
+    Divider
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { BeatLoader } from "react-spinners";
 import { fetchleadData, selectleadData, updateleadData, selectleadError, selectleadLoading } from "../../app/Slices/leadSlice";
 import { getModulePermissions } from "../../utils/permissions";
+import { AddStudentData } from "../../app/Slices/studentSlice";
+import timeConversion from "../../utils/timeConversion";
+import { selectrolesData, selectrolesError, selectrolesLoading, fetchrolesData } from "../../app/Slices/roleSlice";
+import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseData } from "../../app/Slices/courseSlice";
+import QualificationsModal from "./QualificationsModal";
 
 export default function Edit_Leads() {
     const { lead_id } = useParams();
     const error = useSelector(selectleadError);
     const isLoading = useSelector(selectleadLoading);
+    const roleData = useSelector(selectrolesData);
+    const roleError = useSelector(selectrolesError);
+    const roleLoading = useSelector(selectrolesLoading);
+    const courseData = useSelector(selectcourseData);
+    const courseError = useSelector(selectcourseError);
+    const courseLoading = useSelector(selectcourseLoading);
     const [lead, setLead] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [isSaveLoading, setIsSaveLoading] = useState(false);
-    const [hasCertificate, setHasCertificate] = useState(false); // State to track checkbox status
-
-    const Toast = useToast({
-        position: "top-right",
-    });
+    const [hasCertificate, setHasCertificate] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         studentName: "",
         email: "",
-        qualification: "",
+        password: "",
         phoneNumber: "",
+        referCode: "",
+        parentCode: "",
+        role: "",
+        walletAmount: "0",
+        admissionNo: "",
+        profilePhoto: "",
+        branchFeeStructureId: "",
+        currentCourseId: "",
+        handledBy: "",
+        deviceId: "",
+        lastActiveAt: "",
+        interestIn: "",
+        reason: "",
+        updatedOn: Date.now(),
         createdOn: "",
         branchId: "",
         primaryAddress: "",
         state: "",
-        city: "",
         status: "",
-        highestQualification: "",
-        collegeName: "",
-        boardUniversityName: "",
-        hasCertificate: false,
-        certificateNo: "",
-        issuedBy: "",
-        issueDate: "",
-        otherQualifications: "",
+        city: "",
         courses: "",
+        qualifications: "[]",
         paymentMethods: "",
-        referCode: "",
-        parentCode: "",
     });
+
     const leadData = useSelector(selectleadData);
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -67,6 +80,8 @@ export default function Edit_Leads() {
         if (!leadData.length) {
             dispatch(fetchleadData());
         }
+        dispatch(fetchrolesData());
+        dispatch(fetchcourseData());
     }, [dispatch, leadData.length]);
 
     useEffect(() => {
@@ -74,48 +89,89 @@ export default function Edit_Leads() {
         if (leadDetails) {
             setLead(leadDetails);
             setFormData(leadDetails);
-            setHasCertificate(leadDetails.hasCertificate);
         }
     }, [leadData, lead_id]);
 
-    if (!lead) {
-        return (
-            <Flex justify="center" align="center" h="100vh">
-                <Spinner size="xl" />
-            </Flex>
-        );
-    }
-
-    const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: type === "checkbox" ? checked : value,
-        }));
+    const openModal = () => {
+        setIsModalOpen(true);
     };
 
-    if (isLoading) {
-        return (
-            <Flex justify="center" align="center" h="100vh">
-                <Spinner size="xl" />
-            </Flex>
-        );
-    }
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
 
-    if (error) {
-        return <NetworkError />;
-    }
+    const handleQualificationChange = (index, event) => {
+        const { name, value } = event.target;
+        const newQualifications = JSON.parse(formData.qualifications);
+        newQualifications[index] = {
+            ...newQualifications[index],
+            [name]: value,
+        };
+        setFormData({ ...formData, qualifications: JSON.stringify(newQualifications) });
+    };
+
+    const addQualification = () => {
+        const newQualifications = JSON.parse(formData.qualifications);
+        if (newQualifications.length < 5) {
+            newQualifications.push({
+                qualification: '',
+                highestQualification: '',
+            });
+            setFormData({ ...formData, qualifications: JSON.stringify(newQualifications) });
+        }
+    };
+
+    const removeQualification = (index) => {
+        const newQualifications = JSON.parse(formData.qualifications);
+        newQualifications.splice(index, 1);
+        setFormData({ ...formData, qualifications: JSON.stringify(newQualifications) });
+    };
+
+
+
+    const handleInputChange = (event) => {
+        const { name, value } = event.target;
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+            updatedOn: Date.now(),
+        }));
+    };
 
 
     const handleSave = () => {
         dispatch(updateleadData(lead_id, formData))
-            .then(() => {
+            .then((response) => {
                 toast({
                     title: "Lead updated successfully",
                     status: "success",
                     duration: 3000,
                     isClosable: true,
                 });
+
+                if (formData.status === "converted") {
+                    const { lead_id, ...formData2 } = formData;
+
+                    dispatch(AddStudentData(formData2))
+                        .then(() => {
+                            toast({
+                                title: "Student data updated successfully",
+                                status: "success",
+                                duration: 3000,
+                                isClosable: true,
+                            });
+                        })
+                        .catch((error) => {
+                            toast({
+                                title: "Failed to update student data",
+                                status: "error",
+                                duration: 3000,
+                                isClosable: true,
+                            });
+                            console.log("Error updating student data: ", error);
+                        });
+                }
+
                 setIsEditing(false);
             })
             .catch((error) => {
@@ -135,8 +191,8 @@ export default function Edit_Leads() {
 
     const handleCancel = () => {
         setIsEditing(false);
-    }
-
+        dispatch(fetchleadData());
+    };
 
     const LeadManagementPermissions = getModulePermissions("Inquiry");
 
@@ -145,6 +201,28 @@ export default function Edit_Leads() {
     }
 
     const canEditData = LeadManagementPermissions.update;
+
+    if (!lead) {
+        return (
+            <Flex justify="center" align="center" h="100vh">
+                <Spinner size="xl" />
+            </Flex>
+        );
+    }
+
+    if (isLoading || roleLoading || courseLoading) {
+        return (
+            <Flex justify="center" align="center" h="100vh">
+                <Spinner size="xl" />
+            </Flex>
+        );
+    }
+
+    if (error || roleError || courseError) {
+        return <NetworkError />;
+    }
+
+
 
     return (
         <Box p={2} m={5}>
@@ -225,10 +303,10 @@ export default function Edit_Leads() {
                         />
                     </GridItem>
                     <GridItem>
-                        <Text mb={2} fontWeight="bold">Qualification</Text>
+                        <Text mb={2} fontWeight="bold">Password</Text>
                         <Input
-                            name="qualification"
-                            value={formData.qualification}
+                            name="password"
+                            value={formData.password}
                             onChange={handleInputChange}
                             isDisabled={!isEditing}
                             bg={isEditing ? 'white' : 'gray.100'}
@@ -267,14 +345,168 @@ export default function Edit_Leads() {
                         />
                     </GridItem>
                     <GridItem>
-                        <Text mb={2} fontWeight="bold">Created On</Text>
+                        <Text mb={2} fontWeight="bold">
+                            Qualifications
+                        </Text>
                         <Input
-                            name="createdOn"
-                            type="date"
-                            value={formData.createdOn}
+                            name="qualifications"
+                            value={formData.qualifications}  // Ensure this is correct for your UI needs
+                            onClick={openModal}
+                            isDisabled={!isEditing}
+                            bg={isEditing ? "white" : "gray.100"}
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <Text mb={2} fontWeight="bold">Status</Text>
+                        <Select
+                            name="status"
+                            value={formData.status}
                             onChange={handleInputChange}
                             isDisabled={!isEditing}
                             bg={isEditing ? 'white' : 'gray.100'}
+                        >
+                            <option value="accepted">Accepted</option>
+                            <option value="pending">Pending</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="converted">Converted</option>
+                        </Select>
+                    </GridItem>
+
+                    <GridItem>
+                        <Text mb={2} fontWeight="bold">
+                            Role
+                        </Text>
+                        <Select
+                            name="role"
+                            value={formData.role}
+                            onChange={handleInputChange}
+                            isDisabled={!isEditing}
+                            bg={isEditing ? 'white' : 'gray.100'}
+                        >
+                            {roleData.map((role) => (
+                                <option key={role.roleId} value={role.roleId}>
+                                    {role.roleName}
+                                </option>
+                            ))}
+                        </Select>
+                    </GridItem>
+                    <GridItem>
+                        <Text mb={2} fontWeight="bold">Wallet Amount</Text>
+                        <Input
+                            name="walletAmount"
+                            value={formData.walletAmount}
+                            onChange={handleInputChange}
+                            isDisabled={!isEditing}
+                            bg={isEditing ? 'white' : 'gray.100'}
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <Text mb={2} fontWeight="bold">Admission No</Text>
+                        <Input
+                            name="admissionNo"
+                            value={formData.admissionNo}
+                            onChange={handleInputChange}
+                            isDisabled={!isEditing}
+                            bg={isEditing ? 'white' : 'gray.100'}
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <Text mb={2} fontWeight="bold">Profile Photo</Text>
+                        <Input
+                            name="profilePhoto"
+                            value={formData.profilePhoto}
+                            onChange={handleInputChange}
+                            isDisabled={!isEditing}
+                            bg={isEditing ? 'white' : 'gray.100'}
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <Text mb={2} fontWeight="bold">Branch Fee Structure Id</Text>
+                        <Input
+                            name="branchFeeStructureId"
+                            value={formData.branchFeeStructureId}
+                            onChange={handleInputChange}
+                            isDisabled={!isEditing}
+                            bg={isEditing ? 'white' : 'gray.100'}
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <Text mb={2} fontWeight="bold">Current Course Id</Text>
+                        <Input
+                            name="currentCourseId"
+                            value={formData.currentCourseId}
+                            onChange={handleInputChange}
+                            isDisabled={!isEditing}
+                            bg={isEditing ? 'white' : 'gray.100'}
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <Text mb={2} fontWeight="bold">Handled By</Text>
+                        <Input
+                            name="handledBy"
+                            value={formData.handledBy}
+                            onChange={handleInputChange}
+                            isDisabled={!isEditing}
+                            bg={isEditing ? 'white' : 'gray.100'}
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <Text mb={2} fontWeight="bold">Device Id</Text>
+                        <Input
+                            name="deviceId"
+                            value={formData.deviceId}
+                            onChange={handleInputChange}
+                            isDisabled={!isEditing}
+                            bg={isEditing ? 'white' : 'gray.100'}
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <Text mb={2} fontWeight="bold">Interest In</Text>
+                        <Input
+                            name="interestIn"
+                            value={formData.interestIn}
+                            onChange={handleInputChange}
+                            isDisabled={!isEditing}
+                            bg={isEditing ? 'white' : 'gray.100'}
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <Text mb={2} fontWeight="bold">Last Active</Text>
+                        <Input
+                            name="lastActiveAt"
+                            value={formData.lastActiveAt}
+                            onChange={handleInputChange}
+                            isDisabled
+                            bg='gray.100'
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <Text mb={2} fontWeight="bold">Reason</Text>
+                        <Input
+                            name="reason"
+                            value={formData.reason}
+                            onChange={handleInputChange}
+                            isDisabled={!isEditing}
+                            bg={isEditing ? 'white' : 'gray.100'}
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <Text mb={2} fontWeight="bold">Created On</Text>
+                        <Input
+                            name="createdOn"
+                            value={timeConversion.unixTimeToRealTime(formData.createdOn)}
+                            isDisabled
+                            bg='gray.100'
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <Text mb={2} fontWeight="bold">Updated On</Text>
+                        <Input
+                            name="updatedOn"
+                            value={timeConversion.unixTimeToRealTime(formData.updatedOn)}
+                            onChange={handleInputChange}
+                            isDisabled
+                            bg='gray.100'
                         />
                     </GridItem>
                     <GridItem>
@@ -317,109 +549,6 @@ export default function Edit_Leads() {
                             bg={isEditing ? 'white' : 'gray.100'}
                         />
                     </GridItem>
-                    <GridItem>
-                        <Text mb={2} fontWeight="bold">Status</Text>
-                        <Select
-                            name="status"
-                            value={formData.status}
-                            onChange={handleInputChange}
-                            isDisabled={!isEditing}
-                            bg={isEditing ? 'white' : 'gray.100'}
-                        >
-                            <option value="accepted">Accepted</option>
-                            <option value="pending">Pending</option>
-                            <option value="rejected">Rejected</option>
-                            <option value="converted">Converted</option>
-                        </Select>
-                    </GridItem>
-                    <GridItem>
-                        <Text mb={2} fontWeight="bold">Highest Qualification</Text>
-                        <Input
-                            name="highestQualification"
-                            value={formData.highestQualification}
-                            onChange={handleInputChange}
-                            isDisabled={!isEditing}
-                            bg={isEditing ? 'white' : 'gray.100'}
-                        />
-                    </GridItem>
-                    <GridItem>
-                        <Text mb={2} fontWeight="bold">College Name</Text>
-                        <Input
-                            name="collegeName"
-                            value={formData.collegeName}
-                            onChange={handleInputChange}
-                            isDisabled={!isEditing}
-                            bg={isEditing ? 'white' : 'gray.100'}
-                        />
-                    </GridItem>
-                    <GridItem>
-                        <Text mb={2} fontWeight="bold">Board/University Name</Text>
-                        <Input
-                            name="boardUniversityName"
-                            value={formData.boardUniversityName}
-                            onChange={handleInputChange}
-                            isDisabled={!isEditing}
-                            bg={isEditing ? 'white' : 'gray.100'}
-                        />
-                    </GridItem>
-                    <GridItem>
-                        <Text mb={2} fontWeight="bold">Has Certificate</Text>
-                        <Checkbox
-                            name="hasCertificate"
-                            isChecked={formData.hasCertificate}
-                            onChange={(e) => {
-                                handleInputChange(e);
-                                setHasCertificate(e.target.checked); // Update the state of hasCertificate
-                            }}
-                            isDisabled={!isEditing}
-                            bg={isEditing ? 'white' : 'gray.100'}
-                        />
-                    </GridItem>
-                    {hasCertificate && (
-                        <>
-                            <GridItem>
-                                <Text mb={2} fontWeight="bold">Certificate Number</Text>
-                                <Input
-                                    name="certificateNo"
-                                    value={formData.certificateNo}
-                                    onChange={handleInputChange}
-                                    isDisabled={!isEditing}
-                                    bg={isEditing ? 'white' : 'gray.100'}
-                                />
-                            </GridItem>
-                            <GridItem>
-                                <Text mb={2} fontWeight="bold">Issued By</Text>
-                                <Input
-                                    name="issuedBy"
-                                    value={formData.issuedBy}
-                                    onChange={handleInputChange}
-                                    isDisabled={!isEditing}
-                                    bg={isEditing ? 'white' : 'gray.100'}
-                                />
-                            </GridItem>
-                            <GridItem>
-                                <Text mb={2} fontWeight="bold">Issue Date</Text>
-                                <Input
-                                    name="issueDate"
-                                    type="date"
-                                    value={formData.issueDate}
-                                    onChange={handleInputChange}
-                                    isDisabled={!isEditing}
-                                    bg={isEditing ? 'white' : 'gray.100'}
-                                />
-                            </GridItem>
-                        </>
-                    )}
-                    <GridItem colSpan={1}>
-                        <Text mb={2} fontWeight="bold">Other Qualifications</Text>
-                        <Textarea
-                            name="otherQualifications"
-                            value={formData.otherQualifications}
-                            onChange={handleInputChange}
-                            isDisabled={!isEditing}
-                            bg={isEditing ? 'white' : 'gray.100'}
-                        />
-                    </GridItem>
                     <GridItem colSpan={1}>
                         <Text mb={2} fontWeight="bold">Courses</Text>
                         <Textarea
@@ -443,6 +572,15 @@ export default function Edit_Leads() {
                     </GridItem>
 
                 </Grid>
+
+                <QualificationsModal
+                    isOpen={isModalOpen}
+                    onClose={closeModal}
+                    qualifications={formData.qualifications}
+                    handleQualificationChange={handleQualificationChange}
+                    addQualification={addQualification}
+                    removeQualification={removeQualification}
+                />
             </Box>
         </Box>
     )

@@ -135,10 +135,9 @@ export default function Data() {
     return <NetworkError />;
   }
 
-  const filteredInquiries = DataByBranch.filter((Lead) => {
-    const statusMatch = selectedStatus ? Lead.status === selectedStatus : true;
-    return statusMatch;
-  });
+  const filteredInquiries = DataByBranch
+    .filter((Lead) => selectedStatus ? Lead.status === selectedStatus : true)
+    .sort((a, b) => b.createdOn - a.createdOn);
 
   const totalPages = Math.ceil(filteredInquiries.length / inquiriesPerPage);
 
@@ -172,7 +171,9 @@ export default function Data() {
 
   const indexOfLastLead = currentPage * inquiriesPerPage;
   const indexOfFirstLead = indexOfLastLead - inquiriesPerPage;
-  const currentInquiries = filteredInquiries.slice(indexOfFirstLead, indexOfLastLead);
+  const currentInquiries = filteredInquiries
+    .slice(indexOfFirstLead, indexOfLastLead)
+    .sort((a, b) => b.createdOn - a.createdOn);
 
   const LeadManagementPermissions = getModulePermissions("Inquiry");
 
@@ -256,6 +257,21 @@ export default function Data() {
                 borderRadius="lg"
                 boxShadow="lg"
                 maxW="xl"
+                overflow="auto"
+                css={{
+                  '&::-webkit-scrollbar': {
+                    width: '8px',
+                    height: '8px',
+                    backgroundColor: 'transparent',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    backgroundColor: '#cbd5e0',
+                    borderRadius: '10px',
+                  },
+                  '&::-webkit-scrollbar-thumb:hover': {
+                    backgroundColor: '#a0aec0',
+                  },
+                }}
               >
                 <Flex justify="space-between">
                   <Text fontSize="lg" fontWeight="semibold">

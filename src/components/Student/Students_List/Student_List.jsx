@@ -68,6 +68,9 @@ export default function Student_List() {
     interestIn: "",
     admissionNo: "",
     profilePhoto: "",
+    courses: "",
+    paymentMethods: "",
+    qualifications: "",
   });
 
   const StudentData = useSelector(selectStudentData);
@@ -107,26 +110,29 @@ export default function Student_List() {
     e.preventDefault();
     setIsSaveLoading(true);
 
-    const formData = new FormData();
-    formData.append("studentName", newStudentData.studentName);
-    formData.append("email", newStudentData.email);
-    formData.append("password", passwordGenerator.password());
-    formData.append("role", newStudentData.role);
-    formData.append("createdOn", Date.now());
-    formData.append("status", "NeedKyc");
-    formData.append("branchId", newStudentData.branchId);
-    formData.append("handledBy", newStudentData.handledBy);
-    formData.append("currentCourseId", newStudentData.currentCourseId);
-    formData.append("walletAmount", 0);
-    formData.append("referCode", newStudentData.referCode);
-    formData.append("parentCode", newStudentData.parentCode);
-    formData.append("primaryAddress", newStudentData.primaryAddress);
-    formData.append("state", newStudentData.state);
-    formData.append("city", newStudentData.city);
-    formData.append("interestIn", newStudentData.interestIn);
-    formData.append("admissionNo", newStudentData.admissionNo);
-    formData.append("profilePhoto", newStudentData.profilePhoto);
-    dispatch(AddStudentData(formData))
+    const formData2 = new FormData();
+    formData2.append("studentName", newStudentData.studentName);
+    formData2.append("email", newStudentData.email);
+    formData2.append("password", passwordGenerator.password());
+    formData2.append("role", newStudentData.role);
+    formData2.append("createdOn", Date.now());
+    formData2.append("status", "NeedKyc");
+    formData2.append("branchId", newStudentData.branchId);
+    formData2.append("handledBy", newStudentData.handledBy);
+    formData2.append("currentCourseId", newStudentData.currentCourseId);
+    formData2.append("walletAmount", 0);
+    formData2.append("referCode", newStudentData.referCode);
+    formData2.append("parentCode", newStudentData.parentCode);
+    formData2.append("primaryAddress", newStudentData.primaryAddress);
+    formData2.append("state", newStudentData.state);
+    formData2.append("city", newStudentData.city);
+    formData2.append("interestIn", newStudentData.interestIn);
+    formData2.append("admissionNo", newStudentData.admissionNo);
+    formData2.append("profilePhoto", newStudentData.profilePhoto);
+    formData2.append("courses", newStudentData.courses);
+    formData2.append("paymentMethods", newStudentData.paymentMethods);
+    formData2.append("qualifications", newStudentData.qualifications);
+    dispatch(AddStudentData(formData2))
       .then(() => {
         setIsSaveLoading(false);
         Toast({
@@ -363,7 +369,8 @@ export default function Student_List() {
         '&::-webkit-scrollbar-thumb:hover': {
           backgroundColor: '#a0aec0',
         },
-      }}>
+      }}
+      >
         {currentStudents.length === 0 ? (
           <Flex justify="center" align="center" height="100%">
             <Box textAlign="center">

@@ -65,13 +65,13 @@ export const fetchStudentData = () => async (dispatch) => {
   }
 };
 
-export const AddStudentData = (formData) => async (dispatch) => {
+export const AddStudentData = (formData2) => async (dispatch) => {
   try {
     const apiToken = sessionStorage.getItem("api-token");
 
     const response = await axios.post(
       import.meta.env.VITE_BASE_URL + "students/register",
-      formData,
+      formData2,
       {
         headers: {
           "Content-Type": "application/json",

@@ -20,23 +20,22 @@ import {
   Flex,
   Stack,
   Spinner,
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
-  CheckboxGroup,
   Text,
   useToast,
   Image,
+  Table,
+  Tbody,
+  Td,
+  Tr,
 } from '@chakra-ui/react';
 import { CheckCircleIcon, EditIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
 import NetworkError from "../NotFound/networkError";
 import fallbackImage from "../../assets/images/imageError.png";
+import passwordGenerator from "../../utils/passwordGenerator";
 import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseData } from '../../app/Slices/courseSlice';
 import { selectleadData, selectleadError, selectleadLoading, fetchleadData, AddleadData, updateleadData } from "../../app/Slices/leadSlice";
+import { selectbranchPlannerData, selectbranchPlannerError, selectbranchPlannerLoading, fetchbranchPlannerData } from "../../app/Slices/branchPlanner";
 
 export default function InquiryForm() {
   const branchId = sessionStorage.getItem("BranchId");
@@ -47,18 +46,34 @@ export default function InquiryForm() {
   const courseData = useSelector(selectcourseData);
   const courseError = useSelector(selectcourseError);
   const courseLoading = useSelector(selectcourseLoading);
+  const plannerData = useSelector(selectbranchPlannerData);
+  const plannerLoading = useSelector(selectbranchPlannerLoading);
+  const plannerError = useSelector(selectbranchPlannerError);
   const error = useSelector(selectleadError);
   const isLoading = useSelector(selectleadLoading);
   const Toast = useToast({
     position: "top-right",
   });
   const [selectedCourses, setSelectedCourses] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
     studentName: '',
     email: '',
+    password: passwordGenerator.password(),
     phoneNumber: '',
     referCode: '',
     parentCode: '',
+    role: '',
+    walletAmount: '0',
+    admissionNo: '',
+    profilePhoto: '',
+    branchFeeStructureId: '',
+    currentCourseId: '',
+    handledBy: '',
+    deviceId: '',
+    lastActiveAt: '',
+    interestIn: '',
+    reason: '',
     createdOn: Date.now(),
     updatedOn: Date.now(),
     branchId: branchId,
@@ -92,12 +107,27 @@ export default function InquiryForm() {
     },
   });
 
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [kitFeeIncluded, setKitFeeIncluded] = useState(true);
 
   useEffect(() => {
     dispatch(fetchleadData());
     dispatch(fetchcourseData());
+    dispatch(fetchbranchPlannerData());
   }, [dispatch]);
+
+
+  const planner = plannerData.find(plan => plan.branchId == branchId);
+
+  if (!planner) {
+    return (
+      <Flex justify="center" align="center" h="100vh">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
+  const kitFee = planner.kitFee;
+  const admissionFee = planner.admissionFee;
+
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -152,7 +182,11 @@ export default function InquiryForm() {
     const selectedCourse = courseData.find(course => course.courseId === courseId);
 
     if (!selectedCourse) {
-      return;
+      return (
+        <Flex justify="center" align="center" h="100vh">
+          <Spinner size="xl" />
+        </Flex>
+      );
     }
 
     setSelectedCourses(prevSelectedCourses => {
@@ -194,20 +228,22 @@ export default function InquiryForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const selectedPaymentMethods = Object.keys(formData.paymentMethods)
+      .filter(method => formData.paymentMethods[method]);
+
     const formDataToSend = {
       ...formData,
+      currentCourseId: selectedCourses.length > 0 ? selectedCourses[0].courseId : '',
       qualifications: JSON.stringify(formData.qualifications),
       courses: JSON.stringify(selectedCourses),
-      paymentMethods: JSON.stringify(formData.paymentMethods),
+      paymentMethods: JSON.stringify(selectedPaymentMethods), 
     };
 
     try {
       if (formData.lead_id) {
         const response = await dispatch(updateleadData(formData.lead_id, formDataToSend));
-        console.log('UpdateleadData response:', response);
       } else {
         const response = await dispatch(AddleadData(formDataToSend));
-        console.log('AddleadData response:', response);
 
         const { lead_id, student_id } = response.data;
 
@@ -223,21 +259,6 @@ export default function InquiryForm() {
     }
   };
 
-  const handleUpdate = async () => {
-    const formDataToSend = {
-      ...formData,
-      qualifications: JSON.stringify(formData.qualifications),
-      courses: JSON.stringify(selectedCourses),
-      paymentMethods: JSON.stringify(formData.paymentMethods),
-    };
-
-    try {
-      await dispatch(updateleadData(formData.lead_id, formDataToSend));
-      nextStep();
-    } catch (error) {
-      console.error('Error updating lead:', error);
-    }
-  };
 
   const validateStep = () => {
     switch (step) {
@@ -255,7 +276,11 @@ export default function InquiryForm() {
           formData.qualifications[0].qualification !== '' &&
           (formData.qualifications[0].qualification !== 'Other' || formData.qualifications[0].highestQualification !== '') &&
           formData.qualifications[0].collegeName !== '' &&
-          formData.qualifications[0].boardUniversityName !== ''
+          formData.qualifications[0].boardUniversityName !== '' &&
+          formData.qualifications[0].startDate !== '' &&
+          formData.qualifications[0].endDate !== '' &&
+          formData.qualifications[0].gradeMarks !== ''
+
         );
       case 3:
         return selectedCourses.length > 0;
@@ -267,6 +292,7 @@ export default function InquiryForm() {
         return true;
     }
   };
+
 
   const calculateTotalAmount = () => {
     let totalAmount = 0;
@@ -284,10 +310,41 @@ export default function InquiryForm() {
       }
     });
 
+    if (kitFeeIncluded) {
+      totalAmount += kitFee;
+    }
+
     return { totalAmount: totalAmount.toFixed(2), selectedCourseDetails };
   };
 
-  if (isLoading || courseLoading) {
+  const handleUpdate = async () => {
+
+    const selectedPaymentMethods = Object.keys(formData.paymentMethods)
+      .filter(method => formData.paymentMethods[method]);
+
+    const formDataToSend = {
+      ...formData,
+      currentCourseId: selectedCourses.length > 0 ? selectedCourses[0].courseId : '',
+      qualifications: JSON.stringify(formData.qualifications),
+      courses: JSON.stringify(selectedCourses),
+      paymentMethods: JSON.stringify(selectedPaymentMethods),
+    };
+
+    try {
+      if (validateStep()) {
+        await dispatch(updateleadData(formData.lead_id, formDataToSend));
+      }
+      if (step === 5) {
+        setTimeout(() => {
+          navigate("/leads");
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Error updating lead:', error);
+    }
+  };
+
+  if (isLoading || courseLoading || plannerLoading) {
     return (
       <Flex justify="center" align="center" h="100vh">
         <Spinner size="xl" />
@@ -295,13 +352,13 @@ export default function InquiryForm() {
     );
   }
 
-  if (error || courseError) {
+  if (error || courseError || plannerError) {
     return <NetworkError />;
   }
 
-  const handleOverlayClick = (e) => {
-    e.stopPropagation();
-  };
+  const filteredCourses = courseData.filter(course =>
+    course.courseName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
 
   return (
@@ -500,12 +557,13 @@ export default function InquiryForm() {
                           </FormControl>
                         )}
                         <FormControl>
-                          <FormLabel>College Name</FormLabel>
+                          <FormLabel>College/School Name</FormLabel>
                           <Input
                             type="text"
                             name="collegeName"
                             value={qualification.collegeName}
                             onChange={(e) => handleQualificationChange(index, e)}
+                            required
                           />
                         </FormControl>
                         <FormControl>
@@ -515,6 +573,7 @@ export default function InquiryForm() {
                             name="boardUniversityName"
                             value={qualification.boardUniversityName}
                             onChange={(e) => handleQualificationChange(index, e)}
+                            required
                           />
                         </FormControl>
                         <FormControl>
@@ -524,6 +583,7 @@ export default function InquiryForm() {
                             name="startDate"
                             value={qualification.startDate}
                             onChange={(e) => handleQualificationChange(index, e)}
+                            required
                           />
                         </FormControl>
                         <FormControl>
@@ -533,6 +593,7 @@ export default function InquiryForm() {
                             name="endDate"
                             value={qualification.endDate}
                             onChange={(e) => handleQualificationChange(index, e)}
+                            required
                           />
                         </FormControl>
                         <FormControl>
@@ -542,6 +603,7 @@ export default function InquiryForm() {
                             name="gradeMarks"
                             value={qualification.gradeMarks}
                             onChange={(e) => handleQualificationChange(index, e)}
+                            required
                           />
                         </FormControl>
                         <FormControl>
@@ -561,6 +623,7 @@ export default function InquiryForm() {
                                 name="certificateNo"
                                 value={qualification.certificateNo}
                                 onChange={(e) => handleQualificationChange(index, e)}
+                                required
                               />
                             </FormControl>
                             <FormControl>
@@ -570,6 +633,7 @@ export default function InquiryForm() {
                                 name="issuedBy"
                                 value={qualification.issuedBy}
                                 onChange={(e) => handleQualificationChange(index, e)}
+                                required
                               />
                             </FormControl>
                             <FormControl>
@@ -579,6 +643,7 @@ export default function InquiryForm() {
                                 name="issueDate"
                                 value={qualification.issueDate}
                                 onChange={(e) => handleQualificationChange(index, e)}
+                                required
                               />
                             </FormControl>
                           </>
@@ -604,7 +669,7 @@ export default function InquiryForm() {
                         Previous
                       </Button>
                     )}
-                    <Button colorScheme="blue" onClick={(e) => handleUpdate(e)}>
+                    <Button colorScheme="blue" onClick={(e) => { nextStep(); handleUpdate(e); }}>
                       Next
                     </Button>
                   </HStack>
@@ -612,73 +677,91 @@ export default function InquiryForm() {
               )}
 
               {step === 3 && (
-                <VStack spacing={4} align="stretch" overflow="auto">
+                <VStack spacing={4} align="stretch" >
+                  <Box position='relative'>
+                    <Input
+                      type="text"
+                      placeholder="Search by course name"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      position="relative"
+                      maxWidth={280}
+                      top="0"
+                      right="0"
+                      mr={4}
+                      px={2}
+                      py={1}
+                    />
+                  </Box>
                   <Grid
-                    templateColumns={{ base: "repeat(1, 1fr)", sm: "repeat(2, 1fr)", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }}
+                    templateColumns={{
+                      base: "repeat(1, 1fr)",
+                      sm: "repeat(2, 1fr)",
+                      md: "repeat(2, 1fr)",
+                      lg: "repeat(3, 1fr)"
+                    }}
                     gap={6}
                     mb={4}
                   >
-                    {courseData.length === 0 ? (
+                    {filteredCourses.length === 0 ? (
                       <Flex justify="center" align="center" height="100%">
                         <Box textAlign="center">
                           <Text fontSize="xl" fontWeight="bold">No course available</Text>
                         </Box>
                       </Flex>
                     ) : (
-                      courseData
-                        .map((course, index) => (
-                          <Box
-                            key={index}
-                            bg="white"
-                            p="4"
-                            borderRadius="lg"
-                            boxShadow="md"
-                            maxWidth="300px"
-                            boxSizing="border-box"
-                            transition="box-shadow 0.3s"
-                            _hover={{
-                              boxShadow: "2xl",
-                            }}
-                            display="flex"
-                            flexDirection="column"
-                            justifyContent="space-between"
-                            height="100%"
-                          >
-                            <Box>
-                              <Image
-                                src={course.smallThumbnail}
-                                alt={course.courseName}
-                                borderRadius="lg"
-                                mb="4"
-                                height="200px"
-                                width="100%"
-                                objectFit="cover"
-                                onError={(e) => (e.target.src = fallbackImage)}
-                              />
-                              <Text fontWeight="bold" mb="2">
-                                {course.courseName}
-                              </Text>
-                              <Text mb="2">
-                                <b>Duration:</b> {course.duration}
-                              </Text>
-                              <Text mb="2">
-                                <b>Price:</b> {course.price}
-                              </Text>
-                              <Text mb="2">
-                                <b>Short Info:</b> {course.shortInfo}
-                              </Text>
-                              <Checkbox
-                                key={course.courseId}
-                                isChecked={selectedCourses.some(selected => selected.courseId === course.courseId)}
-                                onChange={() => {
-                                  handleCourseSelection(course.courseId.toString());
-                                }} />
-                            </Box>
-                            <Flex alignItems="center" mt="auto">
-                            </Flex>
+                      filteredCourses.map((course, index) => (
+                        <Box
+                          key={index}
+                          bg="white"
+                          p="4"
+                          borderRadius="lg"
+                          boxShadow="md"
+                          maxWidth="300px"
+                          boxSizing="border-box"
+                          transition="box-shadow 0.3s"
+                          _hover={{
+                            boxShadow: "2xl",
+                          }}
+                          display="flex"
+                          flexDirection="column"
+                          justifyContent="space-between"
+                          height="100%"
+                        >
+                          <Box>
+                            <Image
+                              src={course.smallThumbnail}
+                              alt={course.courseName}
+                              borderRadius="lg"
+                              mb="4"
+                              height="200px"
+                              width="100%"
+                              objectFit="cover"
+                              onError={(e) => (e.target.src = fallbackImage)}
+                            />
+                            <Text fontWeight="bold" mb="2">
+                              {course.courseName}
+                            </Text>
+                            <Text mb="2">
+                              <b>Duration:</b> {course.duration}
+                            </Text>
+                            <Text mb="2">
+                              <b>Price:</b> {course.price}
+                            </Text>
+                            <Text mb="2">
+                              <b>Short Info:</b> {course.shortInfo}
+                            </Text>
+                            <Checkbox
+                              key={course.courseId}
+                              isChecked={selectedCourses.some(selected => selected.courseId === course.courseId)}
+                              onChange={() => {
+                                handleCourseSelection(course.courseId.toString());
+                              }} />
                           </Box>
-
-                        ))
+                          <Flex alignItems="center" mt="auto">
+                          </Flex>
+                        </Box>
+                      ))
                     )}
                   </Grid>
                   <HStack mt={8} spacing={4} justify="center">
@@ -687,7 +770,7 @@ export default function InquiryForm() {
                         Previous
                       </Button>
                     )}
-                    <Button colorScheme="blue" onClick={(e) => { handleUpdate(e); }}>
+                    <Button colorScheme="blue" onClick={(e) => { nextStep(); handleUpdate(e); }}>
                       Next
                     </Button>
                   </HStack>
@@ -717,28 +800,32 @@ export default function InquiryForm() {
                     </Text>
                   </Box>
                   <Box>
-                    <Text fontSize="lg">
-                      <strong>Qualification:</strong> {formData.qualifications.qualification === 'Other' ? formData.qualifications.highestQualification : formData.qualifications.qualification}
-                    </Text>
-                    <Text fontSize="lg">
-                      <strong>College/School Name:</strong> {formData.collegeName}
-                    </Text>
-                    <Text fontSize="lg">
-                      <strong>Board/University Name:</strong> {formData.boardUniversityName}
-                    </Text>
-                    {formData.hasCertificate && (
-                      <>
+                    {formData.qualifications.map((qualification, index) => (
+                      <div key={index}>
                         <Text fontSize="lg">
-                          <strong>Certificate No.:</strong> {formData.certificateNo}
+                          <strong>Qualification {index + 1}:</strong> {qualification.qualification === 'Other' ? qualification.highestQualification : qualification.qualification}
                         </Text>
                         <Text fontSize="lg">
-                          <strong>Issued By:</strong> {formData.issuedBy}
+                          <strong>College/School Name:</strong> {qualification.collegeName}
                         </Text>
                         <Text fontSize="lg">
-                          <strong>Issue Date:</strong> {formData.issueDate}
+                          <strong>Board/University Name:</strong> {qualification.boardUniversityName}
                         </Text>
-                      </>
-                    )}
+                        {qualification.hasCertificate && (
+                          <>
+                            <Text fontSize="lg">
+                              <strong>Certificate No.:</strong> {qualification.certificateNo}
+                            </Text>
+                            <Text fontSize="lg">
+                              <strong>Issued By:</strong> {qualification.issuedBy}
+                            </Text>
+                            <Text fontSize="lg">
+                              <strong>Issue Date:</strong> {qualification.issueDate}
+                            </Text>
+                          </>
+                        )}
+                      </div>
+                    ))}
                   </Box>
                   <Box gridColumn="span 2">
                     <Text fontSize="lg">
@@ -760,7 +847,7 @@ export default function InquiryForm() {
                           Previous
                         </Button>
                       )}
-                      <Button colorScheme="blue" size="lg" onClick={(e) => { handleUpdate(e); }}>
+                      <Button colorScheme="blue" size="lg" onClick={(e) => { nextStep(); handleUpdate(e); }}>
                         Next
                       </Button>
                     </HStack>
@@ -770,89 +857,115 @@ export default function InquiryForm() {
 
               {step === 5 && (
                 <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={8}>
-                  {/* Left Side: Course Summary Card */}
-                  <Card>
+                  {/* Left Side: Payment Options */}
+                  <Stack spacing={4} p={4} borderWidth="1px" borderRadius="md" >
+                    <Box borderRadius="lg" bg="aliceblue" p={2}>
+                      <Checkbox
+                        name="creditCard"
+                        isChecked={formData.paymentMethods.creditCard}
+                        onChange={handlePaymentMethodChange}
+                      >
+                        Credit Card
+                      </Checkbox>
+                    </Box>
+                    <Box borderRadius="lg" bg="aliceblue" p={2}>
+                      <Checkbox
+                        name="debitCard"
+                        isChecked={formData.paymentMethods.debitCard}
+                        onChange={handlePaymentMethodChange}
+                      >
+                        Debit Card
+                      </Checkbox>
+                    </Box>
+                    <Box borderRadius="lg" bg="aliceblue" p={2}>
+                      <Checkbox
+                        name="emi"
+                        isChecked={formData.paymentMethods.emi}
+                        onChange={handlePaymentMethodChange}
+                      >
+                        EMI
+                      </Checkbox>
+                    </Box>
+                    <Box borderRadius="lg" bg="aliceblue" p={2}>
+                      <Checkbox
+                        name="netBanking"
+                        isChecked={formData.paymentMethods.netBanking}
+                        onChange={handlePaymentMethodChange}
+                      >
+                        Net Banking
+                      </Checkbox>
+                    </Box>
+                    <Box borderRadius="lg" bg="aliceblue" p={2}>
+                      <Checkbox
+                        name="upi"
+                        isChecked={formData.paymentMethods.upi}
+                        onChange={handlePaymentMethodChange}
+                      >
+                        UPI
+                      </Checkbox>
+                    </Box>
+                    <Box borderRadius="lg" bg="aliceblue" p={2}>
+                      <Checkbox
+                        name="cash"
+                        isChecked={formData.paymentMethods.cash}
+                        onChange={handlePaymentMethodChange}
+                      >
+                        Cash
+                      </Checkbox>
+                    </Box>
+                  </Stack>
+
+
+
+                  {/* Right Side: Course Summary Card */}
+                  <Card borderWidth="1px" borderRadius="lg" overflow="hidden">
                     <CardHeader>Total Payable Amount</CardHeader>
                     <CardBody>
-                      <VStack spacing={4} align="stretch">
-                        {calculateTotalAmount().selectedCourseDetails.map(course => (
-                          <Box key={course.courseId} borderBottomWidth="1px" pb={2}>
-                            <Heading size="sm">{course.courseTitle}</Heading>
-                            <Text>Price: Rs. {course.price}</Text>
-                          </Box>
-                        ))}
-                        <Box borderTopWidth="1px" pt={2}>
-                          <Heading size="md">Total: Rs. {calculateTotalAmount().totalAmount}</Heading>
-                        </Box>
-                      </VStack>
+                      <Table variant="simple" size="md">
+                        <Tbody>
+                          {/* Render selected courses */}
+                          {calculateTotalAmount().selectedCourseDetails.map((course) => (
+                            <Tr key={course.courseId}>
+                              <Td fontSize="lg">{course.courseTitle}</Td>
+                              <Td textAlign="right" fontSize="lg">
+                                Rs. {course.price}
+                              </Td>
+                            </Tr>
+                          ))}
+                          {/* Checkbox for kit fee */}
+                          <Tr>
+                            <Td colSpan={2} >
+                              <Checkbox
+                                isChecked={kitFeeIncluded}
+                                onChange={() => setKitFeeIncluded(!kitFeeIncluded)}
+                                size="lg"
+                              >
+                                Kit Fee (Rs. {kitFee})
+                              </Checkbox>
+                            </Td>
+                          </Tr>
+                          {/* Total amount section */}
+                          <Tr>
+                            <Td colSpan={2} textAlign="center">
+                              <Heading size="md" mt={4}>
+                                Total: Rs. {calculateTotalAmount().totalAmount}
+                              </Heading>
+                            </Td>
+                          </Tr>
+                        </Tbody>
+                      </Table>
                     </CardBody>
                   </Card>
 
-                  {/* Right Side: Payment Options */}
+                  {/* Buttons for Navigation */}
                   <VStack spacing={4} align="stretch">
-                    <FormControl>
-                      <FormLabel>Select Payment Method</FormLabel>
-                      <CheckboxGroup colorScheme="blue" onChange={handlePaymentMethodChange}>
-                        <VStack spacing={4} align="stretch">
-                          <FormControl>
-                            <VStack align="stretch">
-                              <Checkbox
-                                name="creditCard"
-                                isChecked={formData.paymentMethods.creditCard}
-                                onChange={handlePaymentMethodChange}
-                              >
-                                Credit Card
-                              </Checkbox>
-                              <Checkbox
-                                name="debitCard"
-                                isChecked={formData.paymentMethods.debitCard}
-                                onChange={handlePaymentMethodChange}
-                              >
-                                Debit Card
-                              </Checkbox>
-                              <Checkbox
-                                name="emi"
-                                isChecked={formData.paymentMethods.emi}
-                                onChange={handlePaymentMethodChange}
-                              >
-                                EMI
-                              </Checkbox>
-                              <Checkbox
-                                name="netBanking"
-                                isChecked={formData.paymentMethods.netBanking}
-                                onChange={handlePaymentMethodChange}
-                              >
-                                Net Banking
-                              </Checkbox>
-                              <Checkbox
-                                name="upi"
-                                isChecked={formData.paymentMethods.upi}
-                                onChange={handlePaymentMethodChange}
-                              >
-                                UPI
-                              </Checkbox>
-                              <Checkbox
-                                name="cash"
-                                isChecked={formData.paymentMethods.cash}
-                                onChange={handlePaymentMethodChange}
-                              >
-                                Cash
-                              </Checkbox>
-                            </VStack>
-                          </FormControl>
-                        </VStack>
-
-                      </CheckboxGroup>
-                    </FormControl>
-
-                    {/* Buttons for Navigation */}
                     <HStack mt={8} spacing={4} justify="center">
                       {step > 1 && (
                         <Button colorScheme="blue" onClick={prevStep}>
                           Previous
                         </Button>
                       )}
-                      <Button colorScheme="blue" onClick={handleUpdate}>
+                      <Button colorScheme="blue" onClick={(e) => { nextStep(); handleUpdate(e); }}>
                         Submit
                       </Button>
                     </HStack>
@@ -864,33 +977,6 @@ export default function InquiryForm() {
             </CardBody>
           </Card>
 
-          {/* Success Dialog */}
-          <AlertDialog
-            isOpen={showSuccessDialog}
-            leastDestructiveRef={undefined}
-            onClose={() => setShowSuccessDialog(false)}
-            motionPreset="slideInBottom"
-            onOverlayClick={handleOverlayClick}
-          >
-            <AlertDialogOverlay />
-            <AlertDialogContent
-              mx="auto" // Centers horizontally
-              my="auto" // Centers vertically
-              maxWidth="sm" // Optional: sets a maximum width for the dialog
-            >
-              <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                Inquiry Submitted
-              </AlertDialogHeader>
-              <AlertDialogBody>
-                Your inquiry has been submitted successfully!
-              </AlertDialogBody>
-              <AlertDialogFooter>
-                <Button colorScheme="blue" onClick={() => setShowSuccessDialog(false)}>
-                  Okay
-                </Button>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </Box>
       </Flex>
     </Box>
