@@ -48,8 +48,6 @@ export const {
 export const fetchcourseData = () => async (dispatch) => {
   try {
     const apiToken = sessionStorage.getItem("api-token");
-
-    dispatch(setcourseLoading());
     const response = await axios.get(import.meta.env.VITE_BASE_URL + "courses/all/getAllcourses", {
       headers: {
         "api-token": apiToken,

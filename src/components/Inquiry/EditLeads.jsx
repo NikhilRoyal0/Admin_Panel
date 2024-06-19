@@ -23,8 +23,11 @@ import timeConversion from "../../utils/timeConversion";
 import { selectrolesData, selectrolesError, selectrolesLoading, fetchrolesData } from "../../app/Slices/roleSlice";
 import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseData } from "../../app/Slices/courseSlice";
 import QualificationsModal from "./QualificationsModal";
+import CourseSelect from "./CourseSelect";
+import NetworkError from "../NotFound/networkError";
 
 export default function Edit_Leads() {
+    const branchId = sessionStorage.getItem("BranchId")
     const { lead_id } = useParams();
     const error = useSelector(selectleadError);
     const isLoading = useSelector(selectleadLoading);
@@ -66,7 +69,7 @@ export default function Edit_Leads() {
         city: "",
         courses: "",
         qualifications: "[]",
-        paymentMethods: "",
+        paymentMethods: "[]",
     });
 
     const leadData = useSelector(selectleadData);
@@ -128,16 +131,24 @@ export default function Edit_Leads() {
     };
 
 
-
     const handleInputChange = (event) => {
         const { name, value } = event.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: value,
-            updatedOn: Date.now(),
-        }));
+        if (name === "paymentMethods") {
+            setFormData((prevData) => ({
+                ...prevData,
+                [name]: JSON.stringify([value]),
+                updatedOn: Date.now(),
+            }));
+        } else {
+            setFormData((prevData) => ({
+                ...prevData,
+                [name]: value,
+                updatedOn: Date.now(),
+            }));
+        }
     };
 
+    const coursesData = branchId == 0 ? courseData : courseData.filter(course => course.branchId == branchId);
 
     const handleSave = () => {
         dispatch(updateleadData(lead_id, formData))
@@ -549,28 +560,46 @@ export default function Edit_Leads() {
                             bg={isEditing ? 'white' : 'gray.100'}
                         />
                     </GridItem>
+
+                    <GridItem>
+                        <Text mb={2} fontWeight="bold">Payment Method</Text>
+                        <Select
+                            name="paymentMethods"
+                            value={JSON.parse(formData.paymentMethods)[0] || ""}
+                            onChange={handleInputChange}
+                            isDisabled={!isEditing}
+                            bg={isEditing ? 'white' : 'gray.100'}
+                        >
+                            <option value="emi">EMI</option>
+                            <option value="cash">Cash</option>
+                            <option value="creditCard">Credit Card</option>
+                            <option value="debitCard">Debit Card</option>
+                            <option value="netBanking">Net Banking</option>
+                            <option value="upi">UPI</option>
+                        </Select>
+                    </GridItem>
+                </Grid>
+
+                <Grid templateColumns={{ base: "repeat(1, 1fr)", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(3, 1fr)" }} gap={4} mt={5}>
+                    <CourseSelect
+                        formData={formData}
+                        setFormData={setFormData}
+                        isEditing={isEditing}
+                        coursesData={coursesData}
+                    />
                     <GridItem colSpan={1}>
-                        <Text mb={2} fontWeight="bold">Courses</Text>
+                        <Text mb={2} fontWeight="bold">Course List</Text>
                         <Textarea
                             name="courses"
                             value={formData.courses}
                             onChange={handleInputChange}
                             isDisabled={!isEditing}
                             bg={isEditing ? 'white' : 'gray.100'}
+                            placeholder="Enter courses separated by commas..."
+                            width="100%"
+                            resize="auto"
                         />
                     </GridItem>
-                    <GridItem>
-                        <Text mb={2} fontWeight="bold">Payment Method</Text>
-                        <Input
-                            name="paymentMethods"
-                            type="text"
-                            value={formData.paymentMethods}
-                            onChange={handleInputChange}
-                            isDisabled={!isEditing}
-                            bg={isEditing ? 'white' : 'gray.100'}
-                        />
-                    </GridItem>
-
                 </Grid>
 
                 <QualificationsModal

@@ -26,9 +26,9 @@ export default function Dashboard() {
   if (!CountData) {
 
     dispatch(setCountLoading());
-
+    
     dispatch(setCountError("Count data not available"));
-
+    
     return null;
   }
 
@@ -40,8 +40,8 @@ export default function Dashboard() {
         <BoxCard title={<Small2 totalStudents={CountData.studentCount} />} height="80px" />
         <BoxCard title={<Small3 totalCourses={CountData.courseCount} />} height="80px" />
         <BoxCard title={<Small4 totalCertificates={CountData.certificatesCount} />} height="80px" />
-        <BoxCard title={<Small5 totalStudents={CountData.studentCount} />} height="80px" />
-        <BoxCard title={<Small6 totalStudents={CountData.studentCount} />} height="80px" />
+        <BoxCard title={<Small5 totalconverted={CountData.convertedleadsCount} />} height="80px" />
+        <BoxCard title={<Small6 activeLeads={CountData.activeLeads} />} height="80px" />
       </GridContainer>
 
       {/* Row 2 */}
