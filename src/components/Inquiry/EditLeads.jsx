@@ -12,16 +12,32 @@ import {
     Textarea,
     Grid,
     GridItem,
-    Divider
+    Divider,
+    Modal,
+    ModalBody,
+    Td,
+    Tr,
+    Table,
+    Tbody,
+    Heading,
+    ModalCloseButton,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    CloseButton,
+    Badge,
+    Card
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { BeatLoader } from "react-spinners";
 import { fetchleadData, selectleadData, updateleadData, selectleadError, selectleadLoading } from "../../app/Slices/leadSlice";
 import { getModulePermissions } from "../../utils/permissions";
-import { AddStudentData } from "../../app/Slices/studentSlice";
+import { AddStudentData, updateStudentData, checkStudentExistence } from "../../app/Slices/studentSlice";
 import timeConversion from "../../utils/timeConversion";
 import { selectrolesData, selectrolesError, selectrolesLoading, fetchrolesData } from "../../app/Slices/roleSlice";
 import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseData } from "../../app/Slices/courseSlice";
+import { selectBranchData, selectBranchError, selectBranchLoading, fetchBranchData } from "../../app/Slices/branchSlice";
+import { selectbranchPlannerData, selectbranchPlannerError, selectbranchPlannerLoading, fetchbranchPlannerData } from "../../app/Slices/branchPlanner";
 import QualificationsModal from "./QualificationsModal";
 import CourseSelect from "./CourseSelect";
 import NetworkError from "../NotFound/networkError";
@@ -37,11 +53,17 @@ export default function Edit_Leads() {
     const courseData = useSelector(selectcourseData);
     const courseError = useSelector(selectcourseError);
     const courseLoading = useSelector(selectcourseLoading);
+    const branchData = useSelector(selectBranchData);
+    const branchLoading = useSelector(selectBranchLoading);
+    const branchError = useSelector(selectBranchError);
+    const plannerData = useSelector(selectbranchPlannerData);
+    const plannerLoading = useSelector(selectbranchPlannerLoading);
+    const plannerError = useSelector(selectbranchPlannerError);
     const [lead, setLead] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [isSaveLoading, setIsSaveLoading] = useState(false);
-    const [hasCertificate, setHasCertificate] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isInvoice, setInvoice] = useState(false);
     const [formData, setFormData] = useState({
         studentName: "",
         email: "",
@@ -51,7 +73,6 @@ export default function Edit_Leads() {
         parentCode: "",
         role: "",
         walletAmount: "0",
-        admissionNo: "",
         profilePhoto: "",
         branchFeeStructureId: "",
         currentCourseId: "",
@@ -85,6 +106,8 @@ export default function Edit_Leads() {
         }
         dispatch(fetchrolesData());
         dispatch(fetchcourseData());
+        dispatch(fetchBranchData());
+        dispatch(fetchbranchPlannerData());
     }, [dispatch, leadData.length]);
 
     useEffect(() => {
@@ -94,6 +117,31 @@ export default function Edit_Leads() {
             setFormData(leadDetails);
         }
     }, [leadData, lead_id]);
+
+    const planner = plannerData.find(plan => plan.branchId == branchId);
+
+    if (!planner) {
+        return (
+            <Flex justify="center" align="center" h="100vh">
+                <Spinner size="xl" />
+            </Flex>
+        );
+    }
+    const kitFee = planner.kitFee;
+
+    const admissionFee = planner.admissionFee;
+
+
+    if (!formData.courses) {
+        return (
+            <Flex justify="center" align="center" h="100vh">
+                <Spinner size="xl" />
+            </Flex>
+        );
+    }
+    const courses = JSON.parse(formData.courses);
+
+    const totalAmount = courses.reduce((acc, course) => acc + parseFloat(course.price), 0) + parseFloat(kitFee);
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -148,6 +196,7 @@ export default function Edit_Leads() {
         }
     };
 
+
     const coursesData = branchId == 0 ? courseData : courseData.filter(course => course.branchId == branchId);
 
     const handleSave = () => {
@@ -161,25 +210,59 @@ export default function Edit_Leads() {
                 });
 
                 if (formData.status === "converted") {
-                    const { lead_id, ...formData2 } = formData;
+                    const { lead_id, lead_No, ...formData2 } = formData;
 
-                    dispatch(AddStudentData(formData2))
-                        .then(() => {
-                            toast({
-                                title: "Student data updated successfully",
-                                status: "success",
-                                duration: 3000,
-                                isClosable: true,
-                            });
+                    dispatch(checkStudentExistence(formData2.student_id))
+                        .then((studentExists) => {
+                            if (studentExists) {
+                                dispatch(updateStudentData(formData2.student_id, formData2))
+                                    .then(() => {
+                                        toast({
+                                            title: "Student data updated successfully",
+                                            status: "success",
+                                            duration: 3000,
+                                            isClosable: true,
+                                        });
+                                    })
+                                    .catch((error) => {
+                                        toast({
+                                            title: "Failed to update student data",
+                                            status: "error",
+                                            duration: 3000,
+                                            isClosable: true,
+                                        });
+                                        console.log("Error updating student data: ", error);
+                                    });
+                            } else {
+                                // If student does not exist, add the student data
+                                dispatch(AddStudentData(formData2))
+                                    .then(() => {
+                                        toast({
+                                            title: "Student data added successfully",
+                                            status: "success",
+                                            duration: 3000,
+                                            isClosable: true,
+                                        });
+                                    })
+                                    .catch((error) => {
+                                        toast({
+                                            title: "Failed to add student data",
+                                            status: "error",
+                                            duration: 3000,
+                                            isClosable: true,
+                                        });
+                                        console.log("Error adding student data: ", error);
+                                    });
+                            }
                         })
                         .catch((error) => {
                             toast({
-                                title: "Failed to update student data",
+                                title: "Failed to check student existence",
                                 status: "error",
                                 duration: 3000,
                                 isClosable: true,
                             });
-                            console.log("Error updating student data: ", error);
+                            console.log("Error checking student existence: ", error);
                         });
                 }
 
@@ -196,6 +279,7 @@ export default function Edit_Leads() {
             });
     };
 
+
     const handleEditToggle = () => {
         setIsEditing((prevEditing) => !prevEditing);
     };
@@ -204,6 +288,10 @@ export default function Edit_Leads() {
         setIsEditing(false);
         dispatch(fetchleadData());
     };
+
+    const handleViewInvoice = () => {
+        setInvoice(true);
+    }
 
     const LeadManagementPermissions = getModulePermissions("Inquiry");
 
@@ -221,7 +309,7 @@ export default function Edit_Leads() {
         );
     }
 
-    if (isLoading || roleLoading || courseLoading) {
+    if (isLoading || roleLoading || courseLoading || branchLoading || plannerLoading) {
         return (
             <Flex justify="center" align="center" h="100vh">
                 <Spinner size="xl" />
@@ -229,10 +317,9 @@ export default function Edit_Leads() {
         );
     }
 
-    if (error || roleError || courseError) {
+    if (error || roleError || courseError || branchError || plannerError) {
         return <NetworkError />;
     }
-
 
 
     return (
@@ -253,7 +340,10 @@ export default function Edit_Leads() {
             }}
             >
                 <Flex justify="space-between" align="center">
-                    <Text fontSize="2xl" fontWeight="bold">Leads Details</Text>
+                    <Flex direction="column" align="center">
+                        <Text fontSize="2xl" fontWeight="bold">Leads Details</Text>
+                        <Text fontSize="md" cursor="pointer" color="blue" fontWeight="bold" onClick={handleViewInvoice}>Invoice</Text>
+                    </Flex>
                     <Flex>
                         {isEditing ? (
                             <>
@@ -271,10 +361,10 @@ export default function Edit_Leads() {
                             </>
                         ) : (
                             <Button onClick={() => {
-                                if (canEditData) {
+                                if (canEditData && formData.status !== 'converted') {
                                     handleEditToggle();
                                 } else {
-                                    Toast({
+                                    toast({
                                         title: "You don't have permission to edit this lead",
                                         status: "error",
                                         duration: 3000,
@@ -361,7 +451,7 @@ export default function Edit_Leads() {
                         </Text>
                         <Input
                             name="qualifications"
-                            value={formData.qualifications}  // Ensure this is correct for your UI needs
+                            value={formData.qualifications}
                             onClick={openModal}
                             isDisabled={!isEditing}
                             bg={isEditing ? "white" : "gray.100"}
@@ -406,16 +496,6 @@ export default function Edit_Leads() {
                         <Input
                             name="walletAmount"
                             value={formData.walletAmount}
-                            onChange={handleInputChange}
-                            isDisabled={!isEditing}
-                            bg={isEditing ? 'white' : 'gray.100'}
-                        />
-                    </GridItem>
-                    <GridItem>
-                        <Text mb={2} fontWeight="bold">Admission No</Text>
-                        <Input
-                            name="admissionNo"
-                            value={formData.admissionNo}
                             onChange={handleInputChange}
                             isDisabled={!isEditing}
                             bg={isEditing ? 'white' : 'gray.100'}
@@ -472,36 +552,6 @@ export default function Edit_Leads() {
                         />
                     </GridItem>
                     <GridItem>
-                        <Text mb={2} fontWeight="bold">Interest In</Text>
-                        <Input
-                            name="interestIn"
-                            value={formData.interestIn}
-                            onChange={handleInputChange}
-                            isDisabled={!isEditing}
-                            bg={isEditing ? 'white' : 'gray.100'}
-                        />
-                    </GridItem>
-                    <GridItem>
-                        <Text mb={2} fontWeight="bold">Last Active</Text>
-                        <Input
-                            name="lastActiveAt"
-                            value={formData.lastActiveAt}
-                            onChange={handleInputChange}
-                            isDisabled
-                            bg='gray.100'
-                        />
-                    </GridItem>
-                    <GridItem>
-                        <Text mb={2} fontWeight="bold">Reason</Text>
-                        <Input
-                            name="reason"
-                            value={formData.reason}
-                            onChange={handleInputChange}
-                            isDisabled={!isEditing}
-                            bg={isEditing ? 'white' : 'gray.100'}
-                        />
-                    </GridItem>
-                    <GridItem>
                         <Text mb={2} fontWeight="bold">Created On</Text>
                         <Input
                             name="createdOn"
@@ -511,34 +561,21 @@ export default function Edit_Leads() {
                         />
                     </GridItem>
                     <GridItem>
-                        <Text mb={2} fontWeight="bold">Updated On</Text>
-                        <Input
-                            name="updatedOn"
-                            value={timeConversion.unixTimeToRealTime(formData.updatedOn)}
-                            onChange={handleInputChange}
-                            isDisabled
-                            bg='gray.100'
-                        />
-                    </GridItem>
-                    <GridItem>
-                        <Text mb={2} fontWeight="bold">Branch ID</Text>
-                        <Input
+                        <Text mb={2} fontWeight="bold">Branch</Text>
+                        <Select
                             name="branchId"
                             value={formData.branchId}
                             onChange={handleInputChange}
+                            ml="2"
                             isDisabled={!isEditing}
                             bg={isEditing ? 'white' : 'gray.100'}
-                        />
-                    </GridItem>
-                    <GridItem colSpan={1}>
-                        <Text mb={2} fontWeight="bold">Primary Address</Text>
-                        <Textarea
-                            name="primaryAddress"
-                            value={formData.primaryAddress}
-                            onChange={handleInputChange}
-                            isDisabled={!isEditing}
-                            bg={isEditing ? 'white' : 'gray.100'}
-                        />
+                        >
+                            {branchData && branchData.map(branch => (
+                                <option key={branch.branchId} value={branch.branchId}>
+                                    {branch.branchName}
+                                </option>
+                            ))}
+                        </Select>
                     </GridItem>
                     <GridItem>
                         <Text mb={2} fontWeight="bold">State</Text>
@@ -560,7 +597,16 @@ export default function Edit_Leads() {
                             bg={isEditing ? 'white' : 'gray.100'}
                         />
                     </GridItem>
-
+                    <GridItem colSpan={1}>
+                        <Text mb={2} fontWeight="bold">Primary Address</Text>
+                        <Textarea
+                            name="primaryAddress"
+                            value={formData.primaryAddress}
+                            onChange={handleInputChange}
+                            isDisabled={!isEditing}
+                            bg={isEditing ? 'white' : 'gray.100'}
+                        />
+                    </GridItem>
                     <GridItem>
                         <Text mb={2} fontWeight="bold">Payment Method</Text>
                         <Select
@@ -578,28 +624,25 @@ export default function Edit_Leads() {
                             <option value="upi">UPI</option>
                         </Select>
                     </GridItem>
-                </Grid>
-
-                <Grid templateColumns={{ base: "repeat(1, 1fr)", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(3, 1fr)" }} gap={4} mt={5}>
-                    <CourseSelect
-                        formData={formData}
-                        setFormData={setFormData}
-                        isEditing={isEditing}
-                        coursesData={coursesData}
-                    />
-                    <GridItem colSpan={1}>
-                        <Text mb={2} fontWeight="bold">Course List</Text>
-                        <Textarea
-                            name="courses"
-                            value={formData.courses}
-                            onChange={handleInputChange}
-                            isDisabled={!isEditing}
-                            bg={isEditing ? 'white' : 'gray.100'}
-                            placeholder="Enter courses separated by commas..."
-                            width="100%"
-                            resize="auto"
+                    <GridItem>
+                        <CourseSelect
+                            formData={formData}
+                            setFormData={setFormData}
+                            isEditing={isEditing}
+                            coursesData={coursesData}
                         />
                     </GridItem>
+                    <GridItem>
+
+                        <Card>
+                            {courses.map((course, index) => (
+                                <Badge key={index} variant="subtle" m={1} display="inline-flex">
+                                    {course.courseName}
+                                </Badge>
+                            ))}
+                        </Card>
+                    </GridItem>
+
                 </Grid>
 
                 <QualificationsModal
@@ -610,8 +653,52 @@ export default function Edit_Leads() {
                     addQualification={addQualification}
                     removeQualification={removeQualification}
                 />
+                <Modal isOpen={isInvoice} size="lg" onClose={() => setInvoice(false)}
+                >
+                    <ModalOverlay />
+                    <ModalContent>
+                        <ModalHeader>Invoice Details</ModalHeader>
+                        <ModalCloseButton />
+                        <ModalBody>
+                            <Table variant="simple" size="md">
+                                <Tbody>
+                                    {courses.map((course) => (
+                                        <Tr key={course.courseId}>
+                                            <Td fontSize="lg">{course.courseTitle}</Td>
+                                            <Td textAlign="right" fontSize="lg">
+                                                Rs. {course.price}
+                                            </Td>
+                                        </Tr>
+                                    ))}
+                                    <Tr>
+                                        <Td colSpan={1} fontWeight="bold" fontSize="lg">
+                                            Kit Fee
+                                        </Td>
+                                        <Td textAlign="right" fontSize="lg" fontWeight="bold">
+                                            Rs. {kitFee}
+                                        </Td>
+                                    </Tr>
+                                    <Tr>
+                                        <Td colSpan={1}  >
+                                            <Heading size="md" mt={4} >
+                                                Total Amount:
+                                            </Heading>
+                                        </Td>
+                                        <Td colSpan={1} >
+
+                                            <Heading size="md" mt={4} display="flex" justifyContent="flex-end">
+                                                Rs. {totalAmount}
+                                            </Heading>
+                                        </Td>
+                                    </Tr>
+                                </Tbody>
+                            </Table>
+                        </ModalBody>
+                    </ModalContent>
+                </Modal>
             </Box>
-        </Box>
+
+        </Box >
     )
 }
 

@@ -132,6 +132,27 @@ export const deleteStudentData = (student_id) => async (dispatch) => {
   }
 };
 
+export const checkStudentExistence = (student_id) => async () => {
+  try {
+    const apiToken = sessionStorage.getItem("api-token");
+
+    const response = await axios.get(
+      import.meta.env.VITE_BASE_URL + `students/student/${student_id}`,
+      {
+        headers: {
+          "api-token": apiToken,
+        },
+      }
+    );
+
+    console.log("data", response.data)
+    return response.data.exists;
+  } catch (error) {
+    console.error("Error checking student existence:", error);
+    return false;
+  }
+};
+
 export const selectStudentData = (state) => state.Student.data;
 export const selectStudentLoading = (state) => state.Student.isLoading;
 export const selectStudentError = (state) => state.Student.error;

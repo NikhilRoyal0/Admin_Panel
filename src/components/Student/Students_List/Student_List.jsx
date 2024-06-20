@@ -643,18 +643,6 @@ export default function Student_List() {
                 />
                 <Input
                   mb="3"
-                  placeholder="Admission Number"
-                  value={newStudentData.admissionNo}
-                  onChange={(e) =>
-                    setNewStudentData({
-                      ...newStudentData,
-                      admissionNo: e.target.value,
-                    })
-                  }
-                  isRequired
-                />
-                <Input
-                  mb="3"
                   placeholder="Profile Photo"
                   value={newStudentData.profilePhoto}
                   onChange={(e) =>

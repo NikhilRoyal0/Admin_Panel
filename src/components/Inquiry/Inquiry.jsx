@@ -65,7 +65,6 @@ export default function InquiryForm() {
     parentCode: '',
     role: '',
     walletAmount: '0',
-    admissionNo: '',
     profilePhoto: '',
     branchFeeStructureId: '',
     currentCourseId: '',
