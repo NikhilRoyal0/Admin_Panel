@@ -24,9 +24,7 @@ import {
     ModalOverlay,
     ModalContent,
     ModalHeader,
-    CloseButton,
-    Badge,
-    Card
+
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { BeatLoader } from "react-spinners";
@@ -632,17 +630,6 @@ export default function Edit_Leads() {
                             coursesData={coursesData}
                         />
                     </GridItem>
-                    <GridItem>
-
-                        <Card>
-                            {courses.map((course, index) => (
-                                <Badge key={index} variant="subtle" m={1} display="inline-flex">
-                                    {course.courseName}
-                                </Badge>
-                            ))}
-                        </Card>
-                    </GridItem>
-
                 </Grid>
 
                 <QualificationsModal

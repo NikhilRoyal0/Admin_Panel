@@ -224,40 +224,87 @@ export default function InquiryForm() {
     setStep((prevStep) => prevStep - 1);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
 
+const handleSubmit = async (e) => {
+    e.preventDefault();
+  
     const selectedPaymentMethods = Object.keys(formData.paymentMethods)
       .filter(method => formData.paymentMethods[method]);
-
+  
     const formDataToSend = {
       ...formData,
       currentCourseId: selectedCourses.length > 0 ? selectedCourses[0].courseId : '',
       qualifications: JSON.stringify(formData.qualifications),
       courses: JSON.stringify(selectedCourses),
-      paymentMethods: JSON.stringify(selectedPaymentMethods), 
+      paymentMethods: JSON.stringify(selectedPaymentMethods),
     };
-
+  
     try {
+      if (!formData.lead_id) {
+        const emailExists = leadsData.some(lead => lead.email === formData.email);
+        const numberExists = leadsData.some(lead => lead.phoneNumber === formData.phoneNumber);
+  
+        if (emailExists && numberExists) {
+          Toast({
+            title: `Already have lead with email ${formData.email} and number ${formData.phoneNumber}`,
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+            position: "top-right",
+          });
+          return; // Prevent form submission
+        } else if (emailExists) {
+          Toast({
+            title: `Already have lead with email ${formData.email}`,
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+            position: "top-right",
+          });
+          return; // Prevent form submission
+        } else if (numberExists) {
+          Toast({
+            title: `Already have lead with number ${formData.phoneNumber}`,
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+            position: "top-right",
+          });
+          return; // Prevent form submission
+        }
+      }
+  
+      // Proceed with saving data
+      let response;
       if (formData.lead_id) {
-        const response = await dispatch(updateleadData(formData.lead_id, formDataToSend));
+        response = await dispatch(updateleadData(formData.lead_id, formDataToSend));
+        nextStep();
       } else {
-        const response = await dispatch(AddleadData(formDataToSend));
-
+        response = await dispatch(AddleadData(formDataToSend));
+        nextStep();
+  
         const { lead_id, student_id } = response.data;
-
+  
         setFormData(prevState => ({
           ...prevState,
           lead_id: lead_id,
           student_id: student_id,
         }));
       }
-
     } catch (error) {
       console.error('Error handling form submission:', error);
+  
+      Toast({
+        title: "Error handling form submission",
+        description: error.message,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
     }
   };
-
+  
 
   const validateStep = () => {
     switch (step) {
@@ -515,7 +562,7 @@ export default function InquiryForm() {
                           Previous
                         </Button>
                       )}
-                      <Button colorScheme="blue" onClick={(e) => { nextStep(); handleSubmit(e); }} type="submit">
+                      <Button colorScheme="blue" onClick={(e) => { handleSubmit(e); }} type="submit">
                         Next
                       </Button>
                     </HStack>
@@ -668,7 +715,7 @@ export default function InquiryForm() {
                         Previous
                       </Button>
                     )}
-                    <Button colorScheme="blue" onClick={(e) => { nextStep(); handleUpdate(e); }}>
+                    <Button colorScheme="blue" onClick={(e) => { handleUpdate(e); }}>
                       Next
                     </Button>
                   </HStack>
@@ -846,7 +893,7 @@ export default function InquiryForm() {
                           Previous
                         </Button>
                       )}
-                      <Button colorScheme="blue" size="lg" onClick={(e) => { nextStep(); handleUpdate(e); }}>
+                      <Button colorScheme="blue" size="lg" onClick={(e) => { handleUpdate(e); }}>
                         Next
                       </Button>
                     </HStack>
@@ -964,7 +1011,7 @@ export default function InquiryForm() {
                           Previous
                         </Button>
                       )}
-                      <Button colorScheme="blue" onClick={(e) => { nextStep(); handleUpdate(e); }}>
+                      <Button colorScheme="blue" onClick={(e) => { handleUpdate(e); }}>
                         Submit
                       </Button>
                     </HStack>
