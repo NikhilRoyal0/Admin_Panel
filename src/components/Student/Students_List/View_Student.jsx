@@ -56,6 +56,7 @@ export default function StudentDashboard() {
         courses: "",
         paymentMethods: "",
         qualifications: "",
+        referredBy: "",
     });
 
     useEffect(() => {

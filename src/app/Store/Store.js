@@ -15,6 +15,7 @@ import purchaseReducer from "../Slices/purchaseSlice";
 import studentWalletReducer from "../Slices/studentWalletSlice";
 import userWalletReducer from "../Slices/userWalletSlice";
 import leadReducer from "../Slices/leadSlice";
+import referenceReducer from "../Slices/referenceSlice";
 
 const Store = configureStore({
   reducer: {
@@ -34,6 +35,7 @@ const Store = configureStore({
     studentWallet: studentWalletReducer,
     userWallet: userWalletReducer,
     lead: leadReducer,
+    reference: referenceReducer,
   },
 });
 

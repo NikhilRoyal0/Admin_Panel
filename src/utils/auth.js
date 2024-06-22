@@ -21,7 +21,6 @@ export const login = async (email, password) => {
             }
         );
 
-
         const { authToken } = response.data.data;
 
         if (authToken) {
@@ -42,6 +41,7 @@ export const login = async (email, password) => {
             sessionStorage.setItem("authToken", authToken);
             sessionStorage.setItem("userId", userDetails.userId);
             sessionStorage.setItem("BranchId", userDetails.branchId);
+            sessionStorage.setItem("discountLimit", userDetails.discountLimit);
             sessionStorage.setItem("api-token", API_TOKEN);
             const expiresIn = userDetails.expiryTimestamp;
             const expiryTimestamp = expiresIn * 1000;
@@ -87,10 +87,12 @@ checkTokenExpiry();
 export const logout = () => {
     sessionStorage.removeItem("authToken");
     sessionStorage.removeItem("userId");
+    sessionStorage.removeItem("BranchId");
+    sessionStorage.removeItem("discountLimit");
     sessionStorage.removeItem("api-token");
 };
 
-export const getUserDetailsFromToken = (authToken) => {
+export function getUserDetailsFromToken(authToken) {
     if (!authToken) {
         console.error("No authToken provided");
         return null;
@@ -110,10 +112,11 @@ export const getUserDetailsFromToken = (authToken) => {
             status: payload.userData.status,
             role: payload.userData.roleAttribute[0].status,
             expiryTimestamp: expiryTimestamp,
-            branchId: payload.userData.branchId
+            branchId: payload.userData.branchId,
+            discountLimit: payload.userData.discountLimit,
         };
     } catch (error) {
         console.error("Error decoding token:", error);
         return null;
     }
-};
+}

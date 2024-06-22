@@ -27,6 +27,10 @@ import {
   Tbody,
   Td,
   Tr,
+  Slider,
+  SliderTrack,
+  SliderThumb,
+  SliderFilledTrack,
 } from '@chakra-ui/react';
 import { CheckCircleIcon, EditIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
@@ -36,9 +40,11 @@ import passwordGenerator from "../../utils/passwordGenerator";
 import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseData } from '../../app/Slices/courseSlice';
 import { selectleadData, selectleadError, selectleadLoading, fetchleadData, AddleadData, updateleadData } from "../../app/Slices/leadSlice";
 import { selectbranchPlannerData, selectbranchPlannerError, selectbranchPlannerLoading, fetchbranchPlannerData } from "../../app/Slices/branchPlanner";
+import { selectreferenceData, selectreferenceError, selectreferenceLoading, fetchreferenceData, AddreferenceData } from "../../app/Slices/referenceSlice";
 
 export default function InquiryForm() {
   const branchId = sessionStorage.getItem("BranchId");
+  const discountLimit = sessionStorage.getItem("discountLimit");
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -49,6 +55,9 @@ export default function InquiryForm() {
   const plannerData = useSelector(selectbranchPlannerData);
   const plannerLoading = useSelector(selectbranchPlannerLoading);
   const plannerError = useSelector(selectbranchPlannerError);
+  const referenceData = useSelector(selectreferenceData);
+  const referenceLoading = useSelector(selectreferenceLoading);
+  const referenceError = useSelector(selectreferenceError);
   const error = useSelector(selectleadError);
   const isLoading = useSelector(selectleadLoading);
   const Toast = useToast({
@@ -56,6 +65,13 @@ export default function InquiryForm() {
   });
   const [selectedCourses, setSelectedCourses] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [hasReference, setHasReference] = useState(false);
+  const [referName, setReferName] = useState('');
+  const [referPhone, setReferPhone] = useState('');
+  const [sliderValue, setSliderValue] = useState(0);
+  const [userDiscountIncluded, setUserDiscountIncluded] = useState(false);
+  const [userDiscountValue, setUserDiscountValue] = useState(0);
+  const [address, setAddress] = useState('');
   const [formData, setFormData] = useState({
     studentName: '',
     email: '',
@@ -81,6 +97,7 @@ export default function InquiryForm() {
     status: 'pending',
     city: '',
     courses: '',
+    referredBy: '',
     qualifications: [
       {
         qualification: '',
@@ -112,6 +129,8 @@ export default function InquiryForm() {
     dispatch(fetchleadData());
     dispatch(fetchcourseData());
     dispatch(fetchbranchPlannerData());
+    dispatch(fetchbranchPlannerData());
+    dispatch(fetchreferenceData());
   }, [dispatch]);
 
 
@@ -126,16 +145,50 @@ export default function InquiryForm() {
   }
   const kitFee = planner.kitFee;
   const admissionFee = planner.admissionFee;
+  const admissionDiscount = planner.admissionDiscount;
 
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+
+
     if (type === 'checkbox') {
       setFormData({ ...formData, [name]: checked });
     } else {
       setFormData({ ...formData, [name]: value });
     }
+
+    if (name === 'referName') {
+      setReferName(value);
+    } else if (name === 'referPhone') {
+      setReferPhone(value);
+
+      const reference = referenceData.find((ref) => ref.referPhone == value);
+
+      if (reference) {
+        setReferName(reference.referName)
+        setAddress(reference.address)
+
+        setFormData(prevData => ({
+          ...prevData,
+          referredBy: reference.referenceId || '',
+        }));
+      } else {
+
+        // Reset referredBy if reference is not found
+        setFormData(prevData => ({
+          ...prevData,
+          referredBy: '',
+        }));
+      }
+    } else if (name === 'address') {
+      setAddress(value);
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
+
+
 
   const handleQualificationChange = (index, e) => {
     const { name, value, type, checked } = e.target;
@@ -178,7 +231,7 @@ export default function InquiryForm() {
       return;
     }
 
-    const selectedCourse = courseData.find(course => course.courseId === courseId);
+    const selectedCourse = courseData.find(course => course.courseId == courseId);
 
     if (!selectedCourse) {
       return (
@@ -189,7 +242,7 @@ export default function InquiryForm() {
     }
 
     setSelectedCourses(prevSelectedCourses => {
-      const courseIndex = prevSelectedCourses.findIndex(course => course.courseId === courseId);
+      const courseIndex = prevSelectedCourses.findIndex(course => course.courseId == courseId);
 
       if (courseIndex !== -1) {
         const updatedSelectedCourses = [...prevSelectedCourses];
@@ -225,25 +278,88 @@ export default function InquiryForm() {
   };
 
 
-const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    const selectedPaymentMethods = Object.keys(formData.paymentMethods)
-      .filter(method => formData.paymentMethods[method]);
-  
-    const formDataToSend = {
-      ...formData,
-      currentCourseId: selectedCourses.length > 0 ? selectedCourses[0].courseId : '',
-      qualifications: JSON.stringify(formData.qualifications),
-      courses: JSON.stringify(selectedCourses),
-      paymentMethods: JSON.stringify(selectedPaymentMethods),
-    };
-  
+  const handleCheckboxChange = () => {
+    setHasReference((prev) => !prev);
+  };
+
+
+
+  const createReference = async () => {
     try {
+
+      const existingReference = referenceData.find(ref => ref.referPhone == referPhone);
+
+      if (existingReference) {
+        return existingReference.referenceId;
+      }
+
+      if (hasReference && referPhone.length >= 8) {
+
+        const newReferenceData = {
+          referName: referName,
+          referPhone: referPhone,
+          address: address,
+          createdOn: Date.now(),
+          status: 'active',
+        };
+
+
+        const response = await dispatch(AddreferenceData(newReferenceData));
+
+        if (response && response.data && response.data.referenceId) {
+          const { referenceId } = response.data;
+          return referenceId;
+        } else {
+          throw new Error('Failed to retrieve referenceId from response');
+        }
+      } else {
+        return null; // or handle as needed if conditions are not met
+      }
+    } catch (error) {
+      console.error('Error creating reference:', error);
+
+      Toast({
+        title: 'Error creating reference',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+        position: 'top-right',
+      });
+
+      throw error;
+    }
+  };
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+
+      const referenceId = await createReference();
+
+      const selectedPaymentMethods = Object.keys(formData.paymentMethods)
+        .filter(method => formData.paymentMethods[method]);
+
+      const formDataToSend = {
+        ...formData,
+        currentCourseId: selectedCourses.length > 0 ? selectedCourses[0].courseId : '',
+        qualifications: JSON.stringify(formData.qualifications),
+        courses: JSON.stringify(selectedCourses),
+        paymentMethods: JSON.stringify(selectedPaymentMethods),
+        referredBy: referenceId || formData.referredBy,
+      };
+
+      delete formDataToSend.referName;
+      delete formDataToSend.referPhone;
+      delete formDataToSend.address;
+      console.log("data", formData)
+
+
       if (!formData.lead_id) {
         const emailExists = leadsData.some(lead => lead.email === formData.email);
         const numberExists = leadsData.some(lead => lead.phoneNumber === formData.phoneNumber);
-  
+
         if (emailExists && numberExists) {
           Toast({
             title: `Already have lead with email ${formData.email} and number ${formData.phoneNumber}`,
@@ -252,7 +368,7 @@ const handleSubmit = async (e) => {
             isClosable: true,
             position: "top-right",
           });
-          return; // Prevent form submission
+          return;
         } else if (emailExists) {
           Toast({
             title: `Already have lead with email ${formData.email}`,
@@ -261,7 +377,7 @@ const handleSubmit = async (e) => {
             isClosable: true,
             position: "top-right",
           });
-          return; // Prevent form submission
+          return;
         } else if (numberExists) {
           Toast({
             title: `Already have lead with number ${formData.phoneNumber}`,
@@ -270,11 +386,10 @@ const handleSubmit = async (e) => {
             isClosable: true,
             position: "top-right",
           });
-          return; // Prevent form submission
+          return;
         }
       }
-  
-      // Proceed with saving data
+
       let response;
       if (formData.lead_id) {
         response = await dispatch(updateleadData(formData.lead_id, formDataToSend));
@@ -282,9 +397,9 @@ const handleSubmit = async (e) => {
       } else {
         response = await dispatch(AddleadData(formDataToSend));
         nextStep();
-  
+
         const { lead_id, student_id } = response.data;
-  
+
         setFormData(prevState => ({
           ...prevState,
           lead_id: lead_id,
@@ -293,10 +408,10 @@ const handleSubmit = async (e) => {
       }
     } catch (error) {
       console.error('Error handling form submission:', error);
-  
+
       Toast({
         title: "Error handling form submission",
-        description: error.message,
+        description: error.message || "An unexpected error occurred",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -304,7 +419,7 @@ const handleSubmit = async (e) => {
       });
     }
   };
-  
+
 
   const validateStep = () => {
     switch (step) {
@@ -315,7 +430,8 @@ const handleSubmit = async (e) => {
           formData.phoneNumber !== '' &&
           formData.state !== '' &&
           formData.city !== '' &&
-          formData.primaryAddress !== ''
+          formData.primaryAddress !== '' &&
+          (hasReference ? (referName !== '' && referPhone !== '' && address !== '') : formData.parentCode !== '')
         );
       case 2:
         return (
@@ -340,12 +456,13 @@ const handleSubmit = async (e) => {
   };
 
 
+
   const calculateTotalAmount = () => {
     let totalAmount = 0;
     const selectedCourseDetails = [];
 
     selectedCourses.forEach(selected => {
-      const course = courseData.find(course => course.courseId === selected.courseId);
+      const course = courseData.find(course => course.courseId == selected.courseId);
 
       if (course) {
         totalAmount += parseFloat(course.price);
@@ -356,14 +473,20 @@ const handleSubmit = async (e) => {
       }
     });
 
+    let totalDiscount = (sliderValue / 100) + (userDiscountIncluded ? (userDiscountValue / 100) : 0);
+    let discountedAmount = totalAmount - (totalDiscount * totalAmount);
+
     if (kitFeeIncluded) {
-      totalAmount += kitFee;
+      discountedAmount += kitFee;
     }
 
-    return { totalAmount: totalAmount.toFixed(2), selectedCourseDetails };
+    return { totalAmount: discountedAmount.toFixed(2), selectedCourseDetails };
   };
 
+
+
   const handleUpdate = async () => {
+    const referenceId = await createReference();
 
     const selectedPaymentMethods = Object.keys(formData.paymentMethods)
       .filter(method => formData.paymentMethods[method]);
@@ -374,11 +497,16 @@ const handleSubmit = async (e) => {
       qualifications: JSON.stringify(formData.qualifications),
       courses: JSON.stringify(selectedCourses),
       paymentMethods: JSON.stringify(selectedPaymentMethods),
+      referredBy: referenceId || formData.referredBy,
     };
+    delete formDataToSend.referName;
+    delete formDataToSend.referPhone;
+    delete formDataToSend.address;
 
     try {
       if (validateStep()) {
         await dispatch(updateleadData(formData.lead_id, formDataToSend));
+        nextStep()
       }
       if (step === 5) {
         setTimeout(() => {
@@ -390,7 +518,7 @@ const handleSubmit = async (e) => {
     }
   };
 
-  if (isLoading || courseLoading || plannerLoading) {
+  if (isLoading || courseLoading || plannerLoading || referenceLoading) {
     return (
       <Flex justify="center" align="center" h="100vh">
         <Spinner size="xl" />
@@ -398,7 +526,7 @@ const handleSubmit = async (e) => {
     );
   }
 
-  if (error || courseError || plannerError) {
+  if (error || courseError || plannerError || referenceError) {
     return <NetworkError />;
   }
 
@@ -519,6 +647,58 @@ const handleSubmit = async (e) => {
                           />
                         </FormControl>
                       </GridItem>
+                      <GridItem>
+                        <FormControl>
+                          <FormLabel>Parent Code</FormLabel>
+                          <Input
+                            type="text"
+                            name="parentCode"
+                            value={formData.parentCode}
+                            onChange={handleChange}
+                            required
+                          />
+                          <Checkbox mt={2} isChecked={hasReference} onChange={handleCheckboxChange}>
+                            Have Reference
+                          </Checkbox>
+                        </FormControl>
+                      </GridItem>
+                      {hasReference && (
+                        <>
+                          <GridItem>
+                            <FormControl>
+                              <FormLabel>Refer Phone Number</FormLabel>
+                              <Input
+                                type="text"
+                                name="referPhone"
+                                value={referPhone}
+                                onChange={handleChange}
+                              />
+                            </FormControl>
+                          </GridItem>
+                          <GridItem>
+                            <FormControl>
+                              <FormLabel>Refer Name</FormLabel>
+                              <Input
+                                type="text"
+                                name="referName"
+                                value={referName}
+                                onChange={handleChange}
+                              />
+                            </FormControl>
+                          </GridItem>
+                          <GridItem>
+                            <FormControl>
+                              <FormLabel>Refer Address</FormLabel>
+                              <Input
+                                type="text"
+                                name="address"
+                                value={address}
+                                onChange={handleChange}
+                              />
+                            </FormControl>
+                          </GridItem>
+                        </>
+                      )}
                       <GridItem>
                         <FormControl>
                           <FormLabel>State</FormLabel>
@@ -969,18 +1149,16 @@ const handleSubmit = async (e) => {
                     <CardBody>
                       <Table variant="simple" size="md">
                         <Tbody>
-                          {/* Render selected courses */}
                           {calculateTotalAmount().selectedCourseDetails.map((course) => (
-                            <Tr key={course.courseId}>
+                            <Tr key={course.courseTitle}>
                               <Td fontSize="lg">{course.courseTitle}</Td>
                               <Td textAlign="right" fontSize="lg">
                                 Rs. {course.price}
                               </Td>
                             </Tr>
                           ))}
-                          {/* Checkbox for kit fee */}
                           <Tr>
-                            <Td colSpan={2} >
+                            <Td colSpan={2}>
                               <Checkbox
                                 isChecked={kitFeeIncluded}
                                 onChange={() => setKitFeeIncluded(!kitFeeIncluded)}
@@ -990,7 +1168,71 @@ const handleSubmit = async (e) => {
                               </Checkbox>
                             </Td>
                           </Tr>
-                          {/* Total amount section */}
+                          <Tr>
+                            <Td colSpan={2}>
+                              <Flex alignItems="center">
+                                <Box flex="1">
+                                  <Slider
+                                    aria-label="slider-ex-1"
+                                    value={sliderValue}
+                                    onChange={(value) => setSliderValue(value)}
+                                    min={0}
+                                    max={admissionDiscount - discountLimit}
+                                  >
+                                    <SliderTrack>
+                                      <SliderFilledTrack />
+                                    </SliderTrack>
+                                    <SliderThumb fontSize="sm" boxSize="32px" />
+                                  </Slider>
+                                </Box>
+                              </Flex>
+                            </Td>
+                          </Tr>
+                          <Tr>
+                            <Td colSpan={2} textAlign="center">
+                              <Text fontSize="lg">Additional Discount: {sliderValue}%</Text>
+                            </Td>
+                          </Tr>
+                          <Tr>
+                            <Td colSpan={2}>
+                              <Checkbox
+                                isChecked={userDiscountIncluded}
+                                onChange={() => setUserDiscountIncluded(!userDiscountIncluded)}
+                                size="lg"
+                              >
+                                User Discount
+                              </Checkbox>
+                            </Td>
+                          </Tr>
+                          {userDiscountIncluded && (
+                            <>
+                              <Tr>
+                                <Td colSpan={2}>
+                                  <Flex alignItems="center">
+                                    <Box flex="1">
+                                      <Slider
+                                        aria-label="user-discount-slider"
+                                        value={userDiscountValue}
+                                        onChange={(value) => setUserDiscountValue(value)}
+                                        min={0}
+                                        max={discountLimit}
+                                      >
+                                        <SliderTrack>
+                                          <SliderFilledTrack />
+                                        </SliderTrack>
+                                        <SliderThumb fontSize="sm" boxSize="32px" />
+                                      </Slider>
+                                    </Box>
+                                  </Flex>
+                                </Td>
+                              </Tr>
+                              <Tr>
+                                <Td colSpan={2} textAlign="center">
+                                  <Text fontSize="lg">User Discount: {userDiscountValue}%</Text>
+                                </Td>
+                              </Tr>
+                            </>
+                          )}
                           <Tr>
                             <Td colSpan={2} textAlign="center">
                               <Heading size="md" mt={4}>
@@ -1002,6 +1244,7 @@ const handleSubmit = async (e) => {
                       </Table>
                     </CardBody>
                   </Card>
+
 
                   {/* Buttons for Navigation */}
                   <VStack spacing={4} align="stretch">

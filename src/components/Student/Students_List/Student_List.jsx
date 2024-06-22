@@ -71,6 +71,7 @@ export default function Student_List() {
     courses: "",
     paymentMethods: "",
     qualifications: "",
+    referredBy: "",
   });
 
   const StudentData = useSelector(selectStudentData);
@@ -132,6 +133,7 @@ export default function Student_List() {
     formData2.append("courses", newStudentData.courses);
     formData2.append("paymentMethods", newStudentData.paymentMethods);
     formData2.append("qualifications", newStudentData.qualifications);
+    formData2.append("referredBy",newStudentData.referredBy );
     dispatch(AddStudentData(formData2))
       .then(() => {
         setIsSaveLoading(false);
