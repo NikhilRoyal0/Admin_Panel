@@ -351,7 +351,7 @@ export default function View_Users() {
                 backgroundColor: '#a0aec0',
               },
             }}>
-              <Box mb="4" fontSize="xl" fontWeight="bold" display="flex" justifyContent="space-between" >
+              <Box mb="4" fontSize="xl" fontWeight="bold" display="flex" justifyContent="space-between"  >
                 Additional Info
                 {isEditing ? (
                   <Box>
@@ -559,7 +559,7 @@ export default function View_Users() {
                       size="sm"
                     />
                   ) : (
-                    <span>{formData.profilePhoto}</span>
+                    <Text width={510}>{formData.profilePhoto}</Text>
                   )}
                 </Box>
               </Box>

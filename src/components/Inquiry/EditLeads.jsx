@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
     Box,
@@ -39,6 +39,8 @@ import { selectbranchPlannerData, selectbranchPlannerError, selectbranchPlannerL
 import QualificationsModal from "./QualificationsModal";
 import CourseSelect from "./CourseSelect";
 import NetworkError from "../NotFound/networkError";
+import BillComponent from './BillComponent';
+import { useReactToPrint } from 'react-to-print'; 
 
 export default function Edit_Leads() {
     const branchId = sessionStorage.getItem("BranchId")
@@ -57,6 +59,7 @@ export default function Edit_Leads() {
     const plannerData = useSelector(selectbranchPlannerData);
     const plannerLoading = useSelector(selectbranchPlannerLoading);
     const plannerError = useSelector(selectbranchPlannerError);
+    const billComponentRef = useRef();
     const [lead, setLead] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [isSaveLoading, setIsSaveLoading] = useState(false);
@@ -115,6 +118,11 @@ export default function Edit_Leads() {
             setFormData(leadDetails);
         }
     }, [leadData, lead_id]);
+
+    const handlePrintInvoice = useReactToPrint({
+        content: () => billComponentRef.current, // Function to get the component to print
+      });
+    
 
     const planner = plannerData.find(plan => plan.branchId == branchId);
 
@@ -647,39 +655,54 @@ export default function Edit_Leads() {
                         <ModalHeader>Invoice Details</ModalHeader>
                         <ModalCloseButton />
                         <ModalBody>
-                            <Table variant="simple" size="md">
-                                <Tbody>
-                                    {courses.map((course) => (
-                                        <Tr key={course.courseId}>
-                                            <Td fontSize="lg">{course.courseTitle}</Td>
-                                            <Td textAlign="right" fontSize="lg">
-                                                Rs. {course.price}
-                                            </Td>
-                                        </Tr>
-                                    ))}
-                                    <Tr>
-                                        <Td colSpan={1} fontWeight="bold" fontSize="lg">
-                                            Kit Fee
-                                        </Td>
-                                        <Td textAlign="right" fontSize="lg" fontWeight="bold">
-                                            Rs. {kitFee}
-                                        </Td>
-                                    </Tr>
-                                    <Tr>
-                                        <Td colSpan={1}  >
-                                            <Heading size="md" mt={4} >
-                                                Total Amount:
-                                            </Heading>
-                                        </Td>
-                                        <Td colSpan={1} >
+                        <Table variant="simple" size="md">
+    <Tbody>
+        {courses.map((course) => (
+            <Tr key={course.courseId}>
+                <Td fontSize="lg">{course.courseTitle}</Td>
+                <Td textAlign="right" fontSize="lg">
+                    Rs. {course.price}
+                </Td>
+            </Tr>
+        ))}
+        <Tr>
+            <Td colSpan={1} fontWeight="bold" fontSize="lg">
+                Kit Fee
+            </Td>
+            <Td textAlign="right" fontSize="lg" fontWeight="bold">
+                Rs. {kitFee}
+            </Td>
+        </Tr>
+        <Tr>
+            <Td colSpan={1}>
+                <Heading size="md" mt={4}>
+                    Total Amount:
+                </Heading>
+            </Td>
+            <Td colSpan={1}>
+                <Heading size="md" mt={4} display="flex" justifyContent="flex-end">
+                    Rs. {totalAmount}
+                </Heading>
+            </Td>
+        </Tr>
+        <Tr>
+            <Td colSpan={2} textAlign="right">
+                <Button colorScheme="blue" onClick={handlePrintInvoice}>
+                    Download Invoice
+                </Button>
 
-                                            <Heading size="md" mt={4} display="flex" justifyContent="flex-end">
-                                                Rs. {totalAmount}
-                                            </Heading>
-                                        </Td>
-                                    </Tr>
-                                </Tbody>
-                            </Table>
+                <div style={{ display: 'none' }}>
+                    <BillComponent
+                        ref={billComponentRef}
+                        selectedCourseDetails={formData.courses}
+                        kitFee={kitFee}
+                    />
+                </div>
+            </Td>
+        </Tr>
+    </Tbody>
+</Table>
+
                         </ModalBody>
                     </ModalContent>
                 </Modal>

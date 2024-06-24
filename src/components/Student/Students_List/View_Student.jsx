@@ -653,7 +653,7 @@ export default function StudentDashboard() {
                                             size="sm"
                                         />
                                     ) : (
-                                        <span>{formData.profilePhoto}</span>
+                                        <Text width={510}>{formData.profilePhoto}</Text>
                                     )}
                                 </Box>
                             </Box>

@@ -236,7 +236,13 @@ export default function UserList() {
 
   const renderPagination = () => {
     const pageButtons = [];
-    for (let i = 1; i <= totalPages; i++) {
+
+    // Only render a maximum of 5 page buttons near the current page
+    const maxButtonsToShow = 3;
+    const startIndex = Math.max(Math.ceil(currentPage - (maxButtonsToShow - 1) / 2), 1);
+    const endIndex = Math.min(startIndex + maxButtonsToShow - 1, totalPages);
+
+    for (let i = startIndex; i <= endIndex; i++) {
       pageButtons.push(
         <Button
           key={i}
@@ -249,6 +255,29 @@ export default function UserList() {
         </Button>
       );
     }
+
+    if (startIndex > 1) {
+      pageButtons.unshift(
+        <Button key="first" onClick={() => paginate(1)} mr={2}>
+          &lt;&lt;
+        </Button>,
+        <Button key="ellipsisBefore" onClick={() => paginate(startIndex - 1)} mr={2}>
+          ...
+        </Button>
+      );
+    }
+
+    if (endIndex < totalPages) {
+      pageButtons.push(
+        <Button key="ellipsisAfter" onClick={() => paginate(endIndex + 1)} ml={2}>
+          ...
+        </Button>,
+        <Button key="last" onClick={() => paginate(totalPages)} ml={2}>
+          &gt;&gt;
+        </Button>
+      );
+    }
+
     return pageButtons;
   };
 
@@ -410,19 +439,19 @@ export default function UserList() {
             <Flex justify="flex-end" mt="4">
               {currentUsers.length > 0 && (
                 <Flex justify="flex-end" mt="4">
-                  <Button onClick={() => paginate(1)} mr={2}>
-                    &lt;&lt;
-                  </Button>
-                  <Button onClick={() => paginate(currentPage - 1)} mr={2}>
-                    &lt;
-                  </Button>
+
+                  {currentPage > 1 && (
+                    <Button onClick={() => paginate(currentPage - 1)} mr={2}>
+                      &lt;
+                    </Button>
+                  )}
                   {renderPagination()}
-                  <Button onClick={() => paginate(currentPage + 1)} mr={2}>
-                    &gt;
-                  </Button>
-                  <Button onClick={() => paginate(totalPages)} mr={2}>
-                    &gt;&gt;
-                  </Button>
+                  {currentPage < totalPages && (
+                    <Button onClick={() => paginate(currentPage + 1)} mr={2}>
+                      &gt;
+                    </Button>
+                  )}
+
                 </Flex>
               )}
             </Flex>

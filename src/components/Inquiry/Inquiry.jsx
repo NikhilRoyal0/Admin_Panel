@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   Box,
@@ -41,12 +41,13 @@ import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseDa
 import { selectleadData, selectleadError, selectleadLoading, fetchleadData, AddleadData, updateleadData } from "../../app/Slices/leadSlice";
 import { selectbranchPlannerData, selectbranchPlannerError, selectbranchPlannerLoading, fetchbranchPlannerData } from "../../app/Slices/branchPlanner";
 import { selectreferenceData, selectreferenceError, selectreferenceLoading, fetchreferenceData, AddreferenceData } from "../../app/Slices/referenceSlice";
+import BillComponent from './BillComponent';
+import { useReactToPrint } from 'react-to-print'; // Import useReactToPrint hook
+
 
 export default function InquiryForm() {
   const branchId = sessionStorage.getItem("BranchId");
   const discountLimit = sessionStorage.getItem("discountLimit");
-  const [step, setStep] = useState(1);
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const leadsData = useSelector(selectleadData);
   const courseData = useSelector(selectcourseData);
@@ -63,6 +64,9 @@ export default function InquiryForm() {
   const Toast = useToast({
     position: "top-right",
   });
+  const navigate = useNavigate();
+  const billComponentRef = useRef();
+  const [step, setStep] = useState(1);
   const [selectedCourses, setSelectedCourses] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [hasReference, setHasReference] = useState(false);
@@ -125,6 +129,7 @@ export default function InquiryForm() {
 
   const [kitFeeIncluded, setKitFeeIncluded] = useState(true);
 
+
   useEffect(() => {
     dispatch(fetchleadData());
     dispatch(fetchcourseData());
@@ -132,6 +137,11 @@ export default function InquiryForm() {
     dispatch(fetchbranchPlannerData());
     dispatch(fetchreferenceData());
   }, [dispatch]);
+
+  const handlePrintInvoice = useReactToPrint({
+    content: () => billComponentRef.current, // Function to get the component to print
+  });
+
 
 
   const planner = plannerData.find(plan => plan.branchId == branchId);
@@ -146,6 +156,7 @@ export default function InquiryForm() {
   const kitFee = planner.kitFee;
   const admissionFee = planner.admissionFee;
   const admissionDiscount = planner.admissionDiscount;
+  const paymentMode = JSON.parse(planner.paymentMode);
 
 
   const handleChange = (e) => {
@@ -283,7 +294,6 @@ export default function InquiryForm() {
   };
 
 
-
   const createReference = async () => {
     try {
 
@@ -353,7 +363,6 @@ export default function InquiryForm() {
       delete formDataToSend.referName;
       delete formDataToSend.referPhone;
       delete formDataToSend.address;
-      console.log("data", formData)
 
 
       if (!formData.lead_id) {
@@ -508,15 +517,21 @@ export default function InquiryForm() {
         await dispatch(updateleadData(formData.lead_id, formDataToSend));
         nextStep()
       }
-      if (step === 5) {
-        setTimeout(() => {
-          navigate("/leads");
-        }, 1500);
-      }
+
     } catch (error) {
       console.error('Error updating lead:', error);
     }
   };
+
+  const handleOkay = () => {
+    if (step === 6) {
+      setTimeout(() => {
+        navigate("/leads");
+      }, 500);
+    }
+  }
+
+
 
   if (isLoading || courseLoading || plannerLoading || referenceLoading) {
     return (
@@ -996,7 +1011,7 @@ export default function InquiryForm() {
                         Previous
                       </Button>
                     )}
-                    <Button colorScheme="blue" onClick={(e) => { nextStep(); handleUpdate(e); }}>
+                    <Button colorScheme="blue" onClick={(e) => { handleUpdate(e); }}>
                       Next
                     </Button>
                   </HStack>
@@ -1084,63 +1099,19 @@ export default function InquiryForm() {
               {step === 5 && (
                 <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={8}>
                   {/* Left Side: Payment Options */}
-                  <Stack spacing={4} p={4} borderWidth="1px" borderRadius="md" >
-                    <Box borderRadius="lg" bg="aliceblue" p={2}>
-                      <Checkbox
-                        name="creditCard"
-                        isChecked={formData.paymentMethods.creditCard}
-                        onChange={handlePaymentMethodChange}
-                      >
-                        Credit Card
-                      </Checkbox>
-                    </Box>
-                    <Box borderRadius="lg" bg="aliceblue" p={2}>
-                      <Checkbox
-                        name="debitCard"
-                        isChecked={formData.paymentMethods.debitCard}
-                        onChange={handlePaymentMethodChange}
-                      >
-                        Debit Card
-                      </Checkbox>
-                    </Box>
-                    <Box borderRadius="lg" bg="aliceblue" p={2}>
-                      <Checkbox
-                        name="emi"
-                        isChecked={formData.paymentMethods.emi}
-                        onChange={handlePaymentMethodChange}
-                      >
-                        EMI
-                      </Checkbox>
-                    </Box>
-                    <Box borderRadius="lg" bg="aliceblue" p={2}>
-                      <Checkbox
-                        name="netBanking"
-                        isChecked={formData.paymentMethods.netBanking}
-                        onChange={handlePaymentMethodChange}
-                      >
-                        Net Banking
-                      </Checkbox>
-                    </Box>
-                    <Box borderRadius="lg" bg="aliceblue" p={2}>
-                      <Checkbox
-                        name="upi"
-                        isChecked={formData.paymentMethods.upi}
-                        onChange={handlePaymentMethodChange}
-                      >
-                        UPI
-                      </Checkbox>
-                    </Box>
-                    <Box borderRadius="lg" bg="aliceblue" p={2}>
-                      <Checkbox
-                        name="cash"
-                        isChecked={formData.paymentMethods.cash}
-                        onChange={handlePaymentMethodChange}
-                      >
-                        Cash
-                      </Checkbox>
-                    </Box>
+                  <Stack spacing={4} p={4} borderWidth="1px" borderRadius="md">
+                    {paymentMode.map((mode) => (
+                      <Box key={mode} borderRadius="lg" bg="aliceblue" p={2}>
+                        <Checkbox
+                          name={mode}
+                          isChecked={formData.paymentMethods[mode]}
+                          onChange={handlePaymentMethodChange}
+                        >
+                          {mode.charAt(0).toUpperCase() + mode.slice(1).replace(/([A-Z])/g, ' $1')}
+                        </Checkbox>
+                      </Box>
+                    ))}
                   </Stack>
-
 
 
                   {/* Right Side: Course Summary Card */}
@@ -1245,7 +1216,6 @@ export default function InquiryForm() {
                     </CardBody>
                   </Card>
 
-
                   {/* Buttons for Navigation */}
                   <VStack spacing={4} align="stretch">
                     <HStack mt={8} spacing={4} justify="center">
@@ -1262,6 +1232,31 @@ export default function InquiryForm() {
                 </Grid>
               )}
 
+
+              {step === 6 && (
+                <VStack spacing={8} alignItems="center">
+                  <Text fontSize="xl" fontWeight="bold" color="green.500">
+                    Lead generated successfully!
+                  </Text>
+                  <Flex>
+                    <Button colorScheme="blue" onClick={handleOkay} mr={5}>
+                      Okay
+                    </Button>
+                    <Button colorScheme="blue" onClick={handlePrintInvoice}>
+                      Download Invoice
+                    </Button>
+                  </Flex>
+
+                  {/* Render BillComponent with ref */}
+                  <div style={{ display: 'none' }}>
+                    <BillComponent
+                      ref={billComponentRef} 
+                      selectedCourseDetails={calculateTotalAmount().selectedCourseDetails} 
+                      kitFee={kitFee} 
+                    />
+                  </div>
+                </VStack>
+              )}
 
             </CardBody>
           </Card>
