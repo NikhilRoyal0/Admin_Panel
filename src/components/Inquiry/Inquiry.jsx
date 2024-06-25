@@ -344,8 +344,20 @@ export default function InquiryForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
+    const { isValid, errorMessage } = validateStep();
+    if (!isValid) {
+      Toast({
+        title: "Validation Error",
+        description: errorMessage,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+      return;
+    }
 
+    try {
       const referenceId = await createReference();
 
       const selectedPaymentMethods = Object.keys(formData.paymentMethods)
@@ -363,7 +375,6 @@ export default function InquiryForm() {
       delete formDataToSend.referName;
       delete formDataToSend.referPhone;
       delete formDataToSend.address;
-
 
       if (!formData.lead_id) {
         const emailExists = leadsData.some(lead => lead.email === formData.email);
@@ -402,6 +413,7 @@ export default function InquiryForm() {
       let response;
       if (formData.lead_id) {
         response = await dispatch(updateleadData(formData.lead_id, formDataToSend));
+        validateStep();
         nextStep();
       } else {
         response = await dispatch(AddleadData(formDataToSend));
@@ -430,38 +442,45 @@ export default function InquiryForm() {
   };
 
 
+
   const validateStep = () => {
+    let errorMessage = '';
+
     switch (step) {
       case 1:
-        return (
-          formData.studentName !== '' &&
-          formData.email !== '' &&
-          formData.phoneNumber !== '' &&
-          formData.state !== '' &&
-          formData.city !== '' &&
-          formData.primaryAddress !== '' &&
-          (hasReference ? (referName !== '' && referPhone !== '' && address !== '') : formData.parentCode !== '')
-        );
+        if (formData.studentName === '') errorMessage = 'Student name is required';
+        else if (formData.email === '') errorMessage = 'Email is required';
+        else if (formData.phoneNumber === '') errorMessage = 'Phone number is required';
+        else if (formData.state === '') errorMessage = 'State is required';
+        else if (formData.city === '') errorMessage = 'City is required';
+        else if (formData.primaryAddress === '') errorMessage = 'Primary address is required';
+        else if (hasReference) {
+          if (referName === '') errorMessage = 'Reference name is required';
+          else if (referPhone === '') errorMessage = 'Reference phone number is required';
+          else if (address === '') errorMessage = 'Reference address is required';
+        }
+        break;
       case 2:
-        return (
-          formData.qualifications[0].qualification !== '' &&
-          (formData.qualifications[0].qualification !== 'Other' || formData.qualifications[0].highestQualification !== '') &&
-          formData.qualifications[0].collegeName !== '' &&
-          formData.qualifications[0].boardUniversityName !== '' &&
-          formData.qualifications[0].startDate !== '' &&
-          formData.qualifications[0].endDate !== '' &&
-          formData.qualifications[0].gradeMarks !== ''
-
-        );
+        if (formData.qualifications[0].qualification === '') errorMessage = 'Qualification is required';
+        else if (formData.qualifications[0].qualification === 'Other' && formData.qualifications[0].highestQualification === '') errorMessage = 'Highest qualification is required';
+        else if (formData.qualifications[0].collegeName === '') errorMessage = 'College name is required';
+        else if (formData.qualifications[0].boardUniversityName === '') errorMessage = 'Board/University name is required';
+        else if (formData.qualifications[0].startDate === '') errorMessage = 'Start date is required';
+        else if (formData.qualifications[0].endDate === '') errorMessage = 'End date is required';
+        else if (formData.qualifications[0].gradeMarks === '') errorMessage = 'Grade/Marks are required';
+        break;
       case 3:
-        return selectedCourses.length > 0;
       case 4:
-        return selectedCourses.length > 0;
+        if (selectedCourses.length === 0) errorMessage = 'At least one course must be selected';
+        break;
       case 5:
-        return Object.values(formData.paymentMethods).some((method) => method);
+        if (!Object.values(formData.paymentMethods).some((method) => method)) errorMessage = 'At least one payment method must be selected';
+        break;
       default:
-        return true;
+        break;
     }
+
+    return { isValid: errorMessage === '', errorMessage };
   };
 
 
@@ -495,6 +514,20 @@ export default function InquiryForm() {
 
 
   const handleUpdate = async () => {
+
+    const { isValid, errorMessage } = validateStep();
+    if (!isValid) {
+      Toast({
+        title: "Validation Error",
+        description: errorMessage,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+      return;
+    }
+
     const referenceId = await createReference();
 
     const selectedPaymentMethods = Object.keys(formData.paymentMethods)
@@ -1250,9 +1283,9 @@ export default function InquiryForm() {
                   {/* Render BillComponent with ref */}
                   <div style={{ display: 'none' }}>
                     <BillComponent
-                      ref={billComponentRef} 
-                      selectedCourseDetails={calculateTotalAmount().selectedCourseDetails} 
-                      kitFee={kitFee} 
+                      ref={billComponentRef}
+                      selectedCourseDetails={calculateTotalAmount().selectedCourseDetails}
+                      kitFee={kitFee}
                     />
                   </div>
                 </VStack>
