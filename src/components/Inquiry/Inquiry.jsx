@@ -41,8 +41,9 @@ import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseDa
 import { selectleadData, selectleadError, selectleadLoading, fetchleadData, AddleadData, updateleadData } from "../../app/Slices/leadSlice";
 import { selectbranchPlannerData, selectbranchPlannerError, selectbranchPlannerLoading, fetchbranchPlannerData } from "../../app/Slices/branchPlanner";
 import { selectreferenceData, selectreferenceError, selectreferenceLoading, fetchreferenceData, AddreferenceData } from "../../app/Slices/referenceSlice";
+import { AddinvoiceData, updateinvoiceData } from "../../app/Slices/invoiceSlice";
 import BillComponent from './BillComponent';
-import { useReactToPrint } from 'react-to-print'; // Import useReactToPrint hook
+import { useReactToPrint } from 'react-to-print';
 
 
 export default function InquiryForm() {
@@ -128,6 +129,7 @@ export default function InquiryForm() {
   });
 
   const [kitFeeIncluded, setKitFeeIncluded] = useState(true);
+  const [admissionFeeIncluded, setadmissionFeeIncluded] = useState(true);
 
 
   useEffect(() => {
@@ -139,7 +141,7 @@ export default function InquiryForm() {
   }, [dispatch]);
 
   const handlePrintInvoice = useReactToPrint({
-    content: () => billComponentRef.current, // Function to get the component to print
+    content: () => billComponentRef.current,
   });
 
 
@@ -186,7 +188,6 @@ export default function InquiryForm() {
         }));
       } else {
 
-        // Reset referredBy if reference is not found
         setFormData(prevData => ({
           ...prevData,
           referredBy: '',
@@ -376,40 +377,6 @@ export default function InquiryForm() {
       delete formDataToSend.referPhone;
       delete formDataToSend.address;
 
-      if (!formData.lead_id) {
-        const emailExists = leadsData.some(lead => lead.email === formData.email);
-        const numberExists = leadsData.some(lead => lead.phoneNumber === formData.phoneNumber);
-
-        if (emailExists && numberExists) {
-          Toast({
-            title: `Already have lead with email ${formData.email} and number ${formData.phoneNumber}`,
-            status: "error",
-            duration: 3000,
-            isClosable: true,
-            position: "top-right",
-          });
-          return;
-        } else if (emailExists) {
-          Toast({
-            title: `Already have lead with email ${formData.email}`,
-            status: "error",
-            duration: 3000,
-            isClosable: true,
-            position: "top-right",
-          });
-          return;
-        } else if (numberExists) {
-          Toast({
-            title: `Already have lead with number ${formData.phoneNumber}`,
-            status: "error",
-            duration: 3000,
-            isClosable: true,
-            position: "top-right",
-          });
-          return;
-        }
-      }
-
       let response;
       if (formData.lead_id) {
         response = await dispatch(updateleadData(formData.lead_id, formDataToSend));
@@ -426,6 +393,28 @@ export default function InquiryForm() {
           lead_id: lead_id,
           student_id: student_id,
         }));
+
+        const { totalAmount } = calculateTotalAmount();
+        const invoiceDataToSend = {
+          studentName: formData.studentName,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          courses: JSON.stringify(selectedCourses),
+          paymentMethod: JSON.stringify(selectedPaymentMethods),
+          createdOn: Date.now(),
+          kitFee: kitFeeIncluded ? kitFee : '',
+          totalAmount: totalAmount,
+          totalDiscount: userDiscountValue,
+          userDiscount: sliderValue,
+          branchDiscount: sliderValue,
+          branchId: branchId,
+          admissionFee: admissionFeeIncluded ? admissionFee : '',
+          lead_id: lead_id
+        };
+
+        const invoiceResponse = await dispatch(AddinvoiceData(invoiceDataToSend));
+
+
       }
     } catch (error) {
       console.error('Error handling form submission:', error);
@@ -440,7 +429,6 @@ export default function InquiryForm() {
       });
     }
   };
-
 
 
   const validateStep = () => {
@@ -493,7 +481,7 @@ export default function InquiryForm() {
       const course = courseData.find(course => course.courseId == selected.courseId);
 
       if (course) {
-        totalAmount += parseFloat(course.price);
+        totalAmount += parseFloat(course.price) || 0;
         selectedCourseDetails.push({
           courseTitle: course.courseTitle,
           price: parseFloat(course.price).toFixed(2),
@@ -501,11 +489,17 @@ export default function InquiryForm() {
       }
     });
 
-    let totalDiscount = (sliderValue / 100) + (userDiscountIncluded ? (userDiscountValue / 100) : 0);
-    let discountedAmount = totalAmount - (totalDiscount * totalAmount);
+    let totalDiscountPercentage = (sliderValue / 100) + (userDiscountIncluded ? (userDiscountValue / 100) : 0);
+    totalDiscountPercentage = Math.min(totalDiscountPercentage, 1);
+
+    let discountedAmount = totalAmount - (totalDiscountPercentage * totalAmount);
 
     if (kitFeeIncluded) {
-      discountedAmount += kitFee;
+      discountedAmount += parseFloat(kitFee) || 0;
+    }
+
+    if (admissionFeeIncluded) {
+      discountedAmount += parseFloat(admissionFee) || 0;
     }
 
     return { totalAmount: discountedAmount.toFixed(2), selectedCourseDetails };
@@ -514,7 +508,6 @@ export default function InquiryForm() {
 
 
   const handleUpdate = async () => {
-
     const { isValid, errorMessage } = validateStep();
     if (!isValid) {
       Toast({
@@ -528,31 +521,65 @@ export default function InquiryForm() {
       return;
     }
 
-    const referenceId = await createReference();
-
-    const selectedPaymentMethods = Object.keys(formData.paymentMethods)
-      .filter(method => formData.paymentMethods[method]);
-
-    const formDataToSend = {
-      ...formData,
-      currentCourseId: selectedCourses.length > 0 ? selectedCourses[0].courseId : '',
-      qualifications: JSON.stringify(formData.qualifications),
-      courses: JSON.stringify(selectedCourses),
-      paymentMethods: JSON.stringify(selectedPaymentMethods),
-      referredBy: referenceId || formData.referredBy,
-    };
-    delete formDataToSend.referName;
-    delete formDataToSend.referPhone;
-    delete formDataToSend.address;
-
     try {
+      const referenceId = await createReference();
+
+      const selectedPaymentMethods = Object.keys(formData.paymentMethods)
+        .filter(method => formData.paymentMethods[method]);
+
+      const formDataToSend = {
+        ...formData,
+        currentCourseId: selectedCourses.length > 0 ? selectedCourses[0].courseId : '',
+        qualifications: JSON.stringify(formData.qualifications),
+        courses: JSON.stringify(selectedCourses),
+        paymentMethods: JSON.stringify(selectedPaymentMethods),
+        referredBy: referenceId || formData.referredBy,
+      };
+
+      delete formDataToSend.referName;
+      delete formDataToSend.referPhone;
+      delete formDataToSend.address;
+
       if (validateStep()) {
         await dispatch(updateleadData(formData.lead_id, formDataToSend));
-        nextStep()
-      }
 
+        const { totalAmount } = calculateTotalAmount();
+
+        const invoiceDataToSend = {
+          studentName: formData.studentName,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          courses: JSON.stringify(selectedCourses),
+          paymentMethod: JSON.stringify(selectedPaymentMethods),
+          createdOn: Date.now(),
+          kitFee: kitFeeIncluded ? kitFee : '',
+          totalAmount: totalAmount,
+          totalDiscount: parseFloat(userDiscountValue) + parseFloat(sliderValue),
+          userDiscount: userDiscountValue,
+          branchDiscount: sliderValue,
+          branchId: branchId,
+          admissionFee: admissionFeeIncluded ? admissionFee : '',
+          lead_id: formData.lead_id
+        };
+
+        if (formData.lead_id) {
+          await dispatch(updateinvoiceData(formData.lead_id, invoiceDataToSend));
+        } else {
+          console.error('Lead ID is not available for update.');
+        }
+        nextStep();
+      }
     } catch (error) {
       console.error('Error updating lead:', error);
+
+      Toast({
+        title: "Error updating lead",
+        description: error.message || "An unexpected error occurred",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
     }
   };
 
@@ -1174,6 +1201,17 @@ export default function InquiryForm() {
                           </Tr>
                           <Tr>
                             <Td colSpan={2}>
+                              <Checkbox
+                                isChecked={admissionFeeIncluded}
+                                onChange={() => setadmissionFeeIncluded(!admissionFeeIncluded)}
+                                size="lg"
+                              >
+                                Admission Fee (Rs. {admissionFee})
+                              </Checkbox>
+                            </Td>
+                          </Tr>
+                          <Tr>
+                            <Td colSpan={2}>
                               <Flex alignItems="center">
                                 <Box flex="1">
                                   <Slider
@@ -1280,12 +1318,10 @@ export default function InquiryForm() {
                     </Button>
                   </Flex>
 
-                  {/* Render BillComponent with ref */}
                   <div style={{ display: 'none' }}>
                     <BillComponent
                       ref={billComponentRef}
-                      selectedCourseDetails={calculateTotalAmount().selectedCourseDetails}
-                      kitFee={kitFee}
+                      lead_id={formData.lead_id}
                     />
                   </div>
                 </VStack>

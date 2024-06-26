@@ -36,11 +36,13 @@ import { selectrolesData, selectrolesError, selectrolesLoading, fetchrolesData }
 import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseData } from "../../app/Slices/courseSlice";
 import { selectBranchData, selectBranchError, selectBranchLoading, fetchBranchData } from "../../app/Slices/branchSlice";
 import { selectbranchPlannerData, selectbranchPlannerError, selectbranchPlannerLoading, fetchbranchPlannerData } from "../../app/Slices/branchPlanner";
+import { updateinvoiceData } from "../../app/Slices/invoiceSlice";
+import { selectinvoiceData, selectinvoiceError, selectinvoiceLoading, fetchinvoiceData } from "../../app/Slices/invoiceSlice";
 import QualificationsModal from "./QualificationsModal";
 import CourseSelect from "./CourseSelect";
 import NetworkError from "../NotFound/networkError";
 import BillComponent from './BillComponent';
-import { useReactToPrint } from 'react-to-print'; 
+import { useReactToPrint } from 'react-to-print';
 
 export default function Edit_Leads() {
     const branchId = sessionStorage.getItem("BranchId")
@@ -59,6 +61,9 @@ export default function Edit_Leads() {
     const plannerData = useSelector(selectbranchPlannerData);
     const plannerLoading = useSelector(selectbranchPlannerLoading);
     const plannerError = useSelector(selectbranchPlannerError);
+    const invoiceData = useSelector(selectinvoiceData);
+    const invoiceError = useSelector(selectinvoiceError);
+    const invoiceLoading = useSelector(selectinvoiceLoading);
     const billComponentRef = useRef();
     const [lead, setLead] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -109,6 +114,7 @@ export default function Edit_Leads() {
         dispatch(fetchcourseData());
         dispatch(fetchBranchData());
         dispatch(fetchbranchPlannerData());
+        dispatch(fetchinvoiceData());
     }, [dispatch, leadData.length]);
 
     useEffect(() => {
@@ -121,8 +127,8 @@ export default function Edit_Leads() {
 
     const handlePrintInvoice = useReactToPrint({
         content: () => billComponentRef.current, // Function to get the component to print
-      });
-    
+    });
+
 
     const planner = plannerData.find(plan => plan.branchId == branchId);
 
@@ -147,7 +153,6 @@ export default function Edit_Leads() {
     }
     const courses = JSON.parse(formData.courses);
 
-    const totalAmount = courses.reduce((acc, course) => acc + parseFloat(course.price), 0) + parseFloat(kitFee);
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -205,85 +210,126 @@ export default function Edit_Leads() {
 
     const coursesData = branchId == 0 ? courseData : courseData.filter(course => course.branchId == branchId);
 
-    const handleSave = () => {
-        dispatch(updateleadData(lead_id, formData))
-            .then((response) => {
-                toast({
-                    title: "Lead updated successfully",
-                    status: "success",
-                    duration: 3000,
-                    isClosable: true,
-                });
+    const invoices = invoiceData.find(item => item.lead_id === lead_id)
 
-                if (formData.status === "converted") {
-                    const { lead_id, lead_No, ...formData2 } = formData;
+    const totalPrices = courses.reduce((acc, course) => acc + parseFloat(course.price), 0);
+    const discountedTotal = totalPrices * (1 - parseFloat(invoices.totalDiscount) / 100);
+    const totalAmount = discountedTotal + parseFloat(invoices.kitFee) + parseFloat(invoices.admissionFee);
 
-                    dispatch(checkStudentExistence(formData2.student_id))
-                        .then((studentExists) => {
-                            if (studentExists) {
-                                dispatch(updateStudentData(formData2.student_id, formData2))
-                                    .then(() => {
-                                        toast({
-                                            title: "Student data updated successfully",
-                                            status: "success",
-                                            duration: 3000,
-                                            isClosable: true,
-                                        });
-                                    })
-                                    .catch((error) => {
-                                        toast({
-                                            title: "Failed to update student data",
-                                            status: "error",
-                                            duration: 3000,
-                                            isClosable: true,
-                                        });
-                                        console.log("Error updating student data: ", error);
-                                    });
-                            } else {
-                                // If student does not exist, add the student data
-                                dispatch(AddStudentData(formData2))
-                                    .then(() => {
-                                        toast({
-                                            title: "Student data added successfully",
-                                            status: "success",
-                                            duration: 3000,
-                                            isClosable: true,
-                                        });
-                                    })
-                                    .catch((error) => {
-                                        toast({
-                                            title: "Failed to add student data",
-                                            status: "error",
-                                            duration: 3000,
-                                            isClosable: true,
-                                        });
-                                        console.log("Error adding student data: ", error);
-                                    });
-                            }
-                        })
-                        .catch((error) => {
-                            toast({
-                                title: "Failed to check student existence",
-                                status: "error",
-                                duration: 3000,
-                                isClosable: true,
-                            });
-                            console.log("Error checking student existence: ", error);
-                        });
-                }
+    const handleSave = async () => {
+        setIsSaveLoading(true);
 
-                setIsEditing(false);
-            })
-            .catch((error) => {
-                toast({
-                    title: "Failed to update lead",
-                    status: "error",
-                    duration: 3000,
-                    isClosable: true,
-                });
-                console.log("Error updating lead: ", error);
+        try {
+            await dispatch(updateleadData(lead_id, formData));
+
+            toast({
+                title: "Lead updated successfully",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
             });
+
+
+            // Create the invoice data object
+            const invoiceDataToSend = {
+                studentName: formData.studentName,
+                email: formData.email,
+                phoneNumber: formData.phoneNumber,
+                courses: JSON.stringify(courses),
+                paymentMethod: formData.paymentMethods,
+                kitFee: invoices.kitFee,
+                totalAmount: totalAmount,
+                totalDiscount: invoices.totalDiscount,
+                userDiscount: invoices.userDiscount,
+                branchDiscount: invoices.branchDiscount,
+                branchId: branchId,
+                admissionFee: invoices.admissionFee,
+                lead_id: formData.lead_id,
+            };
+
+            // Dispatch the update invoice action
+            await dispatch(updateinvoiceData(lead_id, invoiceDataToSend));
+
+            console.log("dta", invoiceDataToSend)
+
+            toast({
+                title: "Invoice updated successfully",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+            });
+
+            setIsEditing(false);
+
+            if (formData.status === "converted") {
+                const { lead_id, lead_No, ...formData2 } = formData;
+
+                dispatch(checkStudentExistence(formData2.student_id))
+                    .then((studentExists) => {
+                        if (studentExists) {
+                            dispatch(updateStudentData(formData2.student_id, formData2))
+                                .then(() => {
+                                    toast({
+                                        title: "Student data updated successfully",
+                                        status: "success",
+                                        duration: 3000,
+                                        isClosable: true,
+                                    });
+                                })
+                                .catch((error) => {
+                                    toast({
+                                        title: "Failed to update student data",
+                                        status: "error",
+                                        duration: 3000,
+                                        isClosable: true,
+                                    });
+                                    console.log("Error updating student data: ", error);
+                                });
+                        } else {
+                            // If student does not exist, add the student data
+                            dispatch(AddStudentData(formData2))
+                                .then(() => {
+                                    toast({
+                                        title: "Student data added successfully",
+                                        status: "success",
+                                        duration: 3000,
+                                        isClosable: true,
+                                    });
+                                })
+                                .catch((error) => {
+                                    toast({
+                                        title: "Failed to add student data",
+                                        status: "error",
+                                        duration: 3000,
+                                        isClosable: true,
+                                    });
+                                    console.log("Error adding student data: ", error);
+                                });
+                        }
+                    })
+                    .catch((error) => {
+                        toast({
+                            title: "Failed to check student existence",
+                            status: "error",
+                            duration: 3000,
+                            isClosable: true,
+                        });
+                        console.log("Error checking student existence: ", error);
+                    });
+            }
+        } catch (error) {
+            toast({
+                title: "Failed to update lead",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
+            console.log("Error updating lead: ", error);
+        } finally {
+            setIsSaveLoading(false);
+        }
     };
+
 
 
     const handleEditToggle = () => {
@@ -315,7 +361,7 @@ export default function Edit_Leads() {
         );
     }
 
-    if (isLoading || roleLoading || courseLoading || branchLoading || plannerLoading) {
+    if (isLoading || roleLoading || courseLoading || branchLoading || plannerLoading || invoiceLoading) {
         return (
             <Flex justify="center" align="center" h="100vh">
                 <Spinner size="xl" />
@@ -323,7 +369,7 @@ export default function Edit_Leads() {
         );
     }
 
-    if (error || roleError || courseError || branchError || plannerError) {
+    if (error || roleError || courseError || branchError || plannerError || invoiceError) {
         return <NetworkError />;
     }
 
@@ -655,53 +701,60 @@ export default function Edit_Leads() {
                         <ModalHeader>Invoice Details</ModalHeader>
                         <ModalCloseButton />
                         <ModalBody>
-                        <Table variant="simple" size="md">
-    <Tbody>
-        {courses.map((course) => (
-            <Tr key={course.courseId}>
-                <Td fontSize="lg">{course.courseTitle}</Td>
-                <Td textAlign="right" fontSize="lg">
-                    Rs. {course.price}
-                </Td>
-            </Tr>
-        ))}
-        <Tr>
-            <Td colSpan={1} fontWeight="bold" fontSize="lg">
-                Kit Fee
-            </Td>
-            <Td textAlign="right" fontSize="lg" fontWeight="bold">
-                Rs. {kitFee}
-            </Td>
-        </Tr>
-        <Tr>
-            <Td colSpan={1}>
-                <Heading size="md" mt={4}>
-                    Total Amount:
-                </Heading>
-            </Td>
-            <Td colSpan={1}>
-                <Heading size="md" mt={4} display="flex" justifyContent="flex-end">
-                    Rs. {totalAmount}
-                </Heading>
-            </Td>
-        </Tr>
-        <Tr>
-            <Td colSpan={2} textAlign="right">
-                <Button colorScheme="blue" onClick={handlePrintInvoice}>
-                    Download Invoice
-                </Button>
+                            <Table variant="simple" size="md">
+                                <Tbody>
+                                    {courses.map((course) => (
+                                        <Tr key={course.courseId}>
+                                            <Td fontSize="lg">{course.courseTitle}</Td>
+                                            <Td textAlign="right" fontSize="lg">
+                                                Rs. {course.price}
+                                            </Td>
+                                        </Tr>
+                                    ))}
+                                    <Tr>
+                                        <Td colSpan={1} fontWeight="bold" fontSize="lg">
+                                            Kit Fee
+                                        </Td>
+                                        <Td textAlign="right" fontSize="lg" fontWeight="bold">
+                                            Rs. {kitFee}
+                                        </Td>
+                                    </Tr>
+                                    <Tr>
+                                        <Td colSpan={1} fontWeight="bold" fontSize="lg">
+                                            Admission Fee
+                                        </Td>
+                                        <Td textAlign="right" fontSize="lg" fontWeight="bold">
+                                            Rs. {admissionFee}
+                                        </Td>
+                                    </Tr>
+                                    <Tr>
+                                        <Td colSpan={1}>
+                                            <Heading size="md" mt={4}>
+                                                Total Amount:
+                                            </Heading>
+                                        </Td>
+                                        <Td colSpan={1}>
+                                            <Heading size="md" mt={4} display="flex" justifyContent="flex-end">
+                                                Rs. {totalAmount.toFixed(2)}
+                                            </Heading>
+                                        </Td>
+                                    </Tr>
+                                    <Tr>
+                                        <Td colSpan={2} textAlign="right">
+                                            <Button colorScheme="blue" onClick={handlePrintInvoice}>
+                                                Download Invoice
+                                            </Button>
 
-                <div style={{ display: 'none' }}>
-                    <BillComponent
-                        ref={billComponentRef}
-                        selectedCourseDetails={formData.courses}
-                        kitFee={kitFee}
-                    />
-                </div>
-            </Td>
-        </Tr>
-    </Tbody>
-</Table>
+                                            <div style={{ display: 'none' }}>
+                                                <BillComponent
+                                                    ref={billComponentRef}
+                                                    lead_id={lead_id}
+                                                />
+                                            </div>
+                                        </Td>
+                                    </Tr>
+                                </Tbody>
+                            </Table>
 
                         </ModalBody>
                     </ModalContent>

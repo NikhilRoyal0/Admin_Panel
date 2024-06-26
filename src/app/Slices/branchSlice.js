@@ -46,7 +46,6 @@ export const fetchBranchData = () => async (dispatch) => {
   try {
     const apiToken = sessionStorage.getItem("api-token");
 
-    dispatch(setBranchLoading());
     const response = await axios.get(
       import.meta.env.VITE_BASE_URL + "branches/all/getAllBranches",
       {
