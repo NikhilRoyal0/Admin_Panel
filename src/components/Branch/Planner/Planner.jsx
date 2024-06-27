@@ -15,6 +15,16 @@ import {
   ModalBody,
   ModalFooter,
   useToast,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
+  Checkbox,
+  Tag,
+  TagLabel,
+  TagCloseButton,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { BeatLoader } from "react-spinners";
@@ -26,9 +36,11 @@ import {
   AddbranchPlannerData,
   updatebranchPlannerData,
 } from "../../../app/Slices/branchPlanner";
+import { selectmoduleData, selectmoduleError, selectmoduleLoading, fetchmoduleData } from "../../../app/Slices/moduleSlice";
 import NetworkError from "../../NotFound/networkError";
 import { useParams } from "react-router-dom";
 import { getModulePermissions } from "../../../utils/permissions";
+import { ChevronDownIcon } from "@chakra-ui/icons";
 
 
 export default function Planner() {
@@ -36,8 +48,15 @@ export default function Planner() {
   const [selectedplanerId, setSelectedplanerId] = useState(null);
   const [editedbranchPlannerData, setEditedbranchPlannerData] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [isSaveLoading, setIsSaveLoading] = useState(false);
   const { branchId } = useParams();
+
+  const {
+    isOpen: isSelectModuleModalOpen,
+    onOpen: onSelectModuleModalOpen,
+    onClose: onSelectModuleModalClose,
+  } = useDisclosure();
 
   const [newbranchPlannerData, setNewbranchPlannerData] = useState({
     branchId: branchId,
@@ -46,9 +65,13 @@ export default function Planner() {
     paymentMode: "",
     kitFee: "",
     websiteUrl: "",
+    module: [],
   });
 
   const branchPlannerData = useSelector(selectbranchPlannerData);
+  const moduleData = useSelector(selectmoduleData);
+  const moduleError = useSelector(selectmoduleError);
+  const moduleLoading = useSelector(selectmoduleLoading);
   const isLoading = useSelector(selectbranchPlannerLoading);
   const error = useSelector(selectbranchPlannerError);
   const dispatch = useDispatch();
@@ -58,7 +81,29 @@ export default function Planner() {
 
   useEffect(() => {
     dispatch(fetchbranchPlannerData());
+    dispatch(fetchmoduleData());
   }, [dispatch]);
+
+
+  const filteredModules = moduleData.filter((module) =>
+    module.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleRemoveModule = (moduleId) => {
+    setNewbranchPlannerData((prevData) => ({
+      ...prevData,
+      module: (prevData.module || []).filter((module) => module.moduleId !== moduleId),
+    }));
+  };
+
+  const handleCheckboxChange = (module, isChecked) => {
+    setNewbranchPlannerData((prevData) => ({
+      ...prevData,
+      module: isChecked
+        ? [...(prevData.module || []), module]
+        : (prevData.module || []).filter((m) => m.moduleId !== module.moduleId),
+    }));
+  };
 
   const handleAddbranchPlanner = (e) => {
     e.preventDefault();
@@ -71,6 +116,7 @@ export default function Planner() {
     formData.append("paymentMode", newbranchPlannerData.paymentMode);
     formData.append("kitFee", newbranchPlannerData.kitFee);
     formData.append("websiteUrl", newbranchPlannerData.websiteUrl);
+    formData.append("module", JSON.stringify(newbranchPlannerData.module));
     dispatch(AddbranchPlannerData(formData))
       .then(() => {
         setIsSaveLoading(false);
@@ -118,6 +164,7 @@ export default function Planner() {
       paymentMode: editedbranchPlannerData.paymentMode,
       kitFee: editedbranchPlannerData.kitFee,
       websiteUrl: editedbranchPlannerData.websiteUrl,
+      module: editedbranchPlannerData.module,
     };
 
     dispatch(updatebranchPlannerData(editedbranchPlannerData.planerId, formData))
@@ -150,7 +197,7 @@ export default function Planner() {
       });
   };
 
-  if (isLoading) {
+  if (isLoading || moduleLoading) {
     return (
       <Flex justify="center" align="center" h="32vh">
         <Spinner size="xl" />
@@ -158,14 +205,14 @@ export default function Planner() {
     );
   }
 
-  if (error) {
+  if (error || moduleError) {
     return (
       <NetworkError />
     );
   }
 
 
-  const selectedPlan = branchPlannerData.filter(branch => branch.branchId === (branchId));
+  const selectedPlan = branchPlannerData.filter(branch => branch.branchId == (branchId));
 
   const branchManagementPermissions = getModulePermissions('Branch');
 
@@ -223,6 +270,7 @@ export default function Planner() {
                 <Text >Payment Mode: {branchPlanner.paymentMode}</Text>
                 <Text >Kit Fee: {branchPlanner.kitFee}</Text>
                 <Text >Website Url: {branchPlanner.websiteUrl}</Text>
+                <Text >Module: {branchPlanner.module}</Text>
 
                 <Flex mt="3">
                   <Button
@@ -253,23 +301,18 @@ export default function Planner() {
         )}
       </Box>
 
+
       <Modal
         isOpen={isAddbranchPlannerModalOpen}
         onClose={() => setIsAddbranchPlannerModalOpen(false)}
       >
         <ModalOverlay />
         <form onSubmit={handleAddbranchPlanner}>
-          {" "}
           <ModalContent>
             <ModalHeader>Add Plan</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              <Input
-                mb="3"
-                placeholder="Branch Id"
-                value={branchId}
-                isRequired
-              />
+              <Input mb="3" placeholder="Branch Id" value={branchId} isRequired />
               <Input
                 mb="3"
                 placeholder="Admission Fee"
@@ -331,6 +374,30 @@ export default function Planner() {
                 isRequired
               />
 
+              <Box mb="3" p="2" borderWidth="1px" borderRadius="md">
+                {newbranchPlannerData.module && newbranchPlannerData.module.length > 0 ? (
+                  newbranchPlannerData.module.map((module) => (
+                    <Tag
+                      key={module.moduleId}
+                      size="lg"
+                      borderRadius="full"
+                      variant="solid"
+                      colorScheme="teal"
+                      m="1"
+                    >
+                      <TagLabel>{module.title}</TagLabel>
+                      <TagCloseButton onClick={() => handleRemoveModule(module.moduleId)} />
+                    </Tag>
+                  ))
+                ) : (
+                  <Button
+                    rightIcon={<ChevronDownIcon />}
+                    onClick={onSelectModuleModalOpen}
+                  >
+                    Select Modules
+                  </Button>
+                )}
+              </Box>
             </ModalBody>
             <ModalFooter>
               <Button
@@ -349,8 +416,60 @@ export default function Planner() {
               </Button>
             </ModalFooter>
           </ModalContent>
-        </form>{" "}
+        </form>
       </Modal>
+
+      <Modal
+        isOpen={isSelectModuleModalOpen}
+        onClose={onSelectModuleModalClose}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Select Modules</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Input
+              mb="3"
+              placeholder="Search Modules"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Accordion allowMultiple>
+              {filteredModules.map((module) => (
+                <AccordionItem key={module.moduleId}>
+                  <AccordionButton>
+                    <Box flex="1" textAlign="left">
+                      {module.title}
+                    </Box>
+                    <AccordionIcon />
+                  </AccordionButton>
+                  <AccordionPanel pb={4}>
+                    <Checkbox
+                      value={module.moduleId}
+                      isChecked={newbranchPlannerData.module?.some((m) => m.moduleId === module.moduleId) || false}
+                      onChange={(e) => handleCheckboxChange(module, e.target.checked)}
+                    >
+                      {module.title}
+                    </Checkbox>
+                    <Box mt="2">
+                      <Text><b>Year:</b> {module.year}</Text>
+                      <Text><b>Price:</b> {module.price}</Text>
+                      <Text><b>Class:</b> {module.class}</Text>
+                      <Text><b>Published By:</b> {module.publishedBy}</Text>
+                    </Box>
+                  </AccordionPanel>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" onClick={onSelectModuleModalClose}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
 
       <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
         <ModalOverlay />

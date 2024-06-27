@@ -38,6 +38,7 @@ import User_Transactions from "../components/Users/Users_List/Transactions";
 import Student_Transactions from "../components/Student/Students_List/Transactions";
 import Edit_Leads from "../components/Inquiry/EditLeads";
 import Data from "../components/Inquiry/Data";
+import Module from "../components/Student/Module/Module";
 
 
 const routes = createBrowserRouter(
@@ -71,6 +72,7 @@ const routes = createBrowserRouter(
         <Route path="/student/dashboard/alltransaction/:student_id" element={<Student_Transactions />} />
         <Route path="/student/qualifications" element={<Qualifications />} />
         <Route path="/student/certificates" element={<Certificate />} />
+        <Route path="/student/modules" element={<Module />} />
         <Route path="/certificate/template" element={<Templetes />} />
         <Route path="/student/fee-option" element={<Fee_Option />} />
         <Route path="/courses" element={<Course_List />} />

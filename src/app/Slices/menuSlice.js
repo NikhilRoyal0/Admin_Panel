@@ -14,6 +14,8 @@ import { FaHistory } from "react-icons/fa";
 import { FaRegQuestionCircle } from "react-icons/fa";
 import { BiLogOut } from "react-icons/bi";
 import { PiStudentFill } from "react-icons/pi";
+import { VscFileSubmodule } from "react-icons/vsc";
+
 
 
 const getIconComponentByName = (name) => {
@@ -46,6 +48,8 @@ const getIconComponentByName = (name) => {
       return FaCalendarDays;
     case "Students":
       return PiStudentFill;
+    case "Modules":
+      return VscFileSubmodule;
     default:
       return null;
   }

@@ -212,6 +212,10 @@ export default function Edit_Leads() {
 
     const invoices = invoiceData.find(item => item.lead_id === lead_id)
 
+    if (!invoices) {
+        return null;
+    }
+
     const totalPrices = courses.reduce((acc, course) => acc + parseFloat(course.price), 0);
     const discountedTotal = totalPrices * (1 - parseFloat(invoices.totalDiscount) / 100);
     const totalAmount = discountedTotal + parseFloat(invoices.kitFee) + parseFloat(invoices.admissionFee);

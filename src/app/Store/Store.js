@@ -17,6 +17,7 @@ import userWalletReducer from "../Slices/userWalletSlice";
 import leadReducer from "../Slices/leadSlice";
 import referenceReducer from "../Slices/referenceSlice";
 import invoiceReducer from "../Slices/invoiceSlice";
+import moduleReducer from "../Slices/moduleSlice";
 
 const Store = configureStore({
   reducer: {
@@ -38,6 +39,7 @@ const Store = configureStore({
     lead: leadReducer,
     reference: referenceReducer,
     invoice: invoiceReducer,
+    module: moduleReducer,
   },
 });
 

@@ -147,6 +147,14 @@ const RenderContent = () => {
             </Text>
           </Link>
         );
+      case "/student/modules":
+        return (
+          <Link to="/student/modules">
+            <Text fontSize="xl" fontWeight="bold">
+              Student / Modules
+            </Text>
+          </Link>
+        );
       case "/courses":
         return (
           <Link to="/courses">
