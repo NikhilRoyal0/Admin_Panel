@@ -27,10 +27,13 @@ import {
   Tbody,
   Td,
   Tr,
-  Slider,
+  TableCaption,
   SliderTrack,
   SliderThumb,
   SliderFilledTrack,
+  Slider,
+  Thead,
+  Th,
 } from '@chakra-ui/react';
 import { CheckCircleIcon, EditIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
@@ -41,9 +44,11 @@ import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseDa
 import { selectleadData, selectleadError, selectleadLoading, fetchleadData, AddleadData, updateleadData } from "../../app/Slices/leadSlice";
 import { selectbranchPlannerData, selectbranchPlannerError, selectbranchPlannerLoading, fetchbranchPlannerData } from "../../app/Slices/branchPlanner";
 import { selectreferenceData, selectreferenceError, selectreferenceLoading, fetchreferenceData, AddreferenceData } from "../../app/Slices/referenceSlice";
+import { selectmoduleData, selectmoduleError, selectmoduleLoading, fetchmoduleData } from "../../app/Slices/moduleSlice";
 import { AddinvoiceData, updateinvoiceData } from "../../app/Slices/invoiceSlice";
 import BillComponent from './BillComponent';
 import { useReactToPrint } from 'react-to-print';
+import TimeConversion from '../../utils/timeConversion';
 
 
 export default function InquiryForm() {
@@ -60,6 +65,9 @@ export default function InquiryForm() {
   const referenceData = useSelector(selectreferenceData);
   const referenceLoading = useSelector(selectreferenceLoading);
   const referenceError = useSelector(selectreferenceError);
+  const moduleData = useSelector(selectmoduleData);
+  const moduleError = useSelector(selectmoduleError);
+  const moduleLoading = useSelector(selectmoduleLoading);
   const error = useSelector(selectleadError);
   const isLoading = useSelector(selectleadLoading);
   const Toast = useToast({
@@ -76,6 +84,7 @@ export default function InquiryForm() {
   const [sliderValue, setSliderValue] = useState(0);
   const [userDiscountIncluded, setUserDiscountIncluded] = useState(false);
   const [userDiscountValue, setUserDiscountValue] = useState(0);
+  const [selectedModules, setSelectedModules] = useState([]);
   const [address, setAddress] = useState('');
   const [formData, setFormData] = useState({
     studentName: '',
@@ -103,6 +112,7 @@ export default function InquiryForm() {
     city: '',
     courses: '',
     referredBy: '',
+    module: [],
     qualifications: [
       {
         qualification: '',
@@ -138,6 +148,7 @@ export default function InquiryForm() {
     dispatch(fetchbranchPlannerData());
     dispatch(fetchbranchPlannerData());
     dispatch(fetchreferenceData());
+    dispatch(fetchmoduleData());
   }, [dispatch]);
 
   const handlePrintInvoice = useReactToPrint({
@@ -294,6 +305,21 @@ export default function InquiryForm() {
     setHasReference((prev) => !prev);
   };
 
+  const filteredModules = moduleData.filter((module) =>
+    module.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleModuleChange = (module, isChecked) => {
+    if (isChecked) {
+      setSelectedModules((prevSelectedModules) => [...prevSelectedModules, module]);
+    } else {
+      setSelectedModules((prevSelectedModules) =>
+        prevSelectedModules.filter((m) => m.moduleId !== module.moduleId)
+      );
+    }
+  };
+
+
 
   const createReference = async () => {
     try {
@@ -324,7 +350,7 @@ export default function InquiryForm() {
           throw new Error('Failed to retrieve referenceId from response');
         }
       } else {
-        return null; // or handle as needed if conditions are not met
+        return null;
       }
     } catch (error) {
       console.error('Error creating reference:', error);
@@ -371,6 +397,7 @@ export default function InquiryForm() {
         courses: JSON.stringify(selectedCourses),
         paymentMethods: JSON.stringify(selectedPaymentMethods),
         referredBy: referenceId || formData.referredBy,
+        module: JSON.stringify(selectedModules),
       };
 
       delete formDataToSend.referName;
@@ -409,7 +436,8 @@ export default function InquiryForm() {
           branchDiscount: sliderValue,
           branchId: branchId,
           admissionFee: admissionFeeIncluded ? admissionFee : '',
-          lead_id: lead_id
+          lead_id: lead_id,
+          module: JSON.stringify(selectedModules),
         };
 
         const invoiceResponse = await dispatch(AddinvoiceData(invoiceDataToSend));
@@ -449,7 +477,7 @@ export default function InquiryForm() {
         }
         break;
       case 2:
-        if (formData.qualifications[0].qualification === '') errorMessage = 'Qualification is required';
+        if (formData.qualifications.length === 0 || formData.qualifications[0].qualification === '') errorMessage = 'Qualification is required';
         else if (formData.qualifications[0].qualification === 'Other' && formData.qualifications[0].highestQualification === '') errorMessage = 'Highest qualification is required';
         else if (formData.qualifications[0].collegeName === '') errorMessage = 'College name is required';
         else if (formData.qualifications[0].boardUniversityName === '') errorMessage = 'Board/University name is required';
@@ -459,9 +487,13 @@ export default function InquiryForm() {
         break;
       case 3:
       case 4:
+        // Validate selected courses
         if (selectedCourses.length === 0) errorMessage = 'At least one course must be selected';
         break;
       case 5:
+        break;
+      case 6:
+        // Validate payment methods
         if (!Object.values(formData.paymentMethods).some((method) => method)) errorMessage = 'At least one payment method must be selected';
         break;
       default:
@@ -476,9 +508,11 @@ export default function InquiryForm() {
   const calculateTotalAmount = () => {
     let totalAmount = 0;
     const selectedCourseDetails = [];
+    const selectedModuleDetails = [];
 
+    // Calculate total amount for selected courses
     selectedCourses.forEach(selected => {
-      const course = courseData.find(course => course.courseId == selected.courseId);
+      const course = courseData.find(course => course.courseId === selected.courseId);
 
       if (course) {
         totalAmount += parseFloat(course.price) || 0;
@@ -489,20 +523,34 @@ export default function InquiryForm() {
       }
     });
 
+    // Calculate total amount for selected modules
+
+
+    // Calculate discounted amount
     let totalDiscountPercentage = (sliderValue / 100) + (userDiscountIncluded ? (userDiscountValue / 100) : 0);
     totalDiscountPercentage = Math.min(totalDiscountPercentage, 1);
-
     let discountedAmount = totalAmount - (totalDiscountPercentage * totalAmount);
 
+    selectedModules.forEach(selected => {
+      const module = moduleData.find(module => module.moduleId === selected.moduleId);
+
+      if (module) {
+        discountedAmount += parseFloat(module.price) || 0;
+        selectedModuleDetails.push({
+          title: module.title,
+          price: parseFloat(module.price).toFixed(2),
+        });
+      }
+    });
+
     if (kitFeeIncluded) {
-      discountedAmount += parseFloat(kitFee) || 0;
+      discountedAmount += parseFloat(kitFee);
     }
 
     if (admissionFeeIncluded) {
-      discountedAmount += parseFloat(admissionFee) || 0;
+      discountedAmount += parseFloat(admissionFee);
     }
-
-    return { totalAmount: discountedAmount.toFixed(2), selectedCourseDetails };
+    return { totalAmount: discountedAmount.toFixed(2), selectedCourseDetails, selectedModuleDetails };
   };
 
 
@@ -534,6 +582,7 @@ export default function InquiryForm() {
         courses: JSON.stringify(selectedCourses),
         paymentMethods: JSON.stringify(selectedPaymentMethods),
         referredBy: referenceId || formData.referredBy,
+        module: JSON.stringify(selectedModules),
       };
 
       delete formDataToSend.referName;
@@ -559,7 +608,8 @@ export default function InquiryForm() {
           branchDiscount: sliderValue,
           branchId: branchId,
           admissionFee: admissionFeeIncluded ? admissionFee : '',
-          lead_id: formData.lead_id
+          lead_id: formData.lead_id,
+          module: JSON.stringify(selectedModules),
         };
 
         if (formData.lead_id) {
@@ -584,7 +634,7 @@ export default function InquiryForm() {
   };
 
   const handleOkay = () => {
-    if (step === 6) {
+    if (step === 7) {
       setTimeout(() => {
         navigate("/leads");
       }, 500);
@@ -593,7 +643,7 @@ export default function InquiryForm() {
 
 
 
-  if (isLoading || courseLoading || plannerLoading || referenceLoading) {
+  if (isLoading || courseLoading || plannerLoading || referenceLoading || moduleLoading) {
     return (
       <Flex justify="center" align="center" h="100vh">
         <Spinner size="xl" />
@@ -601,7 +651,7 @@ export default function InquiryForm() {
     );
   }
 
-  if (error || courseError || plannerError || referenceError) {
+  if (error || courseError || plannerError || referenceError || moduleError) {
     return <NetworkError />;
   }
 
@@ -645,13 +695,21 @@ export default function InquiryForm() {
               ) : (
                 <EditIcon color={step === 4 ? 'blue.500' : 'gray.500'} boxSize="2em" />
               )}
-              <Box mt={2}>Review</Box>
+              <Box mt={2}>Modules</Box>
             </Flex>
             <Flex direction="column" alignItems="center">
               {step > 5 ? (
                 <CheckCircleIcon color="green.500" boxSize="2em" />
               ) : (
                 <EditIcon color={step === 5 ? 'blue.500' : 'gray.500'} boxSize="2em" />
+              )}
+              <Box mt={2}>Review</Box>
+            </Flex>
+            <Flex direction="column" alignItems="center">
+              {step > 6 ? (
+                <CheckCircleIcon color="green.500" boxSize="2em" />
+              ) : (
+                <EditIcon color={step === 6 ? 'blue.500' : 'gray.500'} boxSize="2em" />
               )}
               <Box mt={2}>Payment Mode</Box>
             </Flex>
@@ -662,8 +720,9 @@ export default function InquiryForm() {
                 {step === 1 ? 'Basic Details' : ''}
                 {step === 2 ? 'Educational Details' : ''}
                 {step === 3 ? 'Course Selection' : ''}
-                {step === 4 ? 'Review' : ''}
-                {step === 5 ? 'Payment Mode' : ''}
+                {step === 4 ? 'Modules' : ''}
+                {step === 5 ? 'Review' : ''}
+                {step === 6 ? 'Payment Mode' : ''}
               </Heading>
             </CardHeader>
             <CardBody>
@@ -1079,6 +1138,82 @@ export default function InquiryForm() {
               )}
 
               {step === 4 && (
+                <VStack spacing={4} align="stretch">
+                  <Box position="relative">
+                    <Input
+                      type="text"
+                      placeholder="Search by module title"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      position="relative"
+                      maxWidth={280}
+                      top="0"
+                      right="0"
+                      mr={4}
+                      px={2}
+                      py={1}
+                    />
+                  </Box>
+                  <Table variant="simple">
+                    <TableCaption>Modules</TableCaption>
+                    <Thead>
+                      <Tr>
+                        <Th>
+                          <Checkbox
+                            isChecked={false} // Placeholder for the header checkbox state
+                            onChange={() => { }} // Placeholder for the header checkbox onChange handler
+                          />
+                        </Th>
+                        <Th>Title</Th>
+                        <Th>Year</Th>
+                        <Th>Price</Th>
+                        <Th>Class</Th>
+                        <Th>Published By</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {filteredModules.length === 0 ? (
+                        <Tr>
+                          <Td colSpan={6} textAlign="center">
+                            No modules available
+                          </Td>
+                        </Tr>
+                      ) : (
+                        filteredModules.map((module, index) => (
+                          <Tr key={index}>
+                            <Td>
+                              <Checkbox
+                                isChecked={selectedModules.some((m) => m.moduleId === module.moduleId)}
+                                onChange={(e) => handleModuleChange(module, e.target.checked)}
+                              />
+                            </Td>
+                            <Td>{module.title}</Td>
+                            <Td>{module.year}</Td>
+                            <Td>{module.price}</Td>
+                            <Td>{module.class}</Td>
+                            <Td>{module.publishedBy}</Td>
+                          </Tr>
+                        ))
+                      )}
+                    </Tbody>
+                  </Table>
+                  <Box gridColumn="span 2">
+                    <HStack mt={8} spacing={4} justify="center">
+                      {step > 1 && (
+                        <Button colorScheme="blue" size="lg" onClick={prevStep}>
+                          Previous
+                        </Button>
+                      )}
+                      <Button colorScheme="blue" size="lg" onClick={(e) => { handleUpdate(e); }}>
+                        Next
+                      </Button>
+                    </HStack>
+                  </Box>
+                </VStack>
+              )}
+
+
+              {step === 5 && (
                 <Grid gap={4} templateColumns="repeat(2, 1fr)" overflow="auto">
                   <Box gridColumn="span 2">
                     <Heading size="lg" mb={4}>Review Details</Heading>
@@ -1156,7 +1291,7 @@ export default function InquiryForm() {
                 </Grid>
               )}
 
-              {step === 5 && (
+              {step === 6 && (
                 <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={8}>
                   {/* Left Side: Payment Options */}
                   <Stack spacing={4} p={4} borderWidth="1px" borderRadius="md">
@@ -1176,9 +1311,9 @@ export default function InquiryForm() {
 
                   {/* Right Side: Course Summary Card */}
                   <Card borderWidth="1px" borderRadius="lg" overflow="hidden">
-                    <CardHeader>Total Payable Amount</CardHeader>
                     <CardBody>
                       <Table variant="simple" size="md">
+                        <Heading size="md">Course Details</Heading>
                         <Tbody>
                           {calculateTotalAmount().selectedCourseDetails.map((course) => (
                             <Tr key={course.courseTitle}>
@@ -1188,6 +1323,20 @@ export default function InquiryForm() {
                               </Td>
                             </Tr>
                           ))}
+                          {/* Render Modules heading and details only if there are selected modules */}
+                          {calculateTotalAmount().selectedModuleDetails.length > 0 && (
+                            <>
+                              <Heading mt={5} size="md">Modules</Heading>
+                              {calculateTotalAmount().selectedModuleDetails.map((module) => (
+                                <Tr key={module.title}>
+                                  <Td fontSize="lg">{module.title}</Td>
+                                  <Td textAlign="right" fontSize="lg">
+                                    Rs. {module.price}
+                                  </Td>
+                                </Tr>
+                              ))}
+                            </>
+                          )}
                           <Tr>
                             <Td colSpan={2}>
                               <Checkbox
@@ -1287,6 +1436,7 @@ export default function InquiryForm() {
                     </CardBody>
                   </Card>
 
+
                   {/* Buttons for Navigation */}
                   <VStack spacing={4} align="stretch">
                     <HStack mt={8} spacing={4} justify="center">
@@ -1304,7 +1454,7 @@ export default function InquiryForm() {
               )}
 
 
-              {step === 6 && (
+              {step === 7 && (
                 <VStack spacing={8} alignItems="center">
                   <Text fontSize="xl" fontWeight="bold" color="green.500">
                     Lead generated successfully!

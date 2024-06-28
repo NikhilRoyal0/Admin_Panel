@@ -62,9 +62,14 @@ const BillComponent = forwardRef(({ lead_id, }, ref) => {
   }
 
   const selectedCourses = JSON.parse(foundInvoice.courses);
+  const selectedModules = JSON.parse(foundInvoice.module);
   const formattedCourses = selectedCourses.map(course => ({
     courseTitle: course.courseTitle,
     price: parseFloat(course.price).toFixed(2),
+  }));
+  const formattedModules = selectedModules.map(module => ({
+    title: module.title,
+    price: parseFloat(module.price).toFixed(2),
   }));
 
   const validKitFee = parseFloat(foundInvoice.kitFee) || 0;
@@ -72,7 +77,8 @@ const BillComponent = forwardRef(({ lead_id, }, ref) => {
   const formattedTotalDiscount = parseFloat(foundInvoice.totalDiscount) || 0;
 
   const coursesTotal = formattedCourses.reduce((acc, course) => acc + parseFloat(course.price), 0);
-  const subtotal = coursesTotal + validKitFee + formattedAdmissionFee - formattedTotalDiscount;
+  const modulesTotal = formattedModules.reduce((acc, module) => acc + parseFloat(module.price), 0);
+  const subtotal = modulesTotal + coursesTotal + validKitFee + formattedAdmissionFee - formattedTotalDiscount;
 
   return (
     <div ref={ref}>
@@ -112,8 +118,8 @@ const BillComponent = forwardRef(({ lead_id, }, ref) => {
 
           </Grid>
 
-          {/* Courses and Fees Details */}
-          <Heading size="md" mt={8} mb={4}>Courses and Fees Details</Heading>
+          {/* Courses Details */}
+          <Heading size="md" mt={8} mb={4}>Courses Details</Heading>
           <Table variant="simple" size="md">
             <Tbody>
               {formattedCourses.map((course, index) => (
@@ -126,6 +132,29 @@ const BillComponent = forwardRef(({ lead_id, }, ref) => {
                 <Td>Total Discount:</Td>
                 <Td textAlign="right"> {formattedTotalDiscount.toFixed(2)} %</Td>
               </Tr>
+            </Tbody>
+          </Table>
+
+          {/* Modules Details */}
+          {formattedModules.length > 0 && (
+            <>
+              <Heading size="md" mt={8} mb={4}>Modules Details</Heading>
+              <Table variant="simple" size="md">
+                <Tbody>
+                  {formattedModules.map((module, index) => (
+                    <Tr key={index}>
+                      <Td>{module.title}</Td>
+                      <Td textAlign="right">Rs. {module.price}</Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </>
+          )}
+
+          {/* Additional Fees */}
+          <Table variant="simple" size="md">
+            <Tbody>
               <Tr>
                 <Td>
                   Kit Fee :

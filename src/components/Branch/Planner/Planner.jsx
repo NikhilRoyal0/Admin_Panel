@@ -5,7 +5,6 @@ import {
   Input,
   Flex,
   Spinner,
-  Badge,
   Button,
   Modal,
   ModalOverlay,
@@ -25,6 +24,12 @@ import {
   TagLabel,
   TagCloseButton,
   useDisclosure,
+  Table,
+  Tr,
+  Td,
+  Thead,
+  Tbody,
+  Th
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { BeatLoader } from "react-spinners";
@@ -46,7 +51,15 @@ import { ChevronDownIcon } from "@chakra-ui/icons";
 export default function Planner() {
   const [isAddbranchPlannerModalOpen, setIsAddbranchPlannerModalOpen] = useState(false);
   const [selectedplanerId, setSelectedplanerId] = useState(null);
-  const [editedbranchPlannerData, setEditedbranchPlannerData] = useState(null);
+  const [editedbranchPlannerData, setEditedbranchPlannerData] = useState({
+    branchId: "",
+    admissionFee: "",
+    admissionDiscount: "",
+    paymentMode: "",
+    kitFee: "",
+    websiteUrl: "",
+    module: JSON.stringify([]),  // Ensure this is initialized as a valid JSON string
+  });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isSaveLoading, setIsSaveLoading] = useState(false);
@@ -84,25 +97,62 @@ export default function Planner() {
     dispatch(fetchmoduleData());
   }, [dispatch]);
 
-
   const filteredModules = moduleData.filter((module) =>
     module.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleRemoveModule = (moduleId) => {
-    setNewbranchPlannerData((prevData) => ({
-      ...prevData,
-      module: (prevData.module || []).filter((module) => module.moduleId !== moduleId),
-    }));
+    if (isAddbranchPlannerModalOpen) {
+      setNewbranchPlannerData((prevData) => ({
+        ...prevData,
+        module: Array.isArray(prevData.module) ? prevData.module.filter((m) => m.moduleId !== moduleId) : [],
+      }));
+    } else if (isEditModalOpen) {
+      setEditedbranchPlannerData((prevData) => {
+        const parsedModules = JSON.parse(prevData.module || "[]");
+        const updatedModules = parsedModules.filter((m) => m.moduleId !== moduleId);
+        return {
+          ...prevData,
+          module: JSON.stringify(updatedModules),
+        };
+      });
+    }
   };
 
   const handleCheckboxChange = (module, isChecked) => {
-    setNewbranchPlannerData((prevData) => ({
-      ...prevData,
-      module: isChecked
-        ? [...(prevData.module || []), module]
-        : (prevData.module || []).filter((m) => m.moduleId !== module.moduleId),
-    }));
+    if (isAddbranchPlannerModalOpen) {
+      if (isChecked) {
+        setNewbranchPlannerData((prevData) => ({
+          ...prevData,
+          module: [...prevData.module, module],
+        }));
+      } else {
+        setNewbranchPlannerData((prevData) => ({
+          ...prevData,
+          module: prevData.module.filter((m) => m.moduleId !== module.moduleId),
+        }));
+      }
+    } else if (isEditModalOpen) {
+      if (isChecked) {
+        const updatedModules = [
+          ...(editedbranchPlannerData.module ? JSON.parse(editedbranchPlannerData.module) : []),
+          module,
+        ];
+
+        setEditedbranchPlannerData((prevData) => ({
+          ...prevData,
+          module: JSON.stringify(updatedModules),
+        }));
+      } else {
+        const parsedModules = JSON.parse(editedbranchPlannerData.module || "[]");
+        const updatedModules = parsedModules.filter((m) => m.moduleId !== module.moduleId);
+
+        setEditedbranchPlannerData((prevData) => ({
+          ...prevData,
+          module: JSON.stringify(updatedModules),
+        }));
+      }
+    }
   };
 
   const handleAddbranchPlanner = (e) => {
@@ -148,10 +198,12 @@ export default function Planner() {
       });
   };
 
-
   const handleEditbranchPlanner = (branchPlanner) => {
     setSelectedplanerId(branchPlanner.planerId);
-    setEditedbranchPlannerData(branchPlanner);
+    setEditedbranchPlannerData({
+      ...branchPlanner,
+      module: branchPlanner.module || JSON.stringify([]),  // Ensure this is a valid JSON string
+    });
     setIsEditModalOpen(true);
   };
 
@@ -193,7 +245,6 @@ export default function Planner() {
           isClosable: true,
           position: "top-right",
         });
-        console.log("Error updating branch plan: ", error);
       });
   };
 
@@ -210,7 +261,6 @@ export default function Planner() {
       <NetworkError />
     );
   }
-
 
   const selectedPlan = branchPlannerData.filter(branch => branch.branchId == (branchId));
 
@@ -232,209 +282,294 @@ export default function Planner() {
           {selectedPlan.length === 0 && (
             <Button
               mr={5}
-              ml="4"
+              ml="2"
               colorScheme="teal"
-              onClick={() => {
-                setIsAddbranchPlannerModalOpen(true);
-              }}
+              size="sm"
+              isLoading={isSaveLoading}
+              onClick={() => setIsAddbranchPlannerModalOpen(true)}
             >
-              Add Plan
+              Create Branch Plan
             </Button>
           )}
-
         </Flex>
       </Flex>
-      <Box p="6" borderRadius="lg">
-        {selectedPlan.length === 0 ? (
-          <Flex justify="center" align="center" height="100%">
-            <Box textAlign="center">
-              <Text fontSize="xl" fontWeight="bold">No branch plan available</Text>
-            </Box>
-          </Flex>
-        ) : (
-          <Flex width={"fit-content"} justifyContent="space-between">
-            {selectedPlan.map((branchPlanner, index) => (
-              <Box
-                key={index}
-                width={["100%", "100%"]}
-                p="5"
-                bg="white"
-                boxShadow="md"
-                borderRadius="md"
-                borderBottom="1px"
-                borderColor="gray.200"
-                mb="20px"
-              >
-                <Text >Admission Fee: {branchPlanner.admissionFee}</Text>
-                <Text >Admission Discount: {branchPlanner.admissionDiscount}%</Text>
-                <Text >Payment Mode: {branchPlanner.paymentMode}</Text>
-                <Text >Kit Fee: {branchPlanner.kitFee}</Text>
-                <Text >Website Url: {branchPlanner.websiteUrl}</Text>
-                <Text >Module: {branchPlanner.module}</Text>
-
-                <Flex mt="3">
-                  <Button
-                    size="xs"
-                    colorScheme="teal"
-                    mr="1"
-                    onClick={() => {
-                      if (canEditBranch) {
-                        handleEditbranchPlanner(branchPlanner);
-                      } else {
-                        Toast({
-                          title: "You don't have permission to edit branch plan",
-                          status: "error",
-                          duration: 3000,
-                          isClosable: true,
-                          position: "top-right",
-                        });
-                      }
-                    }}
-                  >
-                    Edit
-                  </Button>
-                </Flex>
-              </Box>
-            ))}
-          </Flex>
-
-        )}
-      </Box>
-
-
-      <Modal
-        isOpen={isAddbranchPlannerModalOpen}
-        onClose={() => setIsAddbranchPlannerModalOpen(false)}
-      >
-        <ModalOverlay />
-        <form onSubmit={handleAddbranchPlanner}>
-          <ModalContent>
-            <ModalHeader>Add Plan</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <Input mb="3" placeholder="Branch Id" value={branchId} isRequired />
-              <Input
-                mb="3"
-                placeholder="Admission Fee"
-                value={newbranchPlannerData.admissionFee}
-                onChange={(e) =>
-                  setNewbranchPlannerData({
-                    ...newbranchPlannerData,
-                    admissionFee: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Admission Discount"
-                value={newbranchPlannerData.admissionDiscount}
-                onChange={(e) =>
-                  setNewbranchPlannerData({
-                    ...newbranchPlannerData,
-                    admissionDiscount: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Payment Mode"
-                value={newbranchPlannerData.paymentMode}
-                onChange={(e) =>
-                  setNewbranchPlannerData({
-                    ...newbranchPlannerData,
-                    paymentMode: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Kit Fee"
-                value={newbranchPlannerData.kitFee}
-                onChange={(e) =>
-                  setNewbranchPlannerData({
-                    ...newbranchPlannerData,
-                    kitFee: e.target.value,
-                  })
-                }
-                isRequired
-              />
-              <Input
-                mb="3"
-                placeholder="Website Url"
-                value={newbranchPlannerData.websiteUrl}
-                onChange={(e) =>
-                  setNewbranchPlannerData({
-                    ...newbranchPlannerData,
-                    websiteUrl: e.target.value,
-                  })
-                }
-                isRequired
-              />
-
-              <Box mb="3" p="2" borderWidth="1px" borderRadius="md">
-                {newbranchPlannerData.module && newbranchPlannerData.module.length > 0 ? (
-                  newbranchPlannerData.module.map((module) => (
+      {selectedPlan.map((branch) => (
+        <Table variant="simple">
+          <Thead>
+            <Tr>
+              <Th>Field</Th>
+              <Th>Details</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            <Tr>
+              <Td fontWeight="bold">Admission Fee</Td>
+              <Td>{branch.admissionFee}</Td>
+            </Tr>
+            <Tr>
+              <Td fontWeight="bold">Admission Discount</Td>
+              <Td>{branch.admissionDiscount}</Td>
+            </Tr>
+            <Tr>
+              <Td fontWeight="bold">Payment Mode</Td>
+              <Td>{branch.paymentMode}</Td>
+            </Tr>
+            <Tr>
+              <Td fontWeight="bold">Kit Fee</Td>
+              <Td>{branch.kitFee}</Td>
+            </Tr>
+            <Tr>
+              <Td fontWeight="bold">Website URL</Td>
+              <Td>{branch.websiteUrl}</Td>
+            </Tr>
+            <Tr>
+              <Td fontWeight="bold">Modules</Td>
+              <Td>
+                {branch.module ? (
+                  JSON.parse(branch.module).map((module) => (
                     <Tag
+                      size="md"
                       key={module.moduleId}
-                      size="lg"
                       borderRadius="full"
                       variant="solid"
                       colorScheme="teal"
-                      m="1"
+                      mr={2}
+                      mb={2}
                     >
                       <TagLabel>{module.title}</TagLabel>
-                      <TagCloseButton onClick={() => handleRemoveModule(module.moduleId)} />
                     </Tag>
                   ))
                 ) : (
-                  <Button
-                    rightIcon={<ChevronDownIcon />}
-                    onClick={onSelectModuleModalOpen}
-                  >
-                    Select Modules
-                  </Button>
+                  <Text>No modules selected</Text>
                 )}
-              </Box>
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                type="submit"
+              </Td>
+            </Tr>
+          </Tbody>
+          {canEditBranch && (
+            <Tr>
+              <Td colSpan="2" textAlign="center">
+                <Button
+                  colorScheme="teal"
+                  size="sm"
+                  onClick={() => handleEditbranchPlanner(branch)}
+                >
+                  Edit
+                </Button>
+              </Td>
+            </Tr>
+          )}
+        </Table>
+      ))}
+
+      <Modal isOpen={isAddbranchPlannerModalOpen} onClose={() => setIsAddbranchPlannerModalOpen(false)}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Add New Branch Planner</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <Input
+              placeholder="Admission Fee"
+              value={newbranchPlannerData.admissionFee}
+              onChange={(e) =>
+                setNewbranchPlannerData((prevData) => ({
+                  ...prevData,
+                  admissionFee: e.target.value,
+                }))
+              }
+              mb={4}
+            />
+            <Input
+              placeholder="Admission Discount"
+              value={newbranchPlannerData.admissionDiscount}
+              onChange={(e) =>
+                setNewbranchPlannerData((prevData) => ({
+                  ...prevData,
+                  admissionDiscount: e.target.value,
+                }))
+              }
+              mb={4}
+            />
+            <Input
+              placeholder="Payment Mode"
+              value={newbranchPlannerData.paymentMode}
+              onChange={(e) =>
+                setNewbranchPlannerData((prevData) => ({
+                  ...prevData,
+                  paymentMode: e.target.value,
+                }))
+              }
+              mb={4}
+            />
+            <Input
+              placeholder="Kit Fee"
+              value={newbranchPlannerData.kitFee}
+              onChange={(e) =>
+                setNewbranchPlannerData((prevData) => ({
+                  ...prevData,
+                  kitFee: e.target.value,
+                }))
+              }
+              mb={4}
+            />
+            <Input
+              placeholder="Website URL"
+              value={newbranchPlannerData.websiteUrl}
+              onChange={(e) =>
+                setNewbranchPlannerData((prevData) => ({
+                  ...prevData,
+                  websiteUrl: e.target.value,
+                }))
+              }
+              mb={4}
+            />
+            <Button
+              colorScheme="teal"
+              onClick={onSelectModuleModalOpen}
+              mb={4}
+            >
+              Select Modules
+            </Button>
+            {newbranchPlannerData.module && newbranchPlannerData.module.map((module) => (
+              <Tag
+                size="md"
+                key={module.moduleId}
+                borderRadius="full"
+                variant="solid"
                 colorScheme="teal"
-                isLoading={isSaveLoading}
-                spinner={<BeatLoader size={8} color="white" />}
+                mr={2}
+                mb={2}
               >
-                Submit
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => setIsAddbranchPlannerModalOpen(false)}
-              >
-                Cancel
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </form>
+                <TagLabel>{module.title}</TagLabel>
+                <TagCloseButton onClick={() => handleRemoveModule(module.moduleId)} />
+              </Tag>
+            ))}
+          </ModalBody>
+
+          <ModalFooter>
+            <Button onClick={() => setIsAddbranchPlannerModalOpen(false)}>Cancel</Button>
+            <Button
+              colorScheme="teal"
+              onClick={handleAddbranchPlanner}
+              ml={3}
+              isLoading={isSaveLoading}
+            >
+              Save
+            </Button>
+          </ModalFooter>
+        </ModalContent>
       </Modal>
 
-      <Modal
-        isOpen={isSelectModuleModalOpen}
-        onClose={onSelectModuleModalClose}
-      >
+      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Branch Plan</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <Input
+              placeholder="Admission Fee"
+              value={editedbranchPlannerData.admissionFee}
+              onChange={(e) =>
+                setEditedbranchPlannerData((prevData) => ({
+                  ...prevData,
+                  admissionFee: e.target.value,
+                }))
+              }
+              mb={4}
+            />
+            <Input
+              placeholder="Admission Discount"
+              value={editedbranchPlannerData.admissionDiscount}
+              onChange={(e) =>
+                setEditedbranchPlannerData((prevData) => ({
+                  ...prevData,
+                  admissionDiscount: e.target.value,
+                }))
+              }
+              mb={4}
+            />
+            <Input
+              placeholder="Payment Mode"
+              value={editedbranchPlannerData.paymentMode}
+              onChange={(e) =>
+                setEditedbranchPlannerData((prevData) => ({
+                  ...prevData,
+                  paymentMode: e.target.value,
+                }))
+              }
+              mb={4}
+            />
+            <Input
+              placeholder="Kit Fee"
+              value={editedbranchPlannerData.kitFee}
+              onChange={(e) =>
+                setEditedbranchPlannerData((prevData) => ({
+                  ...prevData,
+                  kitFee: e.target.value,
+                }))
+              }
+              mb={4}
+            />
+            <Input
+              placeholder="Website URL"
+              value={editedbranchPlannerData.websiteUrl}
+              onChange={(e) =>
+                setEditedbranchPlannerData((prevData) => ({
+                  ...prevData,
+                  websiteUrl: e.target.value,
+                }))
+              }
+              mb={4}
+            />
+            <Button
+              colorScheme="teal"
+              onClick={onSelectModuleModalOpen}
+              mb={4}
+            >
+              Select Modules
+            </Button>
+            {editedbranchPlannerData.module && JSON.parse(editedbranchPlannerData.module).map((module) => (
+              <Tag
+                size="md"
+                key={module.moduleId}
+                borderRadius="full"
+                variant="solid"
+                colorScheme="teal"
+                mr={2}
+                mb={2}
+              >
+                <TagLabel>{module.title}</TagLabel>
+                <TagCloseButton onClick={() => handleRemoveModule(module.moduleId)} />
+              </Tag>
+            ))}
+          </ModalBody>
+
+          <ModalFooter>
+            <Button onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
+            <Button
+              colorScheme="teal"
+              onClick={handleSaveChanges}
+              ml={3}
+              isLoading={isSaveLoading}
+            >
+              Save Changes
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={isSelectModuleModalOpen} onClose={onSelectModuleModalClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Select Modules</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Input
-              mb="3"
               placeholder="Search Modules"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              mb={4}
             />
-            <Accordion allowMultiple>
+            <Accordion allowToggle>
               {filteredModules.map((module) => (
                 <AccordionItem key={module.moduleId}>
                   <AccordionButton>
@@ -445,129 +580,30 @@ export default function Planner() {
                   </AccordionButton>
                   <AccordionPanel pb={4}>
                     <Checkbox
-                      value={module.moduleId}
-                      isChecked={newbranchPlannerData.module?.some((m) => m.moduleId === module.moduleId) || false}
-                      onChange={(e) => handleCheckboxChange(module, e.target.checked)}
+                      isChecked={
+                        (isAddbranchPlannerModalOpen
+                          ? newbranchPlannerData.module
+                          : JSON.parse(editedbranchPlannerData.module || "[]")
+                        ).some((m) => m.moduleId === module.moduleId)
+                      }
+                      onChange={(e) =>
+                        handleCheckboxChange(module, e.target.checked)
+                      }
                     >
-                      {module.title}
+                      <Box mt="2" ml={2}>
+                        <Text><b>Year:</b> {module.year}</Text>
+                        <Text><b>Price:</b> {module.price}</Text>
+                        <Text><b>Class:</b> {module.class}</Text>
+                        <Text><b>Published By:</b> {module.publishedBy}</Text>
+                      </Box>
                     </Checkbox>
-                    <Box mt="2">
-                      <Text><b>Year:</b> {module.year}</Text>
-                      <Text><b>Price:</b> {module.price}</Text>
-                      <Text><b>Class:</b> {module.class}</Text>
-                      <Text><b>Published By:</b> {module.publishedBy}</Text>
-                    </Box>
                   </AccordionPanel>
                 </AccordionItem>
               ))}
             </Accordion>
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" onClick={onSelectModuleModalClose}>
-              Close
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Edit Plan</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Box>
-              <Text mb="1" color="gray.600">
-                Admission Fees
-              </Text>
-              <Input
-                mb="3"
-                placeholder="Admission Fees"
-                value={editedbranchPlannerData?.admissionFee || ""}
-                onChange={(e) =>
-                  setEditedbranchPlannerData({
-                    ...editedbranchPlannerData,
-                    admissionFee: e.target.value,
-                  })
-                }
-                required
-              />
-              <Text mb="1" color="gray.600">
-                Payment Mode
-              </Text>
-              <Input
-                mb="3"
-                placeholder="Payment Mode"
-                value={editedbranchPlannerData?.paymentMode || ""}
-                onChange={(e) =>
-                  setEditedbranchPlannerData({
-                    ...editedbranchPlannerData,
-                    paymentMode: e.target.value,
-                  })
-                }
-                required
-              />
-              <Text mb="1" color="gray.600">
-                Kit Fee
-              </Text>
-              <Input
-                mb="3"
-                placeholder="Kit Fee"
-                value={editedbranchPlannerData?.kitFee || ""}
-                onChange={(e) =>
-                  setEditedbranchPlannerData({
-                    ...editedbranchPlannerData,
-                    kitFee: e.target.value,
-                  })
-                }
-                required
-              />
-              <Text mb="1" color="gray.600">
-                Website URL
-              </Text>
-              <Input
-                mb="3"
-                placeholder="Website URL"
-                value={editedbranchPlannerData?.websiteUrl || ""}
-                onChange={(e) =>
-                  setEditedbranchPlannerData({
-                    ...editedbranchPlannerData,
-                    websiteUrl: e.target.value,
-                  })
-                }
-                required
-              />
-              <Text mb="1" color="gray.600">
-                Admission Discount
-              </Text>
-              <Input
-                mb="3"
-                placeholder="Admission Fees"
-                value={editedbranchPlannerData?.admissionDiscount || ""}
-                onChange={(e) =>
-                  setEditedbranchPlannerData({
-                    ...editedbranchPlannerData,
-                    admissionDiscount: e.target.value,
-                  })
-                }
-                required
-              />
-            </Box>
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              colorScheme="teal"
-              mr={3}
-              onClick={handleSaveChanges}
-              isLoading={isSaveLoading}
-              spinner={<BeatLoader size={8} color="white" />}
-            >
-              Save Changes
-            </Button>
-            <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
-              Cancel
-            </Button>
+            <Button onClick={onSelectModuleModalClose}>Close</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

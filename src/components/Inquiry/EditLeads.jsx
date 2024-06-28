@@ -36,10 +36,12 @@ import { selectrolesData, selectrolesError, selectrolesLoading, fetchrolesData }
 import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseData } from "../../app/Slices/courseSlice";
 import { selectBranchData, selectBranchError, selectBranchLoading, fetchBranchData } from "../../app/Slices/branchSlice";
 import { selectbranchPlannerData, selectbranchPlannerError, selectbranchPlannerLoading, fetchbranchPlannerData } from "../../app/Slices/branchPlanner";
+import { selectmoduleData, selectmoduleError, selectmoduleLoading, fetchmoduleData } from "../../app/Slices/moduleSlice";
 import { updateinvoiceData } from "../../app/Slices/invoiceSlice";
 import { selectinvoiceData, selectinvoiceError, selectinvoiceLoading, fetchinvoiceData } from "../../app/Slices/invoiceSlice";
 import QualificationsModal from "./QualificationsModal";
 import CourseSelect from "./CourseSelect";
+import ModuleSelect from "./ModuleSelection";
 import NetworkError from "../NotFound/networkError";
 import BillComponent from './BillComponent';
 import { useReactToPrint } from 'react-to-print';
@@ -64,6 +66,9 @@ export default function Edit_Leads() {
     const invoiceData = useSelector(selectinvoiceData);
     const invoiceError = useSelector(selectinvoiceError);
     const invoiceLoading = useSelector(selectinvoiceLoading);
+    const moduleData = useSelector(selectmoduleData);
+    const moduleError = useSelector(selectmoduleError);
+    const moduleLoading = useSelector(selectmoduleLoading);
     const billComponentRef = useRef();
     const [lead, setLead] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -97,6 +102,7 @@ export default function Edit_Leads() {
         courses: "",
         qualifications: "[]",
         paymentMethods: "[]",
+        module: "[]",
     });
 
     const leadData = useSelector(selectleadData);
@@ -115,6 +121,7 @@ export default function Edit_Leads() {
         dispatch(fetchBranchData());
         dispatch(fetchbranchPlannerData());
         dispatch(fetchinvoiceData());
+        dispatch(fetchmoduleData());
     }, [dispatch, leadData.length]);
 
     useEffect(() => {
@@ -126,7 +133,7 @@ export default function Edit_Leads() {
     }, [leadData, lead_id]);
 
     const handlePrintInvoice = useReactToPrint({
-        content: () => billComponentRef.current, // Function to get the component to print
+        content: () => billComponentRef.current, 
     });
 
 
@@ -144,7 +151,7 @@ export default function Edit_Leads() {
     const admissionFee = planner.admissionFee;
 
 
-    if (!formData.courses) {
+    if (!formData.courses || !formData.module) {
         return (
             <Flex justify="center" align="center" h="100vh">
                 <Spinner size="xl" />
@@ -152,6 +159,7 @@ export default function Edit_Leads() {
         );
     }
     const courses = JSON.parse(formData.courses);
+    const module = JSON.parse(formData.module);
 
 
     const openModal = () => {
@@ -217,8 +225,9 @@ export default function Edit_Leads() {
     }
 
     const totalPrices = courses.reduce((acc, course) => acc + parseFloat(course.price), 0);
+    const totalModule = module.reduce((acc, module) => acc + parseFloat(module.price), 0);
     const discountedTotal = totalPrices * (1 - parseFloat(invoices.totalDiscount) / 100);
-    const totalAmount = discountedTotal + parseFloat(invoices.kitFee) + parseFloat(invoices.admissionFee);
+    const totalAmount = totalModule + discountedTotal + parseFloat(invoices.kitFee) + parseFloat(invoices.admissionFee);
 
     const handleSave = async () => {
         setIsSaveLoading(true);
@@ -244,6 +253,7 @@ export default function Edit_Leads() {
                 kitFee: invoices.kitFee,
                 totalAmount: totalAmount,
                 totalDiscount: invoices.totalDiscount,
+                module: formData.module,
                 userDiscount: invoices.userDiscount,
                 branchDiscount: invoices.branchDiscount,
                 branchId: branchId,
@@ -365,7 +375,7 @@ export default function Edit_Leads() {
         );
     }
 
-    if (isLoading || roleLoading || courseLoading || branchLoading || plannerLoading || invoiceLoading) {
+    if (isLoading || roleLoading || courseLoading || branchLoading || plannerLoading || invoiceLoading || moduleLoading) {
         return (
             <Flex justify="center" align="center" h="100vh">
                 <Spinner size="xl" />
@@ -373,7 +383,7 @@ export default function Edit_Leads() {
         );
     }
 
-    if (error || roleError || courseError || branchError || plannerError || invoiceError) {
+    if (error || roleError || courseError || branchError || plannerError || invoiceError || moduleError) {
         return <NetworkError />;
     }
 
@@ -686,6 +696,14 @@ export default function Edit_Leads() {
                             setFormData={setFormData}
                             isEditing={isEditing}
                             coursesData={coursesData}
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <ModuleSelect
+                            formData={formData}
+                            setFormData={setFormData}
+                            isEditing={isEditing}
+                            moduleData={moduleData}
                         />
                     </GridItem>
                 </Grid>
