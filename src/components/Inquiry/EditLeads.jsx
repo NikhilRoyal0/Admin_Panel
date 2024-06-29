@@ -627,7 +627,7 @@ export default function Edit_Leads() {
                         />
                     </GridItem>
                     <GridItem>
-                        <Text mb={2} fontWeight="bold">Branch</Text>
+                        <Text mb={2} fontWeight="bold">Branch</Text> 
                         <Select
                             name="branchId"
                             value={formData.branchId}

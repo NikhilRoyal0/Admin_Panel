@@ -44,7 +44,6 @@ export const { settempleteData, settempleteLoading, settempleteError } =
 
 export const fetchtempleteData = () => async (dispatch) => {
   try {
-    dispatch(settempleteLoading());
 
     const apiToken = sessionStorage.getItem("api-token");
 

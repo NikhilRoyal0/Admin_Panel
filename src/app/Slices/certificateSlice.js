@@ -35,7 +35,6 @@ export const {
 
 export const fetchCertificateData = () => async (dispatch) => {
   try {
-    dispatch(setCertificateLoading());
     const apiToken = sessionStorage.getItem("api-token");
 
     const response = await axios.get(

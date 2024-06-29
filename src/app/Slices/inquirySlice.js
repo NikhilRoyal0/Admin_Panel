@@ -44,7 +44,6 @@ export const { setinquiryData, setinquiryLoading, setinquiryError } =
 
 export const fetchinquiryData = () => async (dispatch) => {
   try {
-    dispatch(setinquiryLoading());
 
     const apiToken = sessionStorage.getItem("api-token");
 

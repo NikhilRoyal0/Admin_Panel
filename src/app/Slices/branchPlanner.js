@@ -46,7 +46,6 @@ export const fetchbranchPlannerData = () => async (dispatch) => {
   try {
     const apiToken = sessionStorage.getItem("api-token");
 
-    dispatch(setbranchPlannerLoading());
     const response = await axios.get(
       import.meta.env.VITE_BASE_URL + "branch/plan/all/getAllBranchPlan",
       {

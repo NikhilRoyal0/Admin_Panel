@@ -47,7 +47,6 @@ export const {
 
 export const fetchleadData = () => async (dispatch) => {
   try {
-    dispatch(setleadLoading());
     const apiToken = sessionStorage.getItem("api-token");
 
     const response = await axios.get(

@@ -47,7 +47,6 @@ export const {
 
 export const fetchcategoryData = () => async (dispatch) => {
   try {
-    dispatch(setcategoryLoading());
     const apiToken = sessionStorage.getItem("api-token");
 
     const response = await axios.get(

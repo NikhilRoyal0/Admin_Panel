@@ -44,7 +44,6 @@ export const { setpurchaseData, setpurchaseLoading, setpurchaseError } =
 
 export const fetchpurchaseData = () => async (dispatch) => {
   try {
-    dispatch(setpurchaseLoading());
 
     const apiToken = sessionStorage.getItem("api-token");
 

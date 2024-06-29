@@ -53,7 +53,7 @@ export default function UserList() {
     password: "",
     primaryPhone: "",
     secondaryPhone: "",
-    walletAmount: "",
+    walletAmount: "0",
     role: "",
     status: "",
     createdOn: Date.now(),

@@ -44,7 +44,6 @@ export const { setUsersData, setUsersLoading, setUsersError } =
 
 export const fetchUsersData = () => async (dispatch) => {
   try {
-    dispatch(setUsersLoading());
 
     const apiToken = sessionStorage.getItem("api-token");
 

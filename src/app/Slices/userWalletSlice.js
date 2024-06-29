@@ -36,7 +36,6 @@ export const { setuserWalletData, setuserWalletLoading, setuserWalletError } =
 
 export const fetchuserWalletData = () => async (dispatch) => {
     try {
-        dispatch(setuserWalletLoading());
 
         const apiToken = sessionStorage.getItem("api-token");
 

@@ -47,7 +47,6 @@ export const {
 
 export const fetchStudentData = () => async (dispatch) => {
   try {
-    dispatch(setStudentLoading());
     const apiToken = sessionStorage.getItem("api-token");
 
     const response = await axios.get(

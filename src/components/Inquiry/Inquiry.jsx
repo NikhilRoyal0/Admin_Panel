@@ -51,7 +51,7 @@ import { useReactToPrint } from 'react-to-print';
 import TimeConversion from '../../utils/timeConversion';
 
 
-export default function InquiryForm() {
+export default function Inquiry() {
   const branchId = sessionStorage.getItem("BranchId");
   const discountLimit = sessionStorage.getItem("discountLimit");
   const dispatch = useDispatch();

@@ -36,7 +36,6 @@ export const { setstudentWalletData, setstudentWalletLoading, setstudentWalletEr
 
 export const fetchstudentWalletData = () => async (dispatch) => {
   try {
-    dispatch(setstudentWalletLoading());
 
     const apiToken = sessionStorage.getItem("api-token");
 

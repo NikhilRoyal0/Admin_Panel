@@ -44,7 +44,6 @@ export const { setreferenceData, setreferenceLoading, setreferenceError } =
 
 export const fetchreferenceData = () => async (dispatch) => {
   try {
-    dispatch(setreferenceLoading());
 
     const apiToken = sessionStorage.getItem("api-token");
 

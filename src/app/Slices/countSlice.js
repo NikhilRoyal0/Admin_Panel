@@ -30,7 +30,6 @@ export const { setCountData, setCountLoading, setCountError } =
 
 export const fetchCountData = () => async (dispatch) => {
   try {
-    dispatch(setCountLoading());
 
     const apiToken = sessionStorage.getItem("api-token");
 
