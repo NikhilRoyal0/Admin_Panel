@@ -163,6 +163,7 @@ export default function Course_List() {
       })
       .catch((error) => {
         console.error("Error:", error);
+        setIsSaveLoading(false);
         Toast({
           title: "Failed to add course",
           status: "error",

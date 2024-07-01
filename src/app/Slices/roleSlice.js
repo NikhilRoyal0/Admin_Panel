@@ -61,7 +61,7 @@ export const fetchrolesData = () => async (dispatch) => {
   }
 };
 
-export const addrolesData = ({ roleName, permissions, createdBy, createdOn }) => async () => {
+export const addrolesData = ({ roleName, permissions, createdBy, createdOn, status }) => async (dispatch) => {
   try {
     const apiToken = sessionStorage.getItem("api-token");
 
@@ -70,6 +70,7 @@ export const addrolesData = ({ roleName, permissions, createdBy, createdOn }) =>
       permissions,
       createdBy,
       createdOn,
+      status,
     }, {
       headers: {
         'Content-Type': 'application/json',

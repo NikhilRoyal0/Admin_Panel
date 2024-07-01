@@ -161,8 +161,10 @@ export default function Inquiry() {
 
   if (!planner) {
     return (
-      <Flex justify="center" align="center" h="100vh">
-        <Spinner size="xl" />
+      <Flex justify="center" align="center" h="80vh" bg="gray.50">
+        <Text fontSize="3xl" fontWeight="bold" color="teal.500">
+          No branch plan has been added. Please add a branch plan and try again.
+        </Text>
       </Flex>
     );
   }
