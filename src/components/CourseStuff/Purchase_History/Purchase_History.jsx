@@ -50,7 +50,6 @@ import { getModulePermissions } from "../../../utils/permissions";
 import TimeConversion from '../../../utils/timeConversion';
 import { useParams } from "react-router-dom";
 
-
 export default function purchaseList() {
   const { courseId } = useParams();
   const [searchValue, setSearchValue] = useState("");
@@ -64,7 +63,7 @@ export default function purchaseList() {
     paymentMode: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [purchasePerPage, setpurchasePerPage] = useState(10);
+  const [purchajsePerPage, setpurchasePerPage] = useState(10);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editedpurchaseData, setEditedpurchaseData] = useState({});
   const [selectedpurchaseId, setSelectedpurchaseId] = useState(null);
@@ -345,8 +344,8 @@ export default function purchaseList() {
                   <Th>Course Id</Th>
                   <Th>Amount</Th>
                   <Th>Discount</Th>
-                  <Th>Created On</Th>
                   <Th>Payment Mode</Th>
+                  <Th>Created On</Th>
                   <Th>Edit</Th>
                 </Tr>
               </Thead>

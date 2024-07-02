@@ -73,6 +73,7 @@ export const checkTokenExpiry = () => {
             const now = Date.now();
 
             if (expiryTimestamp < now) {
+                window.location.reload();
                 logout();
             } else {
                 setTimeout(checkTokenExpiry, expiryTimestamp - now);
