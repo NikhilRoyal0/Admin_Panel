@@ -75,7 +75,6 @@ export const AddBranchData = (formData) => async (dispatch) => {
         },
       }
     );
-    console.log("Response:", response.data);
     dispatch(fetchBranchData());
   } catch (error) {
     console.error("Error adding branch:", error);

@@ -68,7 +68,6 @@ export const AddstudentWalletData = (formData) => async (dispatch) => {
       }
     );
 
-    console.log("Response:", response.data);
     dispatch(fetchstudentWalletData());
 
   } catch (error) {

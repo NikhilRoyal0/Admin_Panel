@@ -77,7 +77,6 @@ export const addrolesData = ({ roleName, permissions, createdBy, createdOn, stat
         "api-token": apiToken,
       },
     });
-    console.log('Response:', response.data);
     dispatch(fetchrolesData());
 
   } catch (error) {

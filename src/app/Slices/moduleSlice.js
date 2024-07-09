@@ -76,7 +76,6 @@ export const AddmoduleData = (newmoduleData) => async (dispatch) => {
       }
     );
 
-    console.log("Response:", response.data);
     dispatch(fetchmoduleData());
     return response.data; 
 

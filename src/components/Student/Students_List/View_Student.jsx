@@ -5,15 +5,18 @@ import { fetchStudentData, selectStudentData, selectStudentError, selectStudentL
 import { selectBranchData, selectBranchError, selectBranchLoading, fetchBranchData } from "../../../app/Slices/branchSlice";
 import { selectstudentWalletData, selectstudentWalletError, selectstudentWalletLoading, fetchstudentWalletData } from "../../../app/Slices/studentWalletSlice";
 import { selectrolesData, selectrolesError, selectrolesLoading, fetchrolesData } from "../../../app/Slices/roleSlice";
+import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseData } from "../../../app/Slices/courseSlice";
 import { useNavigate, useParams } from 'react-router-dom';
 import fallbackImage from "../../../assets/images/StudentImage.png";
 import { EditIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { getModulePermissions } from "../../../utils/permissions";
 import NetworkError from "../../NotFound/networkError";
 import TimeConversion from "../../../utils/timeConversion";
+import CourseSelect from "../../Inquiry/CourseSelect";
 
 
 export default function StudentDashboard() {
+    const branchId = sessionStorage.getItem("BranchId");
     const navigate = useNavigate();
     const { student_id } = useParams();
     const dispatch = useDispatch();
@@ -27,6 +30,9 @@ export default function StudentDashboard() {
     const roleData = useSelector(selectrolesData);
     const roleError = useSelector(selectrolesError);
     const roleLoading = useSelector(selectrolesLoading);
+    const courseData = useSelector(selectcourseData);
+    const courseError = useSelector(selectcourseLoading);
+    const courseLoading = useSelector(selectcourseLoading);
     const error = useSelector(selectStudentError);
     const isLoading = useSelector(selectStudentLoading);
     const Toast = useToast({
@@ -53,7 +59,7 @@ export default function StudentDashboard() {
         interestIn: "",
         admissionNo: "",
         profilePhoto: "",
-        courses: "",
+        courses: "[]",
         paymentMethods: "",
         qualifications: "",
         referredBy: "",
@@ -64,6 +70,7 @@ export default function StudentDashboard() {
         dispatch(fetchBranchData());
         dispatch(fetchstudentWalletData());
         dispatch(fetchrolesData());
+        dispatch(fetchcourseData());
     }, [dispatch]);
 
     useEffect(() => {
@@ -127,7 +134,8 @@ export default function StudentDashboard() {
     };
 
 
-    if (isLoading || branchLoading || transLoading || roleLoading) {
+
+    if (isLoading || branchLoading || transLoading || roleLoading || courseLoading) {
         return (
             <Flex justify="center" align="center" h="100vh">
                 <Spinner size="xl" />
@@ -135,7 +143,7 @@ export default function StudentDashboard() {
         );
     }
 
-    if (error || branchError || transError || roleError) {
+    if (error || branchError || transError || roleError || courseError) {
         return (
             <NetworkError />
         );
@@ -163,6 +171,7 @@ export default function StudentDashboard() {
 
     const transactions = transData.filter(student => student.student_id === student_id);
     const transactionsToShow = transactions.slice(0, 5);
+    const coursesData = branchId == 0 ? courseData : courseData.filter(course => course.branchId == branchId);
 
 
     return (
@@ -217,7 +226,7 @@ export default function StudentDashboard() {
                                                 Total Courses
                                             </Text>
                                             <Text textAlign="center">
-                                                {formData.courseList}
+                                                {JSON.parse(formData.courses).length}
                                             </Text>
                                         </Box>
                                     </Flex>
@@ -266,26 +275,19 @@ export default function StudentDashboard() {
                                         <Thead>
                                             <Tr>
                                                 <Th>Course</Th>
-                                                <Th>Grade</Th>
+                                                <Th>Price</Th>
                                                 <Th>Duration</Th>
                                             </Tr>
                                         </Thead>
                                         <Tbody>
-                                            <Tr>
-                                                <Td>Course 1</Td>
-                                                <Td>A</Td>
-                                                <Td>4 weeks</Td>
-                                            </Tr>
-                                            <Tr>
-                                                <Td>Course 2</Td>
-                                                <Td>B</Td>
-                                                <Td>6 weeks</Td>
-                                            </Tr>
-                                            <Tr>
-                                                <Td>Course 3</Td>
-                                                <Td>C</Td>
-                                                <Td>8 weeks</Td>
-                                            </Tr>
+                                            {console.log("data", formData.courses)}
+                                            {JSON.parse(formData.courses).map((course, index) => (
+                                                <Tr key={index}>
+                                                    <Td>{course.courseName}</Td>
+                                                    <Td>{course.price}</Td>
+                                                    <Td>{course.duration}</Td>
+                                                </Tr>
+                                            ))}
                                         </Tbody>
                                     </Table>
                                 </Box>
@@ -655,6 +657,14 @@ export default function StudentDashboard() {
                                     ) : (
                                         <Text width={510}>{formData.profilePhoto}</Text>
                                     )}
+                                </Box>
+                                <Box mb="2">
+                                    <CourseSelect
+                                        formData={formData}
+                                        setFormData={setFormData}
+                                        isEditing={isEditing}
+                                        coursesData={coursesData}
+                                    />
                                 </Box>
                             </Box>
                         </Box>

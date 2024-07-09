@@ -78,7 +78,6 @@ export const AddStudentData = (formData2) => async (dispatch) => {
         },
       }
     );
-    console.log("Response:", response.data);
     dispatch(fetchStudentData());
   } catch (error) {
     console.error("Error adding student:", error);

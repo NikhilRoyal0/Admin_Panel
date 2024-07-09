@@ -76,9 +76,8 @@ export const AddreferenceData = (newReferenceData) => async (dispatch) => {
       }
     );
 
-    console.log("Response:", response.data);
     dispatch(fetchreferenceData());
-    return response.data; // Return the response data from the API call
+    return response.data; 
 
 
   } catch (error) {

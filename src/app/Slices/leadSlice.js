@@ -79,7 +79,6 @@ export const AddleadData = (formData) => async (dispatch) => {
       }
     );
 
-    console.log("Response:", response.data);
 
     dispatch(fetchleadData());
 

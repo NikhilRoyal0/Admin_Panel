@@ -76,7 +76,6 @@ export const AddinquiryData = (newinquiryData) => async (dispatch) => {
       }
     );
 
-    console.log("Response:", response.data);
     dispatch(fetchinquiryData());
 
   } catch (error) {

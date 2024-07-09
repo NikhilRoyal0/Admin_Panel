@@ -76,7 +76,6 @@ export const AddUserData = (newUserData) => async (dispatch) => {
       }
     );
 
-    console.log("Response:", response.data);
     dispatch(fetchUsersData());
 
   } catch (error) {

@@ -79,7 +79,6 @@ export const AddinvoiceData = (invoiceDataToSend) => async (dispatch) => {
       }
     );
 
-    console.log("Response:", response.data);
 
     dispatch(fetchinvoiceData());
 

@@ -76,7 +76,6 @@ export const AddtempleteData = (formData) => async (dispatch) => {
       }
     );
 
-    console.log("Response:", response.data);
     dispatch(fetchtempleteData());
 
   } catch (error) {

@@ -70,7 +70,6 @@ const ModuleSelect = ({ formData, setFormData, isEditing, moduleData }) => {
                         Select module
                     </MenuButton>
                     <MenuList minWidth="240px">
-                        {console.log("data", moduleData)}
                         {moduleData.map(module => (
                             <MenuItem key={module.moduleId}>
                                 <Checkbox

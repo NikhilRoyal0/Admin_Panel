@@ -75,7 +75,6 @@ export const AddbranchPlannerData = (formData) => async (dispatch) => {
         },
       }
     );
-    console.log("Response:", response.data);
     dispatch(fetchbranchPlannerData());
   } catch (error) {
     console.error("Error adding branch plan:", error);

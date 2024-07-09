@@ -78,7 +78,6 @@ export const AddcategoryData = (formData) => async (dispatch) => {
         },
       }
     );
-    console.log("Response:", response.data);
     dispatch(fetchcategoryData());
   } catch (error) {
     console.error("Error adding category:", error);

@@ -66,7 +66,6 @@ export const AddCertificateData = (formData) => async (dispatch) => {
         },
       }
     );
-    console.log("Response:", response.data);
     dispatch(fetchCertificateData());
   } catch (error) {
     console.error("Error adding Certificate:", error);

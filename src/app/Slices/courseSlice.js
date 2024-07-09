@@ -70,7 +70,6 @@ export const AddcourseData = (formData) => async (dispatch) => {
         "api-token": apiToken,
       },
     });
-    console.log('Response:', response.data);
     dispatch(fetchcourseData());
   } catch (error) {
     console.error('Error:', error);

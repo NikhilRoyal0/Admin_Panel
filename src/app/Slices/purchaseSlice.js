@@ -76,7 +76,6 @@ export const AddpurchaseData = (newpurchaseData) => async (dispatch) => {
       }
     );
 
-    console.log("Response:", response.data);
     dispatch(fetchpurchaseData());
 
   } catch (error) {

@@ -264,8 +264,6 @@ export default function Edit_Leads() {
             // Dispatch the update invoice action
             await dispatch(updateinvoiceData(lead_id, invoiceDataToSend));
 
-            console.log("dta", invoiceDataToSend)
-
             toast({
                 title: "Invoice updated successfully",
                 status: "success",
