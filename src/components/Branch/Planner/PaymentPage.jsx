@@ -17,8 +17,6 @@ import { MdArrowDropDown } from "react-icons/md";
 const PaymentPage = ({
   newbranchPlannerData,
   setNewbranchPlannerData,
-  setEditedbranchPlannerData,
-  editedbranchPlannerData,
 }) => {
   const initialSelectedpaymentMode = newbranchPlannerData.paymentMode || [];
   const [selectedpaymentMode, setSelectedpaymentMode] = useState(
@@ -27,11 +25,14 @@ const PaymentPage = ({
   const [isOpen, setIsOpen] = useState(false);
 
   const paymentModeData = [
-    { id: 1, mode: "Credit Card" },
-    { id: 2, mode: "Debit Card" },
-    { id: 3, mode: "PayPal" },
-    { id: 4, mode: "Bank Transfer" },
+    { id: 1, mode: "Credit Card " },
+    { id: 2, mode: "Debit Card " },
+    { id: 3, mode: "UPI" },
+    { id: 4, mode: "Net Banking" },
     { id: 5, mode: "Cash" },
+    { id: 6, mode: "EMI" },
+    { id: 7, mode: "Cheque" },
+    { id: 8, mode: "Demand Draft" },
   ];
 
   useEffect(() => {
