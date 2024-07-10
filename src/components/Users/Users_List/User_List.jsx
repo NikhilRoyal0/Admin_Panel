@@ -31,18 +31,27 @@ import {
   selectUsersError,
   AddUserData,
   updateUserData,
-  deleteUserData
+  deleteUserData,
 } from "../../../app/Slices/usersSlice";
-import { fetchrolesData, selectrolesData, selectrolesError, selectrolesLoading } from "../../../app/Slices/roleSlice";
+import {
+  fetchrolesData,
+  selectrolesData,
+  selectrolesError,
+  selectrolesLoading,
+} from "../../../app/Slices/roleSlice";
 import { BeatLoader } from "react-spinners";
 import NetworkError from "../../NotFound/networkError";
 import { getModulePermissions } from "../../../utils/permissions";
-import { fetchBranchData, selectBranchData, selectBranchError, selectBranchLoading } from "../../../app/Slices/branchSlice";
+import {
+  fetchBranchData,
+  selectBranchData,
+  selectBranchError,
+  selectBranchLoading,
+} from "../../../app/Slices/branchSlice";
 import { useNavigate } from "react-router-dom";
 
-
 export default function UserList() {
-  const branchId = sessionStorage.getItem('BranchId');
+  const branchId = sessionStorage.getItem("BranchId");
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
@@ -62,12 +71,12 @@ export default function UserList() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(10);
-  const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] = useState(false);
+  const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] =
+    useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [filteredCount, setFilteredCount] = useState(0);
-
 
   const usersData = useSelector(selectUsersData);
   const roleData = useSelector(selectrolesData);
@@ -89,8 +98,12 @@ export default function UserList() {
     dispatch(fetchBranchData());
   }, [dispatch]);
 
-  const DataByBranch = branchId == 0 ? usersData : usersData.filter(user => user.branchId == branchId);
+  const DataByBranch =
+    branchId == 0
+      ? usersData
+      : usersData.filter((user) => user.branchId == branchId);
 
+      const branchData = BranchData.filter(branch => branch.status == 'Active');
 
   useEffect(() => {
     const filteredUser = DataByBranch.filter((user) => {
@@ -98,7 +111,6 @@ export default function UserList() {
     });
     setFilteredCount(filteredUser.length);
   }, [selectedStatus, usersData]);
-
 
   const filteredUsers = DataByBranch.filter(
     (user) =>
@@ -109,7 +121,6 @@ export default function UserList() {
 
   const handleAddUser = (e) => {
     e.preventDefault();
-
     dispatch(AddUserData(newUserData))
       .then(() => {
         setNewUserData({
@@ -122,7 +133,7 @@ export default function UserList() {
           secondaryPhone: "",
           role: "",
           status: "",
-          createdOn: "",
+          createdOn: Date.now(),
           branchId: "",
           profilePhoto: "",
         });
@@ -132,7 +143,6 @@ export default function UserList() {
         console.error("Error:", error);
       });
   };
-
 
   const handleDeleteConfirmation = () => {
     setIsSaveLoading(true);
@@ -181,9 +191,7 @@ export default function UserList() {
   }
 
   if (error) {
-    return (
-      <NetworkError />
-    );
+    return <NetworkError />;
   }
 
   if (roleLoading) {
@@ -195,9 +203,7 @@ export default function UserList() {
   }
 
   if (roleError) {
-    return (
-      <NetworkError />
-    );
+    return <NetworkError />;
   }
 
   if (BranchLoading) {
@@ -209,15 +215,10 @@ export default function UserList() {
   }
 
   if (BranchError) {
-    return (
-      <NetworkError />
-    );
+    return <NetworkError />;
   }
 
-
-
   const FilterUsers = filteredUsers.filter((users) => {
-
     const statusMatch = selectedStatus ? users.status == selectedStatus : true;
     return statusMatch;
   });
@@ -239,7 +240,10 @@ export default function UserList() {
 
     // Only render a maximum of 5 page buttons near the current page
     const maxButtonsToShow = 3;
-    const startIndex = Math.max(Math.ceil(currentPage - (maxButtonsToShow - 1) / 2), 1);
+    const startIndex = Math.max(
+      Math.ceil(currentPage - (maxButtonsToShow - 1) / 2),
+      1
+    );
     const endIndex = Math.min(startIndex + maxButtonsToShow - 1, totalPages);
 
     for (let i = startIndex; i <= endIndex; i++) {
@@ -261,7 +265,11 @@ export default function UserList() {
         <Button key="first" onClick={() => paginate(1)} mr={2}>
           &lt;&lt;
         </Button>,
-        <Button key="ellipsisBefore" onClick={() => paginate(startIndex - 1)} mr={2}>
+        <Button
+          key="ellipsisBefore"
+          onClick={() => paginate(startIndex - 1)}
+          mr={2}
+        >
           ...
         </Button>
       );
@@ -269,7 +277,11 @@ export default function UserList() {
 
     if (endIndex < totalPages) {
       pageButtons.push(
-        <Button key="ellipsisAfter" onClick={() => paginate(endIndex + 1)} ml={2}>
+        <Button
+          key="ellipsisAfter"
+          onClick={() => paginate(endIndex + 1)}
+          ml={2}
+        >
           ...
         </Button>,
         <Button key="last" onClick={() => paginate(totalPages)} ml={2}>
@@ -285,7 +297,7 @@ export default function UserList() {
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = FilterUsers.slice(indexOfFirstUser, indexOfLastUser);
 
-  const UserManagementPermissions = getModulePermissions('Users');
+  const UserManagementPermissions = getModulePermissions("Users");
 
   if (!UserManagementPermissions) {
     return <NetworkError />;
@@ -293,20 +305,16 @@ export default function UserList() {
   const canAddData = UserManagementPermissions.create;
   const canDeleteData = UserManagementPermissions.delete;
 
-
-
-
   return (
-    <Box p="3" >
-      <Flex
-        align="center"
-        justify="space-between"
-        mb="6"
-        mt={5}
-      >
-        <Text fontSize="2xl" fontWeight="bold" ml={{ base: 0, md: 5 }} mb={{ base: 4, md: 0 }}>
-          User List
-          ({filteredCount})
+    <Box p="3">
+      <Flex align="center" justify="space-between" mb="6" mt={5}>
+        <Text
+          fontSize="2xl"
+          fontWeight="bold"
+          ml={{ base: 0, md: 5 }}
+          mb={{ base: 4, md: 0 }}
+        >
+          User List ({filteredCount})
         </Text>
         <Grid
           templateColumns={{
@@ -337,7 +345,7 @@ export default function UserList() {
             colorScheme="teal"
             onClick={() => {
               if (canAddData) {
-                setIsAddUserModalOpen(true)
+                setIsAddUserModalOpen(true);
               } else {
                 Toast({
                   title: "You don't have permission to add user",
@@ -354,24 +362,31 @@ export default function UserList() {
         </Grid>
       </Flex>
 
-      <Box p="6" borderRadius="lg" overflowX="auto" css={{
-        '&::-webkit-scrollbar': {
-          width: '8px',
-          height: '8px',
-          backgroundColor: 'transparent',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: '#cbd5e0',
-          borderRadius: '10px',
-        },
-        '&::-webkit-scrollbar-thumb:hover': {
-          backgroundColor: '#a0aec0',
-        },
-      }}>
+      <Box
+        p="6"
+        borderRadius="lg"
+        overflowX="auto"
+        css={{
+          "&::-webkit-scrollbar": {
+            width: "8px",
+            height: "8px",
+            backgroundColor: "transparent",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#cbd5e0",
+            borderRadius: "10px",
+          },
+          "&::-webkit-scrollbar-thumb:hover": {
+            backgroundColor: "#a0aec0",
+          },
+        }}
+      >
         {currentUsers.length === 0 ? (
           <Flex justify="center" align="center" height="100%">
             <Box textAlign="center">
-              <Text fontSize="xl" fontWeight="bold">No Users available</Text>
+              <Text fontSize="xl" fontWeight="bold">
+                No Users available
+              </Text>
             </Box>
           </Flex>
         ) : (
@@ -389,57 +404,56 @@ export default function UserList() {
                 </Tr>
               </Thead>
               <Tbody>
-                {currentUsers
-                  .map((user, index) => (
-                    <Tr key={index}>
-                      <Td>{user.firstName}</Td>
-                      <Td>{user.lastName}</Td>
-                      <Td>{user.email}</Td>
-                      <Td>{user.primaryPhone}</Td>
-                      <Td>{user.deviceId}</Td>
-                      <Td>{user.role}</Td>
-                      <Td>
-                        <Flex>
-                          <Button
-                            size="xs"
-                            colorScheme="teal"
-                            mr="2"
-                            onClick={() => {
-                              handleViewUser(user.userId);
-                            }}
-                          >
-                            View
-                          </Button>
-                          <Button
-                            size="xs"
-                            colorScheme="red"
-                            onClick={() => {
-                              if (canDeleteData) {
-                                setIsDeleteConfirmationModalOpen(true);
-                                setSelectedUserId(user.userId);
-                              } else {
-                                Toast({
-                                  title: "You don't have permission to delete user",
-                                  status: "error",
-                                  duration: 3000,
-                                  isClosable: true,
-                                  position: "top-right",
-                                });
-                              }
-                            }}
-                          >
-                            Delete
-                          </Button>
-                        </Flex>
-                      </Td>
-                    </Tr>
-                  ))}
+                {currentUsers.map((user, index) => (
+                  <Tr key={index}>
+                    <Td>{user.firstName}</Td>
+                    <Td>{user.lastName}</Td>
+                    <Td>{user.email}</Td>
+                    <Td>{user.primaryPhone}</Td>
+                    <Td>{user.deviceId}</Td>
+                    <Td>{user.role}</Td>
+                    <Td>
+                      <Flex>
+                        <Button
+                          size="xs"
+                          colorScheme="teal"
+                          mr="2"
+                          onClick={() => {
+                            handleViewUser(user.userId);
+                          }}
+                        >
+                          View
+                        </Button>
+                        <Button
+                          size="xs"
+                          colorScheme="red"
+                          onClick={() => {
+                            if (canDeleteData) {
+                              setIsDeleteConfirmationModalOpen(true);
+                              setSelectedUserId(user.userId);
+                            } else {
+                              Toast({
+                                title:
+                                  "You don't have permission to delete user",
+                                status: "error",
+                                duration: 3000,
+                                isClosable: true,
+                                position: "top-right",
+                              });
+                            }
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </Flex>
+                    </Td>
+                  </Tr>
+                ))}
               </Tbody>
             </Table>
             <Flex justify="flex-end" mt="4">
               {currentUsers.length > 0 && (
                 <Flex justify="flex-end" mt="4">
-
                   {currentPage > 1 && (
                     <Button onClick={() => paginate(currentPage - 1)} mr={2}>
                       &lt;
@@ -451,7 +465,6 @@ export default function UserList() {
                       &gt;
                     </Button>
                   )}
-
                 </Flex>
               )}
             </Flex>
@@ -471,13 +484,19 @@ export default function UserList() {
             <ModalHeader>Add User</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={3}>
+              <Grid
+                templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+                gap={3}
+              >
                 <Input
                   mb="3"
                   placeholder="First Name"
                   value={newUserData.firstName}
                   onChange={(e) =>
-                    setNewUserData({ ...newUserData, firstName: e.target.value })
+                    setNewUserData({
+                      ...newUserData,
+                      firstName: e.target.value,
+                    })
                   }
                   isRequired
                 />
@@ -556,7 +575,7 @@ export default function UserList() {
                   }
                   isRequired
                 >
-                  {BranchData.map((branch) => (
+                  {branchData.map((branch) => (
                     <option key={branch.branchId} value={branch.branchId}>
                       {branch.branchName}
                     </option>
@@ -642,7 +661,6 @@ export default function UserList() {
           </ModalFooter>
         </ModalContent>
       </Modal>
-
     </Box>
   );
 }

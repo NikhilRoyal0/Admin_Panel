@@ -52,6 +52,9 @@ export default function View_Users() {
     }
   }, [userData, userId]);
 
+  const BranchData = branchData.filter(branch => branch.status == 'Active');
+
+
   const handleEditClick = () => {
     setIsEditing(true);
   };
@@ -536,7 +539,7 @@ export default function View_Users() {
                       ml="2"
                       size="sm"
                     >
-                      {branchData && branchData.map(branch => (
+                      {BranchData && BranchData.map(branch => (
                         <option key={branch.branchId} value={branch.branchId}>
                           {branch.branchName}
                         </option>
@@ -544,7 +547,7 @@ export default function View_Users() {
                     </Select>
                   ) : (
                     <span>
-                      {branchData && branchData.find(branch => branch.branchId == formData.branchId)?.branchName}
+                      {BranchData && BranchData.find(branch => branch.branchId == formData.branchId)?.branchName}
                     </span>
                   )}
                 </Box>

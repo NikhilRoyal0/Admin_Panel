@@ -63,7 +63,7 @@ export default function purchaseList() {
     paymentMode: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [purchajsePerPage, setpurchasePerPage] = useState(10);
+  const [purchasePerPage, setpurchasePerPage] = useState(10);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editedpurchaseData, setEditedpurchaseData] = useState({});
   const [selectedpurchaseId, setSelectedpurchaseId] = useState(null);
@@ -101,6 +101,9 @@ export default function purchaseList() {
   // }, [selectedStatus, purchaseData]);
 
   const DataByCourse = purchaseData.filter(course => course.courseId == courseId);
+  const CourseData = courseData.filter(branch => branch.status == 'Active');
+  const StudentData = studentData.filter(branch => branch.status == 'Active');
+
 
   const filteredpurchase = searchValue
     ? DataByCourse.filter((purchase) =>
@@ -420,7 +423,7 @@ export default function purchaseList() {
                 }
                 isRequired
               >
-                {studentData.map((student) => (
+                {StudentData.map((student) => (
                   <option key={student.student_id} value={student.student_id}>
                     {student.studentName}
                   </option>
@@ -435,7 +438,7 @@ export default function purchaseList() {
                 }
                 isRequired
               >
-                {courseData.map((course) => (
+                {CourseData.map((course) => (
                   <option key={course.courseId} value={course.courseId}>
                     {course.courseTitle}
                   </option>
@@ -510,7 +513,7 @@ export default function purchaseList() {
                 isRequired
                 isDisabled={!isEditing}
               >
-                {studentData.map((student) => (
+                {StudentData.map((student) => (
                   <option key={student.student_id} value={student.student_id}>
                     {student.studentName}
                   </option>
@@ -531,7 +534,7 @@ export default function purchaseList() {
                 isRequired
                 isDisabled={!isEditing}
               >
-                {courseData.map((course) => (
+                {CourseData.map((course) => (
                   <option key={course.courseId} value={course.courseId}>
                     {course.courseTitle}
                   </option>

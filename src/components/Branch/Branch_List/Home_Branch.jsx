@@ -1,5 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Spinner, Select, Text, Flex, SimpleGrid, Input, FormControl, FormLabel, Table, Thead, Tbody, Tr, Th, Td, Button, Divider, useToast, Stack, Checkbox } from '@chakra-ui/react';
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Spinner,
+  Select,
+  Text,
+  Flex,
+  SimpleGrid,
+  Input,
+  FormControl,
+  FormLabel,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Button,
+  Divider,
+  useToast,
+  Stack,
+  Checkbox,
+} from "@chakra-ui/react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   fetchBranchData,
@@ -10,14 +31,29 @@ import {
 } from "../../../app/Slices/branchSlice";
 import { useSelector, useDispatch } from "react-redux";
 import NetworkError from "../../NotFound/networkError";
-import { fetchStudentData, selectStudentData } from '../../../app/Slices/studentSlice';
-import Planner from '../Planner/Planner';
-import { FaUserGraduate } from 'react-icons/fa';
+import {
+  fetchStudentData,
+  selectStudentData,
+  selectStudentError,
+  selectStudentLoading,
+} from "../../../app/Slices/studentSlice";
+import Planner from "../Planner/Planner";
+import { FaUserGraduate } from "react-icons/fa";
 import { SiCoursera } from "react-icons/si";
-import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseData } from '../../../app/Slices/courseSlice';
-import { fetchrolesData, selectrolesData, selectrolesError, selectrolesLoading } from "../../../app/Slices/roleSlice";
+import {
+  selectcourseData,
+  selectcourseError,
+  selectcourseLoading,
+  fetchcourseData,
+} from "../../../app/Slices/courseSlice";
+import {
+  fetchrolesData,
+  selectrolesData,
+  selectrolesError,
+  selectrolesLoading,
+} from "../../../app/Slices/roleSlice";
 import TimeConversion from "../../../utils/timeConversion";
-import { getModulePermissions } from '../../../utils/permissions';
+import { getModulePermissions } from "../../../utils/permissions";
 
 export default function Home_Branch() {
   const { branchId } = useParams();
@@ -26,6 +62,8 @@ export default function Home_Branch() {
   const courseError = useSelector(selectcourseError);
   const courseLoading = useSelector(selectcourseLoading);
   const StudentData = useSelector(selectStudentData);
+  const studentLoading = useSelector(selectStudentLoading);
+  const studentError = useSelector(selectStudentError);
   const roleData = useSelector(selectrolesData);
   const roleError = useSelector(selectrolesError);
   const roleLoading = useSelector(selectrolesLoading);
@@ -35,7 +73,7 @@ export default function Home_Branch() {
   const navigate = useNavigate();
   const Toast = useToast();
   const [isEditable, setIsEditable] = useState(false);
-  const [searchInput, setSearchInput] = useState('');
+  const [searchInput, setSearchInput] = useState("");
   const [selectedCourses, setSelectedCourses] = useState([]);
   const [formData, setFormData] = useState({
     branchName: "",
@@ -60,7 +98,9 @@ export default function Home_Branch() {
 
   useEffect(() => {
     if (BranchData.length > 0) {
-      const selectedBranch = BranchData.find(branch => branch.branchId === (branchId));
+      const selectedBranch = BranchData.find(
+        (branch) => branch.branchId == branchId
+      );
       if (selectedBranch) {
         setFormData({
           branchName: selectedBranch.branchName,
@@ -88,12 +128,10 @@ export default function Home_Branch() {
   }
 
   if (error || roleError) {
-    return (
-      <NetworkError />
-    );
+    return <NetworkError />;
   }
 
-  if (courseLoading) {
+  if (courseLoading || studentLoading) {
     return (
       <Flex justify="center" align="center" h="100vh">
         <Spinner size="xl" />
@@ -101,10 +139,8 @@ export default function Home_Branch() {
     );
   }
 
-  if (courseError) {
-    return (
-      <NetworkError />
-    );
+  if (courseError || studentError) {
+    return <NetworkError />;
   }
 
   const handleEditToggle = () => {
@@ -114,7 +150,6 @@ export default function Home_Branch() {
       setIsEditable(!isEditable);
     }
   };
-
 
   const handleCheckboxChange = (event) => {
     const { value } = event.target;
@@ -128,13 +163,13 @@ export default function Home_Branch() {
   };
 
   const handleCancel = () => {
-    setIsEditable(false)
-  }
+    setIsEditable(false);
+  };
 
   const handleFormChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -163,13 +198,16 @@ export default function Home_Branch() {
   };
 
   const handleCourses = (branchId) => {
-    navigate(`/courses/${branchId}`)
-  }
+    navigate(`/courses/${branchId}`);
+  };
 
+  const selectedCourse = courseData.filter(
+    (course) => course.branchId === branchId
+  ).length;
 
-  const selectedCourse = courseData.filter(course => course.branchId === (branchId)).length;
-
-  const selectedBranch = BranchData.find(branch => branch.branchId === (branchId));
+  const selectedBranch = BranchData.find(
+    (branch) => branch.branchId === branchId
+  );
 
   if (!selectedBranch) {
     return (
@@ -179,19 +217,24 @@ export default function Home_Branch() {
     );
   }
 
-  const filteredStudents = StudentData.filter(student => {
-    const matchBranchId = student.branchId === (branchId);
-    const searchString = searchInput ? searchInput.toLowerCase() : '';
-    return matchBranchId && (
-      (student.admissionNo && student.admissionNo.toLowerCase().includes(searchString)) ||
-      (student.email && student.email.toLowerCase().includes(searchString)) ||
-      (student.studentName && student.studentName.toLowerCase().includes(searchString))
+  const filteredStudents = StudentData.filter((student) => {
+    const matchBranchId = student.branchId === branchId;
+    const searchString = searchInput ? searchInput.toLowerCase() : "";
+    return (
+      matchBranchId &&
+      ((student.admissionNo &&
+        student.admissionNo.toLowerCase().includes(searchString)) ||
+        (student.email && student.email.toLowerCase().includes(searchString)) ||
+        (student.studentName &&
+          student.studentName.toLowerCase().includes(searchString)))
     );
   });
 
-  const filteredStudentsCount = StudentData.filter(student => student.branchId === (branchId)).length;
+  const filteredStudentsCount = StudentData.filter(
+    (student) => student.branchId === branchId
+  ).length;
 
-  const branchManagementPermissions = getModulePermissions('Branch');
+  const branchManagementPermissions = getModulePermissions("Branch");
 
   if (!branchManagementPermissions) {
     return <NetworkError />;
@@ -200,23 +243,34 @@ export default function Home_Branch() {
   const canEditBranch = branchManagementPermissions.update;
 
   return (
-    <Flex p="4" mt={2} direction={{ base: 'column', md: 'row' }}>
-      <Box bg="white" boxShadow="md" p="4" borderRadius="md" w={{ base: '100%', md: '50%' }} height="1070px" overflow="auto" css={{
-        '&::-webkit-scrollbar': {
-          width: '8px',
-          height: '8px',
-          backgroundColor: 'transparent',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: '#cbd5e0',
-          borderRadius: '10px',
-        },
-        '&::-webkit-scrollbar-thumb:hover': {
-          backgroundColor: '#a0aec0',
-        },
-      }}>
+    <Flex p="4" mt={2} direction={{ base: "column", md: "row" }}>
+      <Box
+        bg="white"
+        boxShadow="md"
+        p="4"
+        borderRadius="md"
+        w={{ base: "100%", md: "50%" }}
+        height="1070px"
+        overflow="auto"
+        css={{
+          "&::-webkit-scrollbar": {
+            width: "8px",
+            height: "8px",
+            backgroundColor: "transparent",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#cbd5e0",
+            borderRadius: "10px",
+          },
+          "&::-webkit-scrollbar-thumb:hover": {
+            backgroundColor: "#a0aec0",
+          },
+        }}
+      >
         <Flex justify="space-between" align="center">
-          <Text fontSize="2xl" fontWeight="bold">Branch Details</Text>
+          <Text fontSize="2xl" fontWeight="bold">
+            Branch Details
+          </Text>
           <Flex>
             {isEditable && (
               <Button mr={2} onClick={handleCancel} colorScheme="red">
@@ -237,10 +291,10 @@ export default function Home_Branch() {
                   });
                 }
               }}
-              colorScheme="teal">
-              {isEditable ? 'Save' : 'Edit'}
+              colorScheme="teal"
+            >
+              {isEditable ? "Save" : "Edit"}
             </Button>
-
           </Flex>
         </Flex>
         <Divider my="4" />
@@ -252,7 +306,7 @@ export default function Home_Branch() {
               value={formData.branchName}
               onChange={handleFormChange}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
           <FormControl>
@@ -262,7 +316,7 @@ export default function Home_Branch() {
               value={formData.branchAdmin}
               onChange={handleFormChange}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
           <FormControl>
@@ -272,7 +326,7 @@ export default function Home_Branch() {
               value={formData.branchAddress}
               onChange={handleFormChange}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
           <FormControl>
@@ -308,7 +362,7 @@ export default function Home_Branch() {
               name="branchIp"
               value={formData.branchIp}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
           <FormControl>
@@ -318,7 +372,7 @@ export default function Home_Branch() {
               value={formData.branchPassword}
               onChange={handleFormChange}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
           <FormControl>
@@ -328,7 +382,7 @@ export default function Home_Branch() {
               value={formData.branchEmail}
               onChange={handleFormChange}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
           <FormControl>
@@ -338,7 +392,7 @@ export default function Home_Branch() {
               value={formData.branchPhone}
               onChange={handleFormChange}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
 
@@ -349,7 +403,7 @@ export default function Home_Branch() {
               value={formData.walletAmount}
               onChange={handleFormChange}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
           <FormControl>
@@ -359,19 +413,20 @@ export default function Home_Branch() {
               value={formData.commission}
               onChange={handleFormChange}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
           <FormControl>
             <FormLabel>Role</FormLabel>
             <Select
               mb="3"
+              name="role"
               placeholder="Select Role"
               value={formData.role}
               onChange={handleFormChange}
               isRequired
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             >
               {roleData.map((role) => (
                 <option key={role.roleId} value={role.roleId}>
@@ -387,16 +442,18 @@ export default function Home_Branch() {
               value={TimeConversion.unixTimeToRealTime(formData.updatedOn)}
               onChange={handleFormChange}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
           <FormControl>
             <FormLabel>Created On</FormLabel>
             <Input
               name="createdOn"
-              value={TimeConversion.unixTimeToRealTime(selectedBranch.createdOn)}
+              value={TimeConversion.unixTimeToRealTime(
+                selectedBranch.createdOn
+              )}
               isDisabled
-              bg='gray.100'
+              bg="gray.100"
             />
           </FormControl>
           <FormControl>
@@ -405,7 +462,7 @@ export default function Home_Branch() {
               name="primaryDeviceId"
               value={selectedBranch.primaryDeviceId}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
           <FormControl>
@@ -414,16 +471,18 @@ export default function Home_Branch() {
               name="deviceIds"
               value={selectedBranch.deviceIds}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
           <FormControl>
             <FormLabel>Last Active At</FormLabel>
             <Input
               name="lastActiveAt"
-              value={TimeConversion.unixTimeToRealTime(selectedBranch.lastActiveAt)}
+              value={TimeConversion.unixTimeToRealTime(
+                selectedBranch.lastActiveAt
+              )}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
           <FormControl>
@@ -432,7 +491,7 @@ export default function Home_Branch() {
               name="reason"
               value={formData.reason}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
           <FormControl>
@@ -441,7 +500,7 @@ export default function Home_Branch() {
               name="branchUsers"
               value={selectedBranch.branchUsers}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
           <FormControl>
@@ -450,21 +509,18 @@ export default function Home_Branch() {
               name="branchMedia"
               value={selectedBranch.branchMedia}
               isDisabled={!isEditable}
-              bg={isEditable ? 'white' : 'gray.100'}
+              bg={isEditable ? "white" : "gray.100"}
             />
           </FormControl>
         </SimpleGrid>
       </Box>
-      <Box w={{ base: '100%', md: '50%' }} pl={{ md: '2' }} mt={{ base: 4, md: 0 }}>
-        <Flex
-          direction={{ base: "column", md: "row" }}
-          mb="4"
-        >
-          <Box
-            flex="1"
-            mr={{ base: "0", md: "4" }}
-            mb={{ base: "4", md: "0" }}
-          >
+      <Box
+        w={{ base: "100%", md: "50%" }}
+        pl={{ md: "2" }}
+        mt={{ base: 4, md: 0 }}
+      >
+        <Flex direction={{ base: "column", md: "row" }} mb="4">
+          <Box flex="1" mr={{ base: "0", md: "4" }} mb={{ base: "4", md: "0" }}>
             <SimpleGrid columns={{ base: 1, md: 1 }} spacing={4}>
               <Box
                 bg="white"
@@ -478,7 +534,12 @@ export default function Home_Branch() {
                 justifyContent="center"
               >
                 <FaUserGraduate size={50} color="#3182ce" />
-                <Text fontSize="20px" fontWeight="bold" mt="4" textAlign="center">
+                <Text
+                  fontSize="20px"
+                  fontWeight="bold"
+                  mt="4"
+                  textAlign="center"
+                >
                   Total Students
                 </Text>
                 <Text fontSize="25px" mt="2" fontWeight="bold" color="#4a5568">
@@ -497,8 +558,14 @@ export default function Home_Branch() {
                 justifyContent="center"
               >
                 <SiCoursera size={50} color="#3182ce" />
-                <Text fontSize="20px" fontWeight="bold" mt="4" textAlign="center" onClick={() => handleCourses(branchId)}
-                  cursor="pointer">
+                <Text
+                  fontSize="20px"
+                  fontWeight="bold"
+                  mt="4"
+                  textAlign="center"
+                  onClick={() => handleCourses(branchId)}
+                  cursor="pointer"
+                >
                   Total Courses
                 </Text>
                 <Text fontSize="25px" mt="2" fontWeight="bold" color="#4a5568">
@@ -507,10 +574,7 @@ export default function Home_Branch() {
               </Box>
             </SimpleGrid>
           </Box>
-          <Box
-            flex="1"
-            overflow="auto"
-          >
+          <Box flex="1" overflow="auto">
             <Box
               bg="white"
               boxShadow="md"
@@ -520,17 +584,17 @@ export default function Home_Branch() {
               height="340px"
               width="100%"
               css={{
-                '&::-webkit-scrollbar': {
-                  width: '8px',
-                  height: '8px',
-                  backgroundColor: 'transparent',
+                "&::-webkit-scrollbar": {
+                  width: "8px",
+                  height: "8px",
+                  backgroundColor: "transparent",
                 },
-                '&::-webkit-scrollbar-thumb': {
-                  backgroundColor: '#cbd5e0',
-                  borderRadius: '10px',
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "#cbd5e0",
+                  borderRadius: "10px",
                 },
-                '&::-webkit-scrollbar-thumb:hover': {
-                  backgroundColor: '#a0aec0',
+                "&::-webkit-scrollbar-thumb:hover": {
+                  backgroundColor: "#a0aec0",
                 },
               }}
             >
@@ -539,21 +603,31 @@ export default function Home_Branch() {
           </Box>
         </Flex>
 
-        <Box bg="white" boxShadow="md" p="4" borderRadius="md" overflow="auto" height="715px" css={{
-          '&::-webkit-scrollbar': {
-            width: '8px',
-            height: '8px',
-            backgroundColor: 'transparent',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: '#cbd5e0',
-            borderRadius: '10px',
-          },
-          '&::-webkit-scrollbar-thumb:hover': {
-            backgroundColor: '#a0aec0',
-          },
-        }}>
-          <Text fontSize="2xl" fontWeight="bold" mb="4">Students</Text>
+        <Box
+          bg="white"
+          boxShadow="md"
+          p="4"
+          borderRadius="md"
+          overflow="auto"
+          height="715px"
+          css={{
+            "&::-webkit-scrollbar": {
+              width: "8px",
+              height: "8px",
+              backgroundColor: "transparent",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#cbd5e0",
+              borderRadius: "10px",
+            },
+            "&::-webkit-scrollbar-thumb:hover": {
+              backgroundColor: "#a0aec0",
+            },
+          }}
+        >
+          <Text fontSize="2xl" fontWeight="bold" mb="4">
+            Students
+          </Text>
           <Flex mb="4" justify="flex-end">
             <Input
               placeholder="Search student..."
@@ -564,7 +638,9 @@ export default function Home_Branch() {
           {filteredStudents.length === 0 ? (
             <Flex justify="center" align="center" height="80%">
               <Box textAlign="center">
-                <Text fontSize="xl" fontWeight="bold">No student available</Text>
+                <Text fontSize="xl" fontWeight="bold">
+                  No student available
+                </Text>
               </Box>
             </Flex>
           ) : (
@@ -594,5 +670,3 @@ export default function Home_Branch() {
     </Flex>
   );
 }
-
-

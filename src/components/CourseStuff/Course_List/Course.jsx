@@ -42,6 +42,9 @@ export default function EditableCourseDetails() {
         }
     }, [courseData, courseId]);
 
+    const CategoryData = categoryData.filter(branch => branch.status == 'Active');
+
+
     const handleInputChange = (e, field) => {
         setFormData({
             ...formData,
@@ -392,7 +395,7 @@ export default function EditableCourseDetails() {
                                 isDisabled={!isEditable}
                                 bg={isEditable ? 'white' : 'gray.100'}
                             >
-                                {categoryData.map((category) => (
+                                {CategoryData.map((category) => (
                                     <option key={category.categoryId} value={category.categoryId}>
                                         {category.categoryTitle}
                                     </option>

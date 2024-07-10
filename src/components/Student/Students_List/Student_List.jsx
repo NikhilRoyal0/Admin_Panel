@@ -33,19 +33,29 @@ import {
   AddStudentData,
   deleteStudentData,
 } from "../../../app/Slices/studentSlice";
-import { selectBranchData, selectBranchError, selectBranchLoading, fetchBranchData } from "../../../app/Slices/branchSlice";
-import { selectrolesData, selectrolesError, selectrolesLoading, fetchrolesData } from "../../../app/Slices/roleSlice";
+import {
+  selectBranchData,
+  selectBranchError,
+  selectBranchLoading,
+  fetchBranchData,
+} from "../../../app/Slices/branchSlice";
+import {
+  selectrolesData,
+  selectrolesError,
+  selectrolesLoading,
+  fetchrolesData,
+} from "../../../app/Slices/roleSlice";
 import NetworkError from "../../NotFound/networkError";
 import { getModulePermissions } from "../../../utils/permissions";
 import { useNavigate } from "react-router-dom";
 import passwordGenerator from "../../../utils/passwordGenerator";
 
-
 export default function Student_List() {
-  const branchId = sessionStorage.getItem('BranchId');
+  const branchId = sessionStorage.getItem("BranchId");
   const navigate = useNavigate();
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
-  const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] = useState(false);
+  const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] =
+    useState(false);
   const [selectedstudent_id, setSelectedstudent_id] = useState(null);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
 
@@ -98,7 +108,10 @@ export default function Student_List() {
     dispatch(fetchrolesData());
   }, [dispatch]);
 
-  const DataByBranch = branchId == 0 ? StudentData : StudentData.filter(user => user.branchId == branchId);
+  const DataByBranch =
+    branchId == 0
+      ? StudentData
+      : StudentData.filter((user) => user.branchId == branchId);
 
   useEffect(() => {
     const filteredStudents = DataByBranch.filter((student) => {
@@ -106,6 +119,8 @@ export default function Student_List() {
     });
     setFilteredCount(filteredStudents.length);
   }, [selectedStatus, StudentData]);
+
+  const BranchData = branchData.filter((branch) => branch.status == "Active");
 
   const handleAddStudent = (e) => {
     e.preventDefault();
@@ -133,7 +148,7 @@ export default function Student_List() {
     formData2.append("courses", newStudentData.courses);
     formData2.append("paymentMethods", newStudentData.paymentMethods);
     formData2.append("qualifications", newStudentData.qualifications);
-    formData2.append("referredBy",newStudentData.referredBy );
+    formData2.append("referredBy", newStudentData.referredBy);
     dispatch(AddStudentData(formData2))
       .then(() => {
         setIsSaveLoading(false);
@@ -216,7 +231,6 @@ export default function Student_List() {
     setSelectedStatus(e.target.value);
   };
 
-
   if (isLoading) {
     return (
       <Flex justify="center" align="center" h="100vh">
@@ -226,9 +240,7 @@ export default function Student_List() {
   }
 
   if (error) {
-    return (
-      <NetworkError />
-    );
+    return <NetworkError />;
   }
 
   if (roleLoading) {
@@ -240,9 +252,7 @@ export default function Student_List() {
   }
 
   if (roleError) {
-    return (
-      <NetworkError />
-    );
+    return <NetworkError />;
   }
 
   if (branchLoading) {
@@ -254,15 +264,13 @@ export default function Student_List() {
   }
 
   if (branchError) {
-    return (
-      <NetworkError />
-    );
+    return <NetworkError />;
   }
 
-
   const filteredStudent = DataByBranch.filter((student) => {
-
-    const statusMatch = selectedStatus ? student.status == selectedStatus : true;
+    const statusMatch = selectedStatus
+      ? student.status == selectedStatus
+      : true;
     return statusMatch;
   });
 
@@ -278,13 +286,15 @@ export default function Student_List() {
     }
   };
 
-
   const renderPagination = () => {
     const pageButtons = [];
 
     // Only render a maximum of 5 page buttons near the current page
     const maxButtonsToShow = 3;
-    const startIndex = Math.max(Math.ceil(currentPage - (maxButtonsToShow - 1) / 2), 1);
+    const startIndex = Math.max(
+      Math.ceil(currentPage - (maxButtonsToShow - 1) / 2),
+      1
+    );
     const endIndex = Math.min(startIndex + maxButtonsToShow - 1, totalPages);
 
     for (let i = startIndex; i <= endIndex; i++) {
@@ -306,7 +316,11 @@ export default function Student_List() {
         <Button key="first" onClick={() => paginate(1)} mr={2}>
           &lt;&lt;
         </Button>,
-        <Button key="ellipsisBefore" onClick={() => paginate(startIndex - 1)} mr={2}>
+        <Button
+          key="ellipsisBefore"
+          onClick={() => paginate(startIndex - 1)}
+          mr={2}
+        >
           ...
         </Button>
       );
@@ -314,7 +328,11 @@ export default function Student_List() {
 
     if (endIndex < totalPages) {
       pageButtons.push(
-        <Button key="ellipsisAfter" onClick={() => paginate(endIndex + 1)} ml={2}>
+        <Button
+          key="ellipsisAfter"
+          onClick={() => paginate(endIndex + 1)}
+          ml={2}
+        >
           ...
         </Button>,
         <Button key="last" onClick={() => paginate(totalPages)} ml={2}>
@@ -328,10 +346,12 @@ export default function Student_List() {
 
   const indexOfLastStudent = currentPage * StudentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - StudentsPerPage;
-  const currentStudents = filteredStudent.slice(indexOfFirstStudent, indexOfLastStudent);
+  const currentStudents = filteredStudent.slice(
+    indexOfFirstStudent,
+    indexOfLastStudent
+  );
 
-
-  const studentManagementPermissions = getModulePermissions('Students');
+  const studentManagementPermissions = getModulePermissions("Students");
   if (!studentManagementPermissions) {
     return <NetworkError />;
   }
@@ -339,11 +359,10 @@ export default function Student_List() {
   const canDeleteData = studentManagementPermissions.delete;
 
   return (
-    <Box p="3" >
+    <Box p="3">
       <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
-          Student List
-          ({filteredCount})
+          Student List ({filteredCount})
         </Text>
         <Grid
           templateColumns={{
@@ -353,12 +372,10 @@ export default function Student_List() {
           gap={3}
           alignItems="center"
         >
-
           <Select
             placeholder="Filter by Status"
             value={selectedStatus}
             onChange={handleStatusChange}
-
           >
             <option value="Inactive">Inactive</option>
             <option value="Active">Active</option>
@@ -371,7 +388,7 @@ export default function Student_List() {
             colorScheme="teal"
             onClick={() => {
               if (canAddData) {
-                setIsAddStudentModalOpen(true)
+                setIsAddStudentModalOpen(true);
               } else {
                 Toast({
                   title: "You don't have permission to add student",
@@ -387,25 +404,32 @@ export default function Student_List() {
           </Button>
         </Grid>
       </Flex>
-      <Box bg="gray.100" p="6" borderRadius="lg" overflow="auto" css={{
-        '&::-webkit-scrollbar': {
-          width: '8px',
-          height: '8px',
-          backgroundColor: 'transparent',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: '#cbd5e0',
-          borderRadius: '10px',
-        },
-        '&::-webkit-scrollbar-thumb:hover': {
-          backgroundColor: '#a0aec0',
-        },
-      }}
+      <Box
+        bg="gray.100"
+        p="6"
+        borderRadius="lg"
+        overflow="auto"
+        css={{
+          "&::-webkit-scrollbar": {
+            width: "8px",
+            height: "8px",
+            backgroundColor: "transparent",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#cbd5e0",
+            borderRadius: "10px",
+          },
+          "&::-webkit-scrollbar-thumb:hover": {
+            backgroundColor: "#a0aec0",
+          },
+        }}
       >
         {currentStudents.length === 0 ? (
           <Flex justify="center" align="center" height="100%">
             <Box textAlign="center">
-              <Text fontSize="xl" fontWeight="bold">No student available</Text>
+              <Text fontSize="xl" fontWeight="bold">
+                No student available
+              </Text>
             </Box>
           </Flex>
         ) : (
@@ -422,85 +446,84 @@ export default function Student_List() {
               </Tr>
             </Thead>
             <Tbody>
-              {currentStudents
-                .map((Student, index) => (
-                  <Tr key={index}>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Student.student_id}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Student.studentName}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Student.email}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Student.branchId}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Student.currentCourseId}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Student.city}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      <Flex>
-                        <Button
-                          size="xs"
-                          colorScheme="teal"
-                          mr="1"
-                          onClick={() => {
-                            handleViewStudent(Student.student_id)
-                          }}                        >
-                          View
-                        </Button>
-                        <Button
-                          size="xs"
-                          colorScheme="red"
-                          onClick={() => {
-                            if (canDeleteData) {
-                              setSelectedstudent_id(Student.student_id);
-                              setIsDeleteConfirmationModalOpen(true);
-                            } else {
-                              Toast({
-                                title: "You don't have permission to delete student",
-                                status: "error",
-                                duration: 3000,
-                                isClosable: true,
-                                position: "top-right",
-                              });
-                            }
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </Flex>
-                    </Td>
-                  </Tr>
-                ))}
+              {currentStudents.map((Student, index) => (
+                <Tr key={index}>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    {Student.student_id}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    {Student.studentName}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    {Student.email}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    {Student.branchId}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    {Student.currentCourseId}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    {Student.city}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    <Flex>
+                      <Button
+                        size="xs"
+                        colorScheme="teal"
+                        mr="1"
+                        onClick={() => {
+                          handleViewStudent(Student.student_id);
+                        }}
+                      >
+                        View
+                      </Button>
+                      <Button
+                        size="xs"
+                        colorScheme="red"
+                        onClick={() => {
+                          if (canDeleteData) {
+                            setSelectedstudent_id(Student.student_id);
+                            setIsDeleteConfirmationModalOpen(true);
+                          } else {
+                            Toast({
+                              title:
+                                "You don't have permission to delete student",
+                              status: "error",
+                              duration: 3000,
+                              isClosable: true,
+                              position: "top-right",
+                            });
+                          }
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </Flex>
+                  </Td>
+                </Tr>
+              ))}
             </Tbody>
           </Table>
         )}
       </Box>
       <Flex justify="flex-end" mt="4">
-          {currentStudents.length > 0 && (
-            <Flex justify="flex-end" mt="4">
-
-              {currentPage > 1 && (
-                <Button onClick={() => paginate(currentPage - 1)} mr={2}>
-                  &lt;
-                </Button>
-              )}
-              {renderPagination()}
-              {currentPage < totalPages && (
-                <Button onClick={() => paginate(currentPage + 1)} mr={2}>
-                  &gt;
-                </Button>
-              )}
-
-            </Flex>
-          )}
-        </Flex>
+        {currentStudents.length > 0 && (
+          <Flex justify="flex-end" mt="4">
+            {currentPage > 1 && (
+              <Button onClick={() => paginate(currentPage - 1)} mr={2}>
+                &lt;
+              </Button>
+            )}
+            {renderPagination()}
+            {currentPage < totalPages && (
+              <Button onClick={() => paginate(currentPage + 1)} mr={2}>
+                &gt;
+              </Button>
+            )}
+          </Flex>
+        )}
+      </Flex>
 
       {/* Add Student Modal */}
       <Modal
@@ -515,7 +538,10 @@ export default function Student_List() {
             <ModalHeader>Add Student</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={3}>
+              <Grid
+                templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+                gap={3}
+              >
                 <Input
                   mb="3"
                   placeholder="Student Name"
@@ -570,7 +596,7 @@ export default function Student_List() {
                   }
                   isRequired
                 >
-                  {branchData.map((branch) => (
+                  {BranchData.map((branch) => (
                     <option key={branch.branchId} value={branch.branchId}>
                       {branch.branchName}
                     </option>
@@ -735,7 +761,6 @@ export default function Student_List() {
           </ModalFooter>
         </ModalContent>
       </Modal>
-
     </Box>
   );
 }

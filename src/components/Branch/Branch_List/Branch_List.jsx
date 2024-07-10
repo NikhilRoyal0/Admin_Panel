@@ -34,11 +34,15 @@ import {
   AddBranchData,
   deleteBranchData,
 } from "../../../app/Slices/branchSlice";
-import { fetchrolesData, selectrolesData, selectrolesError, selectrolesLoading } from "../../../app/Slices/roleSlice";
+import {
+  fetchrolesData,
+  selectrolesData,
+  selectrolesError,
+  selectrolesLoading,
+} from "../../../app/Slices/roleSlice";
 import NetworkError from "../../NotFound/networkError";
 import { getModulePermissions } from "../../../utils/permissions";
 import { useNavigate } from "react-router-dom";
-
 
 export default function Branch_List() {
   const [isAddBranchModalOpen, setIsAddBranchModalOpen] = useState(false);
@@ -47,7 +51,6 @@ export default function Branch_List() {
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
-
 
   const [newBranchData, setNewBranchData] = useState({
     branchName: "",
@@ -78,7 +81,6 @@ export default function Branch_List() {
   const [filteredCount, setFilteredCount] = useState(0);
 
   const [BranchPerPage, setBranchPerPage] = useState(10);
-
 
   useEffect(() => {
     dispatch(fetchBranchData());
@@ -183,7 +185,6 @@ export default function Branch_List() {
     setSelectedStatus(e.target.value);
   };
 
-
   if (isLoading) {
     return (
       <Flex justify="center" align="center" h="100vh">
@@ -193,9 +194,7 @@ export default function Branch_List() {
   }
 
   if (error) {
-    return (
-      <NetworkError />
-    );
+    return <NetworkError />;
   }
 
   if (roleLoading) {
@@ -207,17 +206,13 @@ export default function Branch_List() {
   }
 
   if (roleError) {
-    return (
-      <NetworkError />
-    );
+    return <NetworkError />;
   }
 
   const filteredBranch = BranchData.filter((branch) => {
-
     const statusMatch = selectedStatus ? branch.status == selectedStatus : true;
     return statusMatch;
   });
-
 
   const totalPages = Math.ceil(filteredBranch.length / BranchPerPage);
 
@@ -236,7 +231,10 @@ export default function Branch_List() {
 
     // Only render a maximum of 5 page buttons near the current page
     const maxButtonsToShow = 3;
-    const startIndex = Math.max(Math.ceil(currentPage - (maxButtonsToShow - 1) / 2), 1);
+    const startIndex = Math.max(
+      Math.ceil(currentPage - (maxButtonsToShow - 1) / 2),
+      1
+    );
     const endIndex = Math.min(startIndex + maxButtonsToShow - 1, totalPages);
 
     for (let i = startIndex; i <= endIndex; i++) {
@@ -258,7 +256,11 @@ export default function Branch_List() {
         <Button key="first" onClick={() => paginate(1)} mr={2}>
           &lt;&lt;
         </Button>,
-        <Button key="ellipsisBefore" onClick={() => paginate(startIndex - 1)} mr={2}>
+        <Button
+          key="ellipsisBefore"
+          onClick={() => paginate(startIndex - 1)}
+          mr={2}
+        >
           ...
         </Button>
       );
@@ -266,7 +268,11 @@ export default function Branch_List() {
 
     if (endIndex < totalPages) {
       pageButtons.push(
-        <Button key="ellipsisAfter" onClick={() => paginate(endIndex + 1)} ml={2}>
+        <Button
+          key="ellipsisAfter"
+          onClick={() => paginate(endIndex + 1)}
+          ml={2}
+        >
           ...
         </Button>,
         <Button key="last" onClick={() => paginate(totalPages)} ml={2}>
@@ -280,10 +286,12 @@ export default function Branch_List() {
 
   const indexOfLastBranch = currentPage * BranchPerPage;
   const indexOfFirstBranch = indexOfLastBranch - BranchPerPage;
-  const currentBranch = filteredBranch.slice(indexOfFirstBranch, indexOfLastBranch);
+  const currentBranch = filteredBranch.slice(
+    indexOfFirstBranch,
+    indexOfLastBranch
+  );
 
-
-  const branchManagementPermissions = getModulePermissions('Branch');
+  const branchManagementPermissions = getModulePermissions("Branch");
 
   if (!branchManagementPermissions) {
     return <NetworkError />;
@@ -292,14 +300,11 @@ export default function Branch_List() {
   const canAddBranch = branchManagementPermissions.create;
   const canDeleteBranch = branchManagementPermissions.delete;
 
-
   return (
-    <Box p="3" >
+    <Box p="3">
       <Flex align="center" justify="space-between" mb="6" mt={5}>
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
-          Branch List
-          ({filteredCount})
-
+          Branch List ({filteredCount})
         </Text>
         <Grid
           templateColumns={{
@@ -341,24 +346,32 @@ export default function Branch_List() {
           </Button>
         </Grid>
       </Flex>
-      <Box bg="gray.100" p="6" borderRadius="lg" overflowX="auto" css={{
-        '&::-webkit-scrollbar': {
-          width: '8px',
-          height: '8px',
-          backgroundColor: 'transparent',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: '#cbd5e0',
-          borderRadius: '10px',
-        },
-        '&::-webkit-scrollbar-thumb:hover': {
-          backgroundColor: '#a0aec0',
-        },
-      }}>
+      <Box
+        bg="gray.100"
+        p="6"
+        borderRadius="lg"
+        overflowX="auto"
+        css={{
+          "&::-webkit-scrollbar": {
+            width: "8px",
+            height: "8px",
+            backgroundColor: "transparent",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#cbd5e0",
+            borderRadius: "10px",
+          },
+          "&::-webkit-scrollbar-thumb:hover": {
+            backgroundColor: "#a0aec0",
+          },
+        }}
+      >
         {currentBranch.length === 0 ? (
           <Flex justify="center" align="center" height="100%">
             <Box textAlign="center">
-              <Text fontSize="xl" fontWeight="bold">No branch available</Text>
+              <Text fontSize="xl" fontWeight="bold">
+                No branch available
+              </Text>
             </Box>
           </Flex>
         ) : (
@@ -366,74 +379,74 @@ export default function Branch_List() {
             <Thead>
               <Tr>
                 <Th>Branch Id</Th>
+                <Th>Branch Name</Th>
                 <Th>Branch Admin</Th>
                 <Th>Branch Address</Th>
                 <Th>Branch Email</Th>
                 <Th>Branch Phone</Th>
                 <Th>Role</Th>
-                <Th>Primary DeviceId</Th>
                 <Th>View/Delete</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {currentBranch
-                .map((Branch, index) => (
-                  <Tr key={index}>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Branch.branchId}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Branch.branchAdmin}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Branch.branchAddress}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Branch.branchEmail}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Branch.branchPhone}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Branch.role}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      {Branch.primaryDeviceId}
-                    </Td>
-                    <Td borderBottom="1px" borderColor="gray.200">
-                      <Flex>
-                        <Button
-                          size="xs"
-                          colorScheme="teal"
-                          mr="1"
-                          onClick={() => handleViewBranch(Branch.branchId)}
-                        >
-                          View
-                        </Button>
-                        <Button
-                          size="xs"
-                          colorScheme="red"
-                          onClick={() => {
-                            if (canDeleteBranch) {
-                              setSelectedBranchId(Branch.branchId);
-                              setIsDeleteConfirmationModalOpen(true);
-                            } else {
-                              Toast({
-                                title: "You don't have permission to delete branch",
-                                status: "error",
-                                duration: 3000,
-                                isClosable: true,
-                                position: "top-right",
-                              });
-                            }
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </Flex>
-                    </Td>
-                  </Tr>
-                ))}
+              {currentBranch.map((Branch, index) => (
+                <Tr key={index}>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    {Branch.branchId}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    {Branch.branchName}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    {Branch.branchAdmin}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    {Branch.branchAddress}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    {Branch.branchEmail}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    {Branch.branchPhone}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    {Branch.role}
+                  </Td>
+                  <Td borderBottom="1px" borderColor="gray.200">
+                    <Flex>
+                      <Button
+                        size="xs"
+                        colorScheme="teal"
+                        mr="1"
+                        onClick={() => handleViewBranch(Branch.branchId)}
+                      >
+                        View
+                      </Button>
+                      <Button
+                        size="xs"
+                        colorScheme="red"
+                        onClick={() => {
+                          if (canDeleteBranch) {
+                            setSelectedBranchId(Branch.branchId);
+                            setIsDeleteConfirmationModalOpen(true);
+                          } else {
+                            Toast({
+                              title:
+                                "You don't have permission to delete branch",
+                              status: "error",
+                              duration: 3000,
+                              isClosable: true,
+                              position: "top-right",
+                            });
+                          }
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </Flex>
+                  </Td>
+                </Tr>
+              ))}
             </Tbody>
           </Table>
         )}
@@ -441,7 +454,6 @@ export default function Branch_List() {
       <Flex justify="flex-end" mt="4">
         {currentBranch.length > 0 && (
           <Flex justify="flex-end" mt="4">
-
             {currentPage > 1 && (
               <Button onClick={() => paginate(currentPage - 1)} mr={2}>
                 &lt;
@@ -453,7 +465,6 @@ export default function Branch_List() {
                 &gt;
               </Button>
             )}
-
           </Flex>
         )}
       </Flex>
@@ -470,7 +481,10 @@ export default function Branch_List() {
             <ModalHeader>Add Branch</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={3}>
+              <Grid
+                templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+                gap={3}
+              >
                 <Input
                   mb="3"
                   placeholder="Branch Name"
@@ -628,7 +642,6 @@ export default function Branch_List() {
           </ModalFooter>
         </ModalContent>
       </Modal>
-
     </Box>
   );
 }

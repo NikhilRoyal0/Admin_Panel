@@ -97,6 +97,9 @@ export default function Course_List() {
     });
   }, [selectedStatus, DataByBranch]);
 
+  const CategoryData = categoryData.filter(branch => branch.status == 'Active');
+
+
 
   const handleAddcourse = (e) => {
     e.preventDefault();
@@ -343,7 +346,7 @@ export default function Course_List() {
             value={selectedCategory}
             onChange={handleCategoryChange}
           >
-            {categoryData.map((category) => (
+            {CategoryData.map((category) => (
               <option key={category.categoryId} value={category.categoryId}>
                 {category.categoryTitle}
               </option>
@@ -651,7 +654,7 @@ export default function Course_List() {
                   placeholder="Select Category"
                   value={newcourseData.category}
                   onChange={(e) => {
-                    const selectedCategory = categoryData.find(category => category.categoryTitle === e.target.value);
+                    const selectedCategory = CategoryData.find(category => category.categoryTitle === e.target.value);
                     setNewcourseData({
                       ...newcourseData,
                       category: e.target.value,
@@ -660,7 +663,7 @@ export default function Course_List() {
                   }}
                   isRequired
                 >
-                  {categoryData.map((category) => (
+                  {CategoryData.map((category) => (
                     <option key={category.categoryId} value={category.categoryTitle}>
                       {category.categoryTitle}
                     </option>
@@ -679,7 +682,7 @@ export default function Course_List() {
                   isDisabled={true}
                   isRequired
                 >
-                  {categoryData.map((category) => (
+                  {CategoryData.map((category) => (
                     <option key={category.categoryId} value={category.categoryId}>
                       {category.categoryId}
                     </option>

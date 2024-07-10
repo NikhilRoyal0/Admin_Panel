@@ -29,7 +29,7 @@ import {
   Td,
   Thead,
   Tbody,
-  Th
+  Th,
 } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { BeatLoader } from "react-spinners";
@@ -41,15 +41,21 @@ import {
   AddbranchPlannerData,
   updatebranchPlannerData,
 } from "../../../app/Slices/branchPlanner";
-import { selectmoduleData, selectmoduleError, selectmoduleLoading, fetchmoduleData } from "../../../app/Slices/moduleSlice";
+import {
+  selectmoduleData,
+  selectmoduleError,
+  selectmoduleLoading,
+  fetchmoduleData,
+} from "../../../app/Slices/moduleSlice";
 import NetworkError from "../../NotFound/networkError";
 import { useParams } from "react-router-dom";
 import { getModulePermissions } from "../../../utils/permissions";
 import { ChevronDownIcon } from "@chakra-ui/icons";
-
+import PaymentPage from "./PaymentPage";
 
 export default function Planner() {
-  const [isAddbranchPlannerModalOpen, setIsAddbranchPlannerModalOpen] = useState(false);
+  const [isAddbranchPlannerModalOpen, setIsAddbranchPlannerModalOpen] =
+    useState(false);
   const [selectedplanerId, setSelectedplanerId] = useState(null);
   const [editedbranchPlannerData, setEditedbranchPlannerData] = useState({
     branchId: "",
@@ -58,7 +64,7 @@ export default function Planner() {
     paymentMode: "",
     kitFee: "",
     websiteUrl: "",
-    module: JSON.stringify([]),  // Ensure this is initialized as a valid JSON string
+    module: JSON.stringify([]), // Ensure this is initialized as a valid JSON string
   });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -75,7 +81,7 @@ export default function Planner() {
     branchId: branchId,
     admissionFee: "",
     admissionDiscount: "",
-    paymentMode: "",
+    paymentMode: [],
     kitFee: "",
     websiteUrl: "",
     module: [],
@@ -105,12 +111,16 @@ export default function Planner() {
     if (isAddbranchPlannerModalOpen) {
       setNewbranchPlannerData((prevData) => ({
         ...prevData,
-        module: Array.isArray(prevData.module) ? prevData.module.filter((m) => m.moduleId !== moduleId) : [],
+        module: Array.isArray(prevData.module)
+          ? prevData.module.filter((m) => m.moduleId !== moduleId)
+          : [],
       }));
     } else if (isEditModalOpen) {
       setEditedbranchPlannerData((prevData) => {
         const parsedModules = JSON.parse(prevData.module || "[]");
-        const updatedModules = parsedModules.filter((m) => m.moduleId !== moduleId);
+        const updatedModules = parsedModules.filter(
+          (m) => m.moduleId !== moduleId
+        );
         return {
           ...prevData,
           module: JSON.stringify(updatedModules),
@@ -135,7 +145,9 @@ export default function Planner() {
     } else if (isEditModalOpen) {
       if (isChecked) {
         const updatedModules = [
-          ...(editedbranchPlannerData.module ? JSON.parse(editedbranchPlannerData.module) : []),
+          ...(editedbranchPlannerData.module
+            ? JSON.parse(editedbranchPlannerData.module)
+            : []),
           module,
         ];
 
@@ -144,8 +156,12 @@ export default function Planner() {
           module: JSON.stringify(updatedModules),
         }));
       } else {
-        const parsedModules = JSON.parse(editedbranchPlannerData.module || "[]");
-        const updatedModules = parsedModules.filter((m) => m.moduleId !== module.moduleId);
+        const parsedModules = JSON.parse(
+          editedbranchPlannerData.module || "[]"
+        );
+        const updatedModules = parsedModules.filter(
+          (m) => m.moduleId !== module.moduleId
+        );
 
         setEditedbranchPlannerData((prevData) => ({
           ...prevData,
@@ -162,11 +178,19 @@ export default function Planner() {
     const formData = new FormData();
     formData.append("branchId", branchId);
     formData.append("admissionFee", newbranchPlannerData.admissionFee);
-    formData.append("admissionDiscount", newbranchPlannerData.admissionDiscount);
-    formData.append("paymentMode", newbranchPlannerData.paymentMode);
+    formData.append(
+      "admissionDiscount",
+      newbranchPlannerData.admissionDiscount
+    );
     formData.append("kitFee", newbranchPlannerData.kitFee);
     formData.append("websiteUrl", newbranchPlannerData.websiteUrl);
     formData.append("module", JSON.stringify(newbranchPlannerData.module));
+    console.log("Form Data:", newbranchPlannerData.paymentMode);
+    formData.append(
+      "paymentMode",
+      JSON.stringify(newbranchPlannerData.paymentMode)
+    );
+
     dispatch(AddbranchPlannerData(formData))
       .then(() => {
         setIsSaveLoading(false);
@@ -180,9 +204,11 @@ export default function Planner() {
         setNewbranchPlannerData({
           branchId: "",
           admissionFee: "",
-          paymentMode: "",
+          admissionDiscount: "",
+          paymentMode: [],
           kitFee: "",
           websiteUrl: "",
+          module: [],
         });
         setIsAddbranchPlannerModalOpen(false);
       })
@@ -202,7 +228,7 @@ export default function Planner() {
     setSelectedplanerId(branchPlanner.planerId);
     setEditedbranchPlannerData({
       ...branchPlanner,
-      module: branchPlanner.module || JSON.stringify([]),  // Ensure this is a valid JSON string
+      module: branchPlanner.module || JSON.stringify([]),
     });
     setIsEditModalOpen(true);
   };
@@ -213,13 +239,15 @@ export default function Planner() {
     const formData = {
       admissionFee: editedbranchPlannerData.admissionFee,
       admissionDiscount: editedbranchPlannerData.admissionDiscount,
-      paymentMode: editedbranchPlannerData.paymentMode,
+      paymentMode: JSON.stringify(newbranchPlannerData.paymentMode),
       kitFee: editedbranchPlannerData.kitFee,
       websiteUrl: editedbranchPlannerData.websiteUrl,
       module: editedbranchPlannerData.module,
     };
 
-    dispatch(updatebranchPlannerData(editedbranchPlannerData.planerId, formData))
+    dispatch(
+      updatebranchPlannerData(editedbranchPlannerData.planerId, formData)
+    )
       .then(() => {
         setIsEditModalOpen(false);
         setSelectedplanerId(null);
@@ -257,14 +285,14 @@ export default function Planner() {
   }
 
   if (error || moduleError) {
-    return (
-      <NetworkError />
-    );
+    return <NetworkError />;
   }
 
-  const selectedPlan = branchPlannerData.filter(branch => branch.branchId == (branchId));
+  const selectedPlan = branchPlannerData.filter(
+    (branch) => branch.branchId == branchId
+  );
 
-  const branchManagementPermissions = getModulePermissions('Branch');
+  const branchManagementPermissions = getModulePermissions("Branch");
 
   if (!branchManagementPermissions) {
     return <NetworkError />;
@@ -274,7 +302,7 @@ export default function Planner() {
 
   return (
     <Box p="0" width="100%">
-      <Flex align="center" justify="space-between" >
+      <Flex align="center" justify="space-between">
         <Text fontSize="2xl" fontWeight="bold" ml={5}>
           Branch Plan
         </Text>
@@ -312,8 +340,23 @@ export default function Planner() {
             </Tr>
             <Tr>
               <Td fontWeight="bold">Payment Mode</Td>
-              <Td>{branch.paymentMode}</Td>
+              <Td>
+                {branch.paymentMode &&
+                Array.isArray(JSON.parse(branch.paymentMode)) ? (
+                  JSON.parse(branch.paymentMode).map((modeObj, index) => (
+                    <span key={index}>
+                      {modeObj.mode}
+                      {index !== JSON.parse(branch.paymentMode).length - 1
+                        ? ", "
+                        : ""}
+                    </span>
+                  ))
+                ) : (
+                  <span>No payment mode selected</span>
+                )}
+              </Td>
             </Tr>
+
             <Tr>
               <Td fontWeight="bold">Kit Fee</Td>
               <Td>{branch.kitFee}</Td>
@@ -361,7 +404,10 @@ export default function Planner() {
         </Table>
       ))}
 
-      <Modal isOpen={isAddbranchPlannerModalOpen} onClose={() => setIsAddbranchPlannerModalOpen(false)}>
+      <Modal
+        isOpen={isAddbranchPlannerModalOpen}
+        onClose={() => setIsAddbranchPlannerModalOpen(false)}
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Add New Branch Planner</ModalHeader>
@@ -389,16 +435,9 @@ export default function Planner() {
               }
               mb={4}
             />
-            <Input
-              placeholder="Payment Mode"
-              value={newbranchPlannerData.paymentMode}
-              onChange={(e) =>
-                setNewbranchPlannerData((prevData) => ({
-                  ...prevData,
-                  paymentMode: e.target.value,
-                }))
-              }
-              mb={4}
+            <PaymentPage
+              newbranchPlannerData={newbranchPlannerData}
+              setNewbranchPlannerData={setNewbranchPlannerData}
             />
             <Input
               placeholder="Kit Fee"
@@ -422,31 +461,32 @@ export default function Planner() {
               }
               mb={4}
             />
-            <Button
-              colorScheme="teal"
-              onClick={onSelectModuleModalOpen}
-              mb={4}
-            >
+            <Button colorScheme="teal" onClick={onSelectModuleModalOpen} mb={4}>
               Select Modules
             </Button>
-            {newbranchPlannerData.module && newbranchPlannerData.module.map((module) => (
-              <Tag
-                size="md"
-                key={module.moduleId}
-                borderRadius="full"
-                variant="solid"
-                colorScheme="teal"
-                mr={2}
-                mb={2}
-              >
-                <TagLabel>{module.title}</TagLabel>
-                <TagCloseButton onClick={() => handleRemoveModule(module.moduleId)} />
-              </Tag>
-            ))}
+            {newbranchPlannerData.module &&
+              newbranchPlannerData.module.map((module) => (
+                <Tag
+                  size="md"
+                  key={module.moduleId}
+                  borderRadius="full"
+                  variant="solid"
+                  colorScheme="teal"
+                  mr={2}
+                  mb={2}
+                >
+                  <TagLabel>{module.title}</TagLabel>
+                  <TagCloseButton
+                    onClick={() => handleRemoveModule(module.moduleId)}
+                  />
+                </Tag>
+              ))}
           </ModalBody>
 
           <ModalFooter>
-            <Button onClick={() => setIsAddbranchPlannerModalOpen(false)}>Cancel</Button>
+            <Button onClick={() => setIsAddbranchPlannerModalOpen(false)}>
+              Cancel
+            </Button>
             <Button
               colorScheme="teal"
               onClick={handleAddbranchPlanner}
@@ -487,16 +527,9 @@ export default function Planner() {
               }
               mb={4}
             />
-            <Input
-              placeholder="Payment Mode"
-              value={editedbranchPlannerData.paymentMode}
-              onChange={(e) =>
-                setEditedbranchPlannerData((prevData) => ({
-                  ...prevData,
-                  paymentMode: e.target.value,
-                }))
-              }
-              mb={4}
+            <PaymentPage
+              newbranchPlannerData={newbranchPlannerData}
+              setNewbranchPlannerData={setNewbranchPlannerData}
             />
             <Input
               placeholder="Kit Fee"
@@ -520,27 +553,26 @@ export default function Planner() {
               }
               mb={4}
             />
-            <Button
-              colorScheme="teal"
-              onClick={onSelectModuleModalOpen}
-              mb={4}
-            >
+            <Button colorScheme="teal" onClick={onSelectModuleModalOpen} mb={4}>
               Select Modules
             </Button>
-            {editedbranchPlannerData.module && JSON.parse(editedbranchPlannerData.module).map((module) => (
-              <Tag
-                size="md"
-                key={module.moduleId}
-                borderRadius="full"
-                variant="solid"
-                colorScheme="teal"
-                mr={2}
-                mb={2}
-              >
-                <TagLabel>{module.title}</TagLabel>
-                <TagCloseButton onClick={() => handleRemoveModule(module.moduleId)} />
-              </Tag>
-            ))}
+            {editedbranchPlannerData.module &&
+              JSON.parse(editedbranchPlannerData.module).map((module) => (
+                <Tag
+                  size="md"
+                  key={module.moduleId}
+                  borderRadius="full"
+                  variant="solid"
+                  colorScheme="teal"
+                  mr={2}
+                  mb={2}
+                >
+                  <TagLabel>{module.title}</TagLabel>
+                  <TagCloseButton
+                    onClick={() => handleRemoveModule(module.moduleId)}
+                  />
+                </Tag>
+              ))}
           </ModalBody>
 
           <ModalFooter>
@@ -557,7 +589,10 @@ export default function Planner() {
         </ModalContent>
       </Modal>
 
-      <Modal isOpen={isSelectModuleModalOpen} onClose={onSelectModuleModalClose}>
+      <Modal
+        isOpen={isSelectModuleModalOpen}
+        onClose={onSelectModuleModalClose}
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Select Modules</ModalHeader>
@@ -580,21 +615,27 @@ export default function Planner() {
                   </AccordionButton>
                   <AccordionPanel pb={4}>
                     <Checkbox
-                      isChecked={
-                        (isAddbranchPlannerModalOpen
-                          ? newbranchPlannerData.module
-                          : JSON.parse(editedbranchPlannerData.module || "[]")
-                        ).some((m) => m.moduleId === module.moduleId)
-                      }
+                      isChecked={(isAddbranchPlannerModalOpen
+                        ? newbranchPlannerData.module
+                        : JSON.parse(editedbranchPlannerData.module || "[]")
+                      ).some((m) => m.moduleId === module.moduleId)}
                       onChange={(e) =>
                         handleCheckboxChange(module, e.target.checked)
                       }
                     >
                       <Box mt="2" ml={2}>
-                        <Text><b>Year:</b> {module.year}</Text>
-                        <Text><b>Price:</b> {module.price}</Text>
-                        <Text><b>Class:</b> {module.class}</Text>
-                        <Text><b>Published By:</b> {module.publishedBy}</Text>
+                        <Text>
+                          <b>Year:</b> {module.year}
+                        </Text>
+                        <Text>
+                          <b>Price:</b> {module.price}
+                        </Text>
+                        <Text>
+                          <b>Class:</b> {module.class}
+                        </Text>
+                        <Text>
+                          <b>Published By:</b> {module.publishedBy}
+                        </Text>
                       </Box>
                     </Checkbox>
                   </AccordionPanel>

@@ -31,21 +31,33 @@ import {
   selectCertificateError,
   AddCertificateData,
 } from "../../../app/Slices/certificateSlice";
-import { selecttempleteData, selecttempleteError, selecttempleteLoading, fetchtempleteData } from "../../../app/Slices/templete";
+import {
+  selecttempleteData,
+  selecttempleteError,
+  selecttempleteLoading,
+  fetchtempleteData,
+} from "../../../app/Slices/templete";
+import {
+  selectStudentData,
+  selectStudentError,
+  selectStudentLoading,
+  fetchStudentData,
+} from "../../../app/Slices/studentSlice";
 import NetworkError from "../../NotFound/networkError";
 import { getModulePermissions } from "../../../utils/permissions";
 import TimeConversion from "../../../utils/timeConversion";
 
-
 export default function Certificate() {
-  const [isAddCertificateModalOpen, setIsAddCertificateModalOpen] = useState(false);
+  const branchId = sessionStorage.getItem("BranchId");
+  const [isAddCertificateModalOpen, setIsAddCertificateModalOpen] =
+    useState(false);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
 
   const [newCertificateData, setNewCertificateData] = useState({
     title: "",
     studentName: "",
     student_id: "",
-    issueDate: "",
+    issueDate: Date.now(),
     issueBy: "",
     certificateHash: "",
     templeteId: "",
@@ -56,6 +68,9 @@ export default function Certificate() {
   const templeteData = useSelector(selecttempleteData);
   const tempeleteError = useSelector(selecttempleteError);
   const templeteLoading = useSelector(selecttempleteLoading);
+  const studentData = useSelector(selectStudentData);
+  const studentError = useSelector(selectStudentError);
+  const studentLoading = useSelector(selectStudentLoading);
   const isLoading = useSelector(selectCertificateLoading);
   const error = useSelector(selectCertificateError);
   const dispatch = useDispatch();
@@ -68,7 +83,16 @@ export default function Certificate() {
   useEffect(() => {
     dispatch(fetchCertificateData());
     dispatch(fetchtempleteData());
+    dispatch(fetchStudentData());
   }, [dispatch]);
+
+  const DataByBranch =
+    branchId == 0
+      ? studentData
+      : studentData.filter((user) => user.branchId == branchId);
+
+      const TempleteData = templeteData.filter(branch => branch.status == 'Active');
+
 
   const handleAddCertificate = (e) => {
     e.preventDefault();
@@ -78,7 +102,7 @@ export default function Certificate() {
     formData.append("title", newCertificateData.title);
     formData.append("studentName", newCertificateData.studentName);
     formData.append("student_id", newCertificateData.student_id);
-    formData.append("issueDate", newCertificateData.issueDate);
+    formData.append("issueDate", Date.now());
     formData.append("issueBy", newCertificateData.issueBy);
     formData.append("certificateHash", newCertificateData.certificateHash);
     formData.append("templeteId", newCertificateData.templeteId);
@@ -130,7 +154,7 @@ export default function Certificate() {
     return <NetworkError />;
   }
 
-  if (templeteLoading) {
+  if (templeteLoading || studentLoading) {
     return (
       <Flex justify="center" align="center" h="100vh">
         <Spinner size="xl" />
@@ -138,7 +162,7 @@ export default function Certificate() {
     );
   }
 
-  if (tempeleteError) {
+  if (tempeleteError || studentError) {
     return <NetworkError />;
   }
 
@@ -159,7 +183,10 @@ export default function Certificate() {
 
     // Only render a maximum of 5 page buttons near the current page
     const maxButtonsToShow = 3;
-    const startIndex = Math.max(Math.ceil(currentPage - (maxButtonsToShow - 1) / 2), 1);
+    const startIndex = Math.max(
+      Math.ceil(currentPage - (maxButtonsToShow - 1) / 2),
+      1
+    );
     const endIndex = Math.min(startIndex + maxButtonsToShow - 1, totalPages);
 
     for (let i = startIndex; i <= endIndex; i++) {
@@ -181,7 +208,11 @@ export default function Certificate() {
         <Button key="first" onClick={() => paginate(1)} mr={2}>
           &lt;&lt;
         </Button>,
-        <Button key="ellipsisBefore" onClick={() => paginate(startIndex - 1)} mr={2}>
+        <Button
+          key="ellipsisBefore"
+          onClick={() => paginate(startIndex - 1)}
+          mr={2}
+        >
           ...
         </Button>
       );
@@ -189,7 +220,11 @@ export default function Certificate() {
 
     if (endIndex < totalPages) {
       pageButtons.push(
-        <Button key="ellipsisAfter" onClick={() => paginate(endIndex + 1)} ml={2}>
+        <Button
+          key="ellipsisAfter"
+          onClick={() => paginate(endIndex + 1)}
+          ml={2}
+        >
           ...
         </Button>,
         <Button key="last" onClick={() => paginate(totalPages)} ml={2}>
@@ -203,16 +238,18 @@ export default function Certificate() {
 
   const indexOfLastCertificate = currentPage * CertificatePerPage;
   const indexOfFirstCertificate = indexOfLastCertificate - CertificatePerPage;
-  const currentCertificate = CertificateData.slice(indexOfFirstCertificate, indexOfLastCertificate);
+  const currentCertificate = CertificateData.slice(
+    indexOfFirstCertificate,
+    indexOfLastCertificate
+  );
 
-  const certificateManagementPermissions = getModulePermissions('Certificates');
+  const certificateManagementPermissions = getModulePermissions("Certificates");
   if (!certificateManagementPermissions) {
     return <NetworkError />;
   }
   const canAddData = certificateManagementPermissions.create;
   const canEditData = certificateManagementPermissions.update;
   const canDeleteData = certificateManagementPermissions.delete;
-
 
   return (
     <Box p="3">
@@ -227,7 +264,7 @@ export default function Certificate() {
             colorScheme="teal"
             onClick={() => {
               if (canAddData) {
-                setIsAddCertificateModalOpen(true)
+                setIsAddCertificateModalOpen(true);
               } else {
                 Toast({
                   title: "You don't have permission to add certificate",
@@ -249,24 +286,26 @@ export default function Certificate() {
         borderRadius="lg"
         overflowX="auto"
         css={{
-          '&::-webkit-scrollbar': {
-            width: '8px',
-            height: '8px',
-            backgroundColor: 'transparent',
+          "&::-webkit-scrollbar": {
+            width: "8px",
+            height: "8px",
+            backgroundColor: "transparent",
           },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: '#cbd5e0',
-            borderRadius: '10px',
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#cbd5e0",
+            borderRadius: "10px",
           },
-          '&::-webkit-scrollbar-thumb:hover': {
-            backgroundColor: '#a0aec0',
+          "&::-webkit-scrollbar-thumb:hover": {
+            backgroundColor: "#a0aec0",
           },
         }}
       >
         {currentCertificate.length === 0 ? (
           <Flex justify="center" align="center" height="100%">
             <Box textAlign="center">
-              <Text fontSize="xl" fontWeight="bold">No certificate available</Text>
+              <Text fontSize="xl" fontWeight="bold">
+                No certificate available
+              </Text>
             </Box>
           </Flex>
         ) : (
@@ -315,7 +354,6 @@ export default function Certificate() {
       <Flex justify="flex-end" mt="4">
         {currentCertificate.length > 0 && (
           <Flex justify="flex-end" mt="4">
-
             {currentPage > 1 && (
               <Button onClick={() => paginate(currentPage - 1)} mr={2}>
                 &lt;
@@ -327,7 +365,6 @@ export default function Certificate() {
                 &gt;
               </Button>
             )}
-
           </Flex>
         )}
       </Flex>
@@ -355,22 +392,37 @@ export default function Certificate() {
                 }
                 isRequired
               />
-              <Input
+              <Select
                 mb="3"
-                placeholder="Student Name"
+                placeholder="Select Student"
                 value={newCertificateData.studentName}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const selectedStudentName = e.target.value;
+                  const selectedStudent = DataByBranch.find(
+                    (student) => student.studentName === selectedStudentName
+                  );
+
                   setNewCertificateData({
                     ...newCertificateData,
-                    studentName: e.target.value,
-                  })
-                }
+                    studentName: selectedStudentName,
+                    student_id: selectedStudent
+                      ? selectedStudent.student_id
+                      : "",
+                  });
+                }}
                 isRequired
-              />
+              >
+                {DataByBranch.map((student) => (
+                  <option key={student.student_id} value={student.studentName}>
+                    {student.studentName}
+                  </option>
+                ))}
+              </Select>
               <Input
                 mb="3"
                 placeholder="Student Id"
                 value={newCertificateData.student_id}
+                isDisabled
                 onChange={(e) =>
                   setNewCertificateData({
                     ...newCertificateData,
@@ -379,18 +431,7 @@ export default function Certificate() {
                 }
                 isRequired
               />
-              <Input
-                mb="3"
-                placeholder="Issued Date"
-                value={newCertificateData.issueDate}
-                onChange={(e) =>
-                  setNewCertificateData({
-                    ...newCertificateData,
-                    issueDate: e.target.value,
-                  })
-                }
-                isRequired
-              />
+
               <Input
                 mb="3"
                 placeholder="Issued By"
@@ -427,7 +468,7 @@ export default function Certificate() {
                 }
                 isRequired
               >
-                {templeteData.map((templete) => (
+                {TempleteData.map((templete) => (
                   <option key={templete.templeteId} value={templete.templeteId}>
                     {templete.title}
                   </option>

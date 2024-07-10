@@ -82,6 +82,9 @@ export default function StudentDashboard() {
         }
     }, [studentData, student_id]);
 
+    const BranchData = branchData.filter(branch => branch.status == 'Active');
+
+
 
 
     const handleEditClick = () => {
@@ -484,7 +487,7 @@ export default function StudentDashboard() {
                                             ml="2"
                                             size="sm"
                                         >
-                                            {branchData && branchData.map(branch => (
+                                            {BranchData && BranchData.map(branch => (
                                                 <option key={branch.branchId} value={branch.branchId}>
                                                     {branch.branchName}
                                                 </option>
@@ -492,7 +495,7 @@ export default function StudentDashboard() {
                                         </Select>
                                     ) : (
                                         <span>
-                                            {branchData && branchData.find(branch => branch.branchId == formData.branchId)?.branchName}
+                                            {BranchData && BranchData.find(branch => branch.branchId == formData.branchId)?.branchName}
                                         </span>
                                     )}
                                 </Box>

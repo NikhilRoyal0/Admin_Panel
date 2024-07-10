@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useState, useEffect, useRef } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
   Box,
   Button,
@@ -34,22 +34,52 @@ import {
   Slider,
   Thead,
   Th,
-} from '@chakra-ui/react';
-import { CheckCircleIcon, EditIcon } from '@chakra-ui/icons';
-import { useNavigate } from 'react-router-dom';
+} from "@chakra-ui/react";
+import { CheckCircleIcon, EditIcon } from "@chakra-ui/icons";
+import { useNavigate } from "react-router-dom";
 import NetworkError from "../NotFound/networkError";
 import fallbackImage from "../../assets/images/imageError.png";
 import passwordGenerator from "../../utils/passwordGenerator";
-import { selectcourseData, selectcourseError, selectcourseLoading, fetchcourseData } from '../../app/Slices/courseSlice';
-import { selectleadData, selectleadError, selectleadLoading, fetchleadData, AddleadData, updateleadData } from "../../app/Slices/leadSlice";
-import { selectbranchPlannerData, selectbranchPlannerError, selectbranchPlannerLoading, fetchbranchPlannerData } from "../../app/Slices/branchPlanner";
-import { selectreferenceData, selectreferenceError, selectreferenceLoading, fetchreferenceData, AddreferenceData } from "../../app/Slices/referenceSlice";
-import { selectmoduleData, selectmoduleError, selectmoduleLoading, fetchmoduleData } from "../../app/Slices/moduleSlice";
-import { AddinvoiceData, updateinvoiceData } from "../../app/Slices/invoiceSlice";
-import BillComponent from './BillComponent';
-import { useReactToPrint } from 'react-to-print';
-import TimeConversion from '../../utils/timeConversion';
-
+import {
+  selectcourseData,
+  selectcourseError,
+  selectcourseLoading,
+  fetchcourseData,
+} from "../../app/Slices/courseSlice";
+import {
+  selectleadData,
+  selectleadError,
+  selectleadLoading,
+  fetchleadData,
+  AddleadData,
+  updateleadData,
+} from "../../app/Slices/leadSlice";
+import {
+  selectbranchPlannerData,
+  selectbranchPlannerError,
+  selectbranchPlannerLoading,
+  fetchbranchPlannerData,
+} from "../../app/Slices/branchPlanner";
+import {
+  selectreferenceData,
+  selectreferenceError,
+  selectreferenceLoading,
+  fetchreferenceData,
+  AddreferenceData,
+} from "../../app/Slices/referenceSlice";
+import {
+  selectmoduleData,
+  selectmoduleError,
+  selectmoduleLoading,
+  fetchmoduleData,
+} from "../../app/Slices/moduleSlice";
+import {
+  AddinvoiceData,
+  updateinvoiceData,
+} from "../../app/Slices/invoiceSlice";
+import BillComponent from "./BillComponent";
+import { useReactToPrint } from "react-to-print";
+import TimeConversion from "../../utils/timeConversion";
 
 export default function Inquiry() {
   const branchId = sessionStorage.getItem("BranchId");
@@ -77,70 +107,62 @@ export default function Inquiry() {
   const billComponentRef = useRef();
   const [step, setStep] = useState(1);
   const [selectedCourses, setSelectedCourses] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [hasReference, setHasReference] = useState(false);
-  const [referName, setReferName] = useState('');
-  const [referPhone, setReferPhone] = useState('');
+  const [referName, setReferName] = useState("");
+  const [referPhone, setReferPhone] = useState("");
   const [sliderValue, setSliderValue] = useState(0);
   const [userDiscountIncluded, setUserDiscountIncluded] = useState(false);
   const [userDiscountValue, setUserDiscountValue] = useState(0);
   const [selectedModules, setSelectedModules] = useState([]);
-  const [address, setAddress] = useState('');
+  const [address, setAddress] = useState("");
   const [formData, setFormData] = useState({
-    studentName: '',
-    email: '',
+    studentName: "",
+    email: "",
     password: passwordGenerator.password(),
-    phoneNumber: '',
-    referCode: '',
-    parentCode: '',
-    role: '',
-    walletAmount: '0',
-    profilePhoto: '',
-    branchFeeStructureId: '',
-    currentCourseId: '',
-    handledBy: '',
-    deviceId: '',
-    lastActiveAt: '',
-    interestIn: '',
-    reason: '',
+    phoneNumber: "",
+    referCode: "",
+    parentCode: "",
+    role: "",
+    walletAmount: "0",
+    profilePhoto: "",
+    branchFeeStructureId: "",
+    currentCourseId: "",
+    handledBy: "",
+    deviceId: "",
+    lastActiveAt: "",
+    interestIn: "",
+    reason: "",
     createdOn: Date.now(),
     updatedOn: Date.now(),
     branchId: branchId,
-    primaryAddress: '',
-    state: '',
-    status: 'pending',
-    city: '',
-    courses: '',
-    referredBy: '',
+    primaryAddress: "",
+    state: "",
+    status: "pending",
+    city: "",
+    courses: "",
+    referredBy: "",
     module: [],
     qualifications: [
       {
-        qualification: '',
-        highestQualification: '',
-        collegeName: '',
-        boardUniversityName: '',
+        qualification: "",
+        highestQualification: "",
+        collegeName: "",
+        boardUniversityName: "",
         hasCertificate: false,
-        startDate: '',
-        endDate: '',
-        gradeMarks: '',
-        certificateNo: '',
-        issuedBy: '',
-        issueDate: '',
-      }
+        startDate: "",
+        endDate: "",
+        gradeMarks: "",
+        certificateNo: "",
+        issuedBy: "",
+        issueDate: "",
+      },
     ],
-    paymentMethods: {
-      creditCard: false,
-      debitCard: false,
-      emi: false,
-      netBanking: false,
-      upi: false,
-      cash: false,
-    },
+    paymentMethods: [],
   });
 
   const [kitFeeIncluded, setKitFeeIncluded] = useState(true);
   const [admissionFeeIncluded, setadmissionFeeIncluded] = useState(true);
-
 
   useEffect(() => {
     dispatch(fetchleadData());
@@ -151,13 +173,14 @@ export default function Inquiry() {
     dispatch(fetchmoduleData());
   }, [dispatch]);
 
+  const CourseData = courseData.filter(branch => branch.status == 'Active');
+  const ModuleData = moduleData.filter(branch => branch.status == 'Active');
+
   const handlePrintInvoice = useReactToPrint({
     content: () => billComponentRef.current,
   });
 
-
-
-  const planner = plannerData.find(plan => plan.branchId == branchId);
+  const planner = plannerData.find((plan) => plan.branchId == branchId);
 
   if (!planner) {
     return (
@@ -173,52 +196,47 @@ export default function Inquiry() {
   const admissionDiscount = planner.admissionDiscount;
   const paymentMode = JSON.parse(planner.paymentMode);
 
-
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
-
-    if (type === 'checkbox') {
+    if (type === "checkbox") {
       setFormData({ ...formData, [name]: checked });
     } else {
       setFormData({ ...formData, [name]: value });
     }
 
-    if (name === 'referName') {
+    if (name === "referName") {
       setReferName(value);
-    } else if (name === 'referPhone') {
+    } else if (name === "referPhone") {
       setReferPhone(value);
 
       const reference = referenceData.find((ref) => ref.referPhone == value);
 
       if (reference) {
-        setReferName(reference.referName)
-        setAddress(reference.address)
+        setReferName(reference.referName);
+        setAddress(reference.address);
 
-        setFormData(prevData => ({
+        setFormData((prevData) => ({
           ...prevData,
-          referredBy: reference.referenceId || '',
+          referredBy: reference.referenceId || "",
         }));
       } else {
-
-        setFormData(prevData => ({
+        setFormData((prevData) => ({
           ...prevData,
-          referredBy: '',
+          referredBy: "",
         }));
       }
-    } else if (name === 'address') {
+    } else if (name === "address") {
       setAddress(value);
     } else {
       setFormData({ ...formData, [name]: value });
     }
   };
 
-
-
   const handleQualificationChange = (index, e) => {
     const { name, value, type, checked } = e.target;
     const updatedQualifications = [...formData.qualifications];
-    updatedQualifications[index][name] = type === 'checkbox' ? checked : value;
+    updatedQualifications[index][name] = type === "checkbox" ? checked : value;
     setFormData({ ...formData, qualifications: updatedQualifications });
   };
 
@@ -229,17 +247,17 @@ export default function Inquiry() {
         qualifications: [
           ...formData.qualifications,
           {
-            qualification: '',
-            highestQualification: '',
-            collegeName: '',
-            boardUniversityName: '',
-            startDate: '',
-            endDate: '',
-            gradeMarks: '',
+            qualification: "",
+            highestQualification: "",
+            collegeName: "",
+            boardUniversityName: "",
+            startDate: "",
+            endDate: "",
+            gradeMarks: "",
             hasCertificate: false,
-            certificateNo: '',
-            issuedBy: '',
-            issueDate: '',
+            certificateNo: "",
+            issuedBy: "",
+            issueDate: "",
           },
         ],
       });
@@ -247,16 +265,20 @@ export default function Inquiry() {
   };
 
   const removeQualification = (index) => {
-    const updatedQualifications = formData.qualifications.filter((_, i) => i !== index);
+    const updatedQualifications = formData.qualifications.filter(
+      (_, i) => i !== index
+    );
     setFormData({ ...formData, qualifications: updatedQualifications });
   };
 
   const handleCourseSelection = (courseId) => {
-    if (!courseData) {
+    if (!CourseData) {
       return;
     }
 
-    const selectedCourse = courseData.find(course => course.courseId == courseId);
+    const selectedCourse = CourseData.find(
+      (course) => course.courseId == courseId
+    );
 
     if (!selectedCourse) {
       return (
@@ -266,8 +288,10 @@ export default function Inquiry() {
       );
     }
 
-    setSelectedCourses(prevSelectedCourses => {
-      const courseIndex = prevSelectedCourses.findIndex(course => course.courseId == courseId);
+    setSelectedCourses((prevSelectedCourses) => {
+      const courseIndex = prevSelectedCourses.findIndex(
+        (course) => course.courseId == courseId
+      );
 
       if (courseIndex !== -1) {
         const updatedSelectedCourses = [...prevSelectedCourses];
@@ -280,14 +304,12 @@ export default function Inquiry() {
     });
   };
 
-  const handlePaymentMethodChange = (e) => {
-    const { name, checked } = e.target;
-
+  const handlePaymentMethodChange = (mode, checked) => {
     setFormData((prevState) => ({
       ...prevState,
       paymentMethods: {
         ...prevState.paymentMethods,
-        [name]: checked,
+        [mode]: checked,
       },
     }));
   };
@@ -302,18 +324,20 @@ export default function Inquiry() {
     setStep((prevStep) => prevStep - 1);
   };
 
-
   const handleCheckboxChange = () => {
     setHasReference((prev) => !prev);
   };
 
-  const filteredModules = moduleData.filter((module) =>
+  const filteredModules = ModuleData.filter((module) =>
     module.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleModuleChange = (module, isChecked) => {
     if (isChecked) {
-      setSelectedModules((prevSelectedModules) => [...prevSelectedModules, module]);
+      setSelectedModules((prevSelectedModules) => [
+        ...prevSelectedModules,
+        module,
+      ]);
     } else {
       setSelectedModules((prevSelectedModules) =>
         prevSelectedModules.filter((m) => m.moduleId !== module.moduleId)
@@ -321,27 +345,24 @@ export default function Inquiry() {
     }
   };
 
-
-
   const createReference = async () => {
     try {
-
-      const existingReference = referenceData.find(ref => ref.referPhone == referPhone);
+      const existingReference = referenceData.find(
+        (ref) => ref.referPhone == referPhone
+      );
 
       if (existingReference) {
         return existingReference.referenceId;
       }
 
       if (hasReference && referPhone.length >= 8) {
-
         const newReferenceData = {
           referName: referName,
           referPhone: referPhone,
           address: address,
           createdOn: Date.now(),
-          status: 'active',
+          status: "active",
         };
-
 
         const response = await dispatch(AddreferenceData(newReferenceData));
 
@@ -349,26 +370,25 @@ export default function Inquiry() {
           const { referenceId } = response.data;
           return referenceId;
         } else {
-          throw new Error('Failed to retrieve referenceId from response');
+          throw new Error("Failed to retrieve referenceId from response");
         }
       } else {
         return null;
       }
     } catch (error) {
-      console.error('Error creating reference:', error);
+      console.error("Error creating reference:", error);
 
       Toast({
-        title: 'Error creating reference',
-        status: 'error',
+        title: "Error creating reference",
+        status: "error",
         duration: 3000,
         isClosable: true,
-        position: 'top-right',
+        position: "top-right",
       });
 
       throw error;
     }
   };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -389,12 +409,14 @@ export default function Inquiry() {
     try {
       const referenceId = await createReference();
 
-      const selectedPaymentMethods = Object.keys(formData.paymentMethods)
-        .filter(method => formData.paymentMethods[method]);
+      const selectedPaymentMethods = Object.keys(
+        formData.paymentMethods
+      ).filter((method) => formData.paymentMethods[method]);
 
       const formDataToSend = {
         ...formData,
-        currentCourseId: selectedCourses.length > 0 ? selectedCourses[0].courseId : '',
+        currentCourseId:
+          selectedCourses.length > 0 ? selectedCourses[0].courseId : "",
         qualifications: JSON.stringify(formData.qualifications),
         courses: JSON.stringify(selectedCourses),
         paymentMethods: JSON.stringify(selectedPaymentMethods),
@@ -408,7 +430,9 @@ export default function Inquiry() {
 
       let response;
       if (formData.lead_id) {
-        response = await dispatch(updateleadData(formData.lead_id, formDataToSend));
+        response = await dispatch(
+          updateleadData(formData.lead_id, formDataToSend)
+        );
         validateStep();
         nextStep();
       } else {
@@ -417,7 +441,7 @@ export default function Inquiry() {
 
         const { lead_id, student_id } = response.data;
 
-        setFormData(prevState => ({
+        setFormData((prevState) => ({
           ...prevState,
           lead_id: lead_id,
           student_id: student_id,
@@ -431,23 +455,23 @@ export default function Inquiry() {
           courses: JSON.stringify(selectedCourses),
           paymentMethod: JSON.stringify(selectedPaymentMethods),
           createdOn: Date.now(),
-          kitFee: kitFeeIncluded ? kitFee : '',
+          kitFee: kitFeeIncluded ? kitFee : "",
           totalAmount: totalAmount,
           totalDiscount: userDiscountValue,
           userDiscount: sliderValue,
           branchDiscount: sliderValue,
           branchId: branchId,
-          admissionFee: admissionFeeIncluded ? admissionFee : '',
+          admissionFee: admissionFeeIncluded ? admissionFee : "",
           lead_id: lead_id,
           module: JSON.stringify(selectedModules),
         };
 
-        const invoiceResponse = await dispatch(AddinvoiceData(invoiceDataToSend));
-
-
+        const invoiceResponse = await dispatch(
+          AddinvoiceData(invoiceDataToSend)
+        );
       }
     } catch (error) {
-      console.error('Error handling form submission:', error);
+      console.error("Error handling form submission:", error);
 
       Toast({
         title: "Error handling form submission",
@@ -460,52 +484,66 @@ export default function Inquiry() {
     }
   };
 
-
   const validateStep = () => {
-    let errorMessage = '';
+    let errorMessage = "";
 
     switch (step) {
       case 1:
-        if (formData.studentName === '') errorMessage = 'Student name is required';
-        else if (formData.email === '') errorMessage = 'Email is required';
-        else if (formData.phoneNumber === '') errorMessage = 'Phone number is required';
-        else if (formData.state === '') errorMessage = 'State is required';
-        else if (formData.city === '') errorMessage = 'City is required';
-        else if (formData.primaryAddress === '') errorMessage = 'Primary address is required';
+        if (formData.studentName === "")
+          errorMessage = "Student name is required";
+        else if (formData.email === "") errorMessage = "Email is required";
+        else if (formData.phoneNumber === "")
+          errorMessage = "Phone number is required";
+        else if (formData.state === "") errorMessage = "State is required";
+        else if (formData.city === "") errorMessage = "City is required";
+        else if (formData.primaryAddress === "")
+          errorMessage = "Primary address is required";
         else if (hasReference) {
-          if (referName === '') errorMessage = 'Reference name is required';
-          else if (referPhone === '') errorMessage = 'Reference phone number is required';
-          else if (address === '') errorMessage = 'Reference address is required';
+          if (referName === "") errorMessage = "Reference name is required";
+          else if (referPhone === "")
+            errorMessage = "Reference phone number is required";
+          else if (address === "")
+            errorMessage = "Reference address is required";
         }
         break;
       case 2:
-        if (formData.qualifications.length === 0 || formData.qualifications[0].qualification === '') errorMessage = 'Qualification is required';
-        else if (formData.qualifications[0].qualification === 'Other' && formData.qualifications[0].highestQualification === '') errorMessage = 'Highest qualification is required';
-        else if (formData.qualifications[0].collegeName === '') errorMessage = 'College name is required';
-        else if (formData.qualifications[0].boardUniversityName === '') errorMessage = 'Board/University name is required';
-        else if (formData.qualifications[0].startDate === '') errorMessage = 'Start date is required';
-        else if (formData.qualifications[0].endDate === '') errorMessage = 'End date is required';
-        else if (formData.qualifications[0].gradeMarks === '') errorMessage = 'Grade/Marks are required';
+        if (
+          formData.qualifications.length === 0 ||
+          formData.qualifications[0].qualification === ""
+        )
+          errorMessage = "Qualification is required";
+        else if (
+          formData.qualifications[0].qualification === "Other" &&
+          formData.qualifications[0].highestQualification === ""
+        )
+          errorMessage = "Highest qualification is required";
+        else if (formData.qualifications[0].collegeName === "")
+          errorMessage = "College name is required";
+        else if (formData.qualifications[0].boardUniversityName === "")
+          errorMessage = "Board/University name is required";
+        else if (formData.qualifications[0].startDate === "")
+          errorMessage = "Start date is required";
+        else if (formData.qualifications[0].endDate === "")
+          errorMessage = "End date is required";
+        else if (formData.qualifications[0].gradeMarks === "")
+          errorMessage = "Grade/Marks are required";
         break;
       case 3:
       case 4:
         // Validate selected courses
-        if (selectedCourses.length === 0) errorMessage = 'At least one course must be selected';
+        if (selectedCourses.length === 0)
+          errorMessage = "At least one course must be selected";
         break;
       case 5:
         break;
       case 6:
-        // Validate payment methods
-        if (!Object.values(formData.paymentMethods).some((method) => method)) errorMessage = 'At least one payment method must be selected';
         break;
       default:
         break;
     }
 
-    return { isValid: errorMessage === '', errorMessage };
+    return { isValid: errorMessage === "", errorMessage };
   };
-
-
 
   const calculateTotalAmount = () => {
     let totalAmount = 0;
@@ -513,8 +551,10 @@ export default function Inquiry() {
     const selectedModuleDetails = [];
 
     // Calculate total amount for selected courses
-    selectedCourses.forEach(selected => {
-      const course = courseData.find(course => course.courseId === selected.courseId);
+    selectedCourses.forEach((selected) => {
+      const course = CourseData.find(
+        (course) => course.courseId === selected.courseId
+      );
 
       if (course) {
         totalAmount += parseFloat(course.price) || 0;
@@ -527,14 +567,16 @@ export default function Inquiry() {
 
     // Calculate total amount for selected modules
 
-
     // Calculate discounted amount
-    let totalDiscountPercentage = (sliderValue / 100) + (userDiscountIncluded ? (userDiscountValue / 100) : 0);
+    let totalDiscountPercentage =
+      sliderValue / 100 + (userDiscountIncluded ? userDiscountValue / 100 : 0);
     totalDiscountPercentage = Math.min(totalDiscountPercentage, 1);
-    let discountedAmount = totalAmount - (totalDiscountPercentage * totalAmount);
+    let discountedAmount = totalAmount - totalDiscountPercentage * totalAmount;
 
-    selectedModules.forEach(selected => {
-      const module = moduleData.find(module => module.moduleId === selected.moduleId);
+    selectedModules.forEach((selected) => {
+      const module = ModuleData.find(
+        (module) => module.moduleId === selected.moduleId
+      );
 
       if (module) {
         discountedAmount += parseFloat(module.price) || 0;
@@ -552,10 +594,12 @@ export default function Inquiry() {
     if (admissionFeeIncluded) {
       discountedAmount += parseFloat(admissionFee);
     }
-    return { totalAmount: discountedAmount.toFixed(2), selectedCourseDetails, selectedModuleDetails };
+    return {
+      totalAmount: discountedAmount.toFixed(2),
+      selectedCourseDetails,
+      selectedModuleDetails,
+    };
   };
-
-
 
   const handleUpdate = async () => {
     const { isValid, errorMessage } = validateStep();
@@ -574,12 +618,14 @@ export default function Inquiry() {
     try {
       const referenceId = await createReference();
 
-      const selectedPaymentMethods = Object.keys(formData.paymentMethods)
-        .filter(method => formData.paymentMethods[method]);
+      const selectedPaymentMethods = Object.keys(
+        formData.paymentMethods
+      ).filter((method) => formData.paymentMethods[method]);
 
       const formDataToSend = {
         ...formData,
-        currentCourseId: selectedCourses.length > 0 ? selectedCourses[0].courseId : '',
+        currentCourseId:
+          selectedCourses.length > 0 ? selectedCourses[0].courseId : "",
         qualifications: JSON.stringify(formData.qualifications),
         courses: JSON.stringify(selectedCourses),
         paymentMethods: JSON.stringify(selectedPaymentMethods),
@@ -603,26 +649,29 @@ export default function Inquiry() {
           courses: JSON.stringify(selectedCourses),
           paymentMethod: JSON.stringify(selectedPaymentMethods),
           createdOn: Date.now(),
-          kitFee: kitFeeIncluded ? kitFee : '',
+          kitFee: kitFeeIncluded ? kitFee : "",
           totalAmount: totalAmount,
-          totalDiscount: parseFloat(userDiscountValue) + parseFloat(sliderValue),
+          totalDiscount:
+            parseFloat(userDiscountValue) + parseFloat(sliderValue),
           userDiscount: userDiscountValue,
           branchDiscount: sliderValue,
           branchId: branchId,
-          admissionFee: admissionFeeIncluded ? admissionFee : '',
+          admissionFee: admissionFeeIncluded ? admissionFee : "",
           lead_id: formData.lead_id,
           module: JSON.stringify(selectedModules),
         };
 
         if (formData.lead_id) {
-          await dispatch(updateinvoiceData(formData.lead_id, invoiceDataToSend));
+          await dispatch(
+            updateinvoiceData(formData.lead_id, invoiceDataToSend)
+          );
         } else {
-          console.error('Lead ID is not available for update.');
+          console.error("Lead ID is not available for update.");
         }
         nextStep();
       }
     } catch (error) {
-      console.error('Error updating lead:', error);
+      console.error("Error updating lead:", error);
 
       Toast({
         title: "Error updating lead",
@@ -641,11 +690,15 @@ export default function Inquiry() {
         navigate("/leads");
       }, 500);
     }
-  }
+  };
 
-
-
-  if (isLoading || courseLoading || plannerLoading || referenceLoading || moduleLoading) {
+  if (
+    isLoading ||
+    courseLoading ||
+    plannerLoading ||
+    referenceLoading ||
+    moduleLoading
+  ) {
     return (
       <Flex justify="center" align="center" h="100vh">
         <Spinner size="xl" />
@@ -657,10 +710,9 @@ export default function Inquiry() {
     return <NetworkError />;
   }
 
-  const filteredCourses = courseData.filter(course =>
+  const filteredCourses = CourseData.filter((course) =>
     course.courseName.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
 
   return (
     <Box bg="gray.100" minHeight="100vh" p="4">
@@ -671,7 +723,10 @@ export default function Inquiry() {
               {step > 1 ? (
                 <CheckCircleIcon color="green.500" boxSize="2em" />
               ) : (
-                <EditIcon color={step === 1 ? 'blue.500' : 'gray.500'} boxSize="2em" />
+                <EditIcon
+                  color={step === 1 ? "blue.500" : "gray.500"}
+                  boxSize="2em"
+                />
               )}
               <Box mt={2}>Basic Details</Box>
             </Flex>
@@ -679,7 +734,10 @@ export default function Inquiry() {
               {step > 2 ? (
                 <CheckCircleIcon color="green.500" boxSize="2em" />
               ) : (
-                <EditIcon color={step === 2 ? 'blue.500' : 'gray.500'} boxSize="2em" />
+                <EditIcon
+                  color={step === 2 ? "blue.500" : "gray.500"}
+                  boxSize="2em"
+                />
               )}
               <Box mt={2}>Educational Details</Box>
             </Flex>
@@ -687,7 +745,10 @@ export default function Inquiry() {
               {step > 3 ? (
                 <CheckCircleIcon color="green.500" boxSize="2em" />
               ) : (
-                <EditIcon color={step === 3 ? 'blue.500' : 'gray.500'} boxSize="2em" />
+                <EditIcon
+                  color={step === 3 ? "blue.500" : "gray.500"}
+                  boxSize="2em"
+                />
               )}
               <Box mt={2}>Course Selection</Box>
             </Flex>
@@ -695,7 +756,10 @@ export default function Inquiry() {
               {step > 4 ? (
                 <CheckCircleIcon color="green.500" boxSize="2em" />
               ) : (
-                <EditIcon color={step === 4 ? 'blue.500' : 'gray.500'} boxSize="2em" />
+                <EditIcon
+                  color={step === 4 ? "blue.500" : "gray.500"}
+                  boxSize="2em"
+                />
               )}
               <Box mt={2}>Modules</Box>
             </Flex>
@@ -703,7 +767,10 @@ export default function Inquiry() {
               {step > 5 ? (
                 <CheckCircleIcon color="green.500" boxSize="2em" />
               ) : (
-                <EditIcon color={step === 5 ? 'blue.500' : 'gray.500'} boxSize="2em" />
+                <EditIcon
+                  color={step === 5 ? "blue.500" : "gray.500"}
+                  boxSize="2em"
+                />
               )}
               <Box mt={2}>Review</Box>
             </Flex>
@@ -711,7 +778,10 @@ export default function Inquiry() {
               {step > 6 ? (
                 <CheckCircleIcon color="green.500" boxSize="2em" />
               ) : (
-                <EditIcon color={step === 6 ? 'blue.500' : 'gray.500'} boxSize="2em" />
+                <EditIcon
+                  color={step === 6 ? "blue.500" : "gray.500"}
+                  boxSize="2em"
+                />
               )}
               <Box mt={2}>Payment Mode</Box>
             </Flex>
@@ -719,12 +789,12 @@ export default function Inquiry() {
           <Card>
             <CardHeader>
               <Heading size="md" textAlign="center">
-                {step === 1 ? 'Basic Details' : ''}
-                {step === 2 ? 'Educational Details' : ''}
-                {step === 3 ? 'Course Selection' : ''}
-                {step === 4 ? 'Modules' : ''}
-                {step === 5 ? 'Review' : ''}
-                {step === 6 ? 'Payment Mode' : ''}
+                {step === 1 ? "Basic Details" : ""}
+                {step === 2 ? "Educational Details" : ""}
+                {step === 3 ? "Course Selection" : ""}
+                {step === 4 ? "Modules" : ""}
+                {step === 5 ? "Review" : ""}
+                {step === 6 ? "Payment Mode" : ""}
               </Heading>
             </CardHeader>
             <CardBody>
@@ -732,7 +802,11 @@ export default function Inquiry() {
                 <form onSubmit={handleSubmit}>
                   <VStack spacing={4} align="stretch">
                     <Grid
-                      templateColumns={{ base: 'repeat(1, 1fr)', sm: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' }}
+                      templateColumns={{
+                        base: "repeat(1, 1fr)",
+                        sm: "repeat(1, 1fr)",
+                        md: "repeat(2, 1fr)",
+                      }}
                       gap={4}
                     >
                       <GridItem>
@@ -793,7 +867,11 @@ export default function Inquiry() {
                             onChange={handleChange}
                             required
                           />
-                          <Checkbox mt={2} isChecked={hasReference} onChange={handleCheckboxChange}>
+                          <Checkbox
+                            mt={2}
+                            isChecked={hasReference}
+                            onChange={handleCheckboxChange}
+                          >
                             Have Reference
                           </Checkbox>
                         </FormControl>
@@ -878,7 +956,13 @@ export default function Inquiry() {
                           Previous
                         </Button>
                       )}
-                      <Button colorScheme="blue" onClick={(e) => { handleSubmit(e); }} type="submit">
+                      <Button
+                        colorScheme="blue"
+                        onClick={(e) => {
+                          handleSubmit(e);
+                        }}
+                        type="submit"
+                      >
                         Next
                       </Button>
                     </HStack>
@@ -890,13 +974,22 @@ export default function Inquiry() {
                 <form>
                   {formData.qualifications.map((qualification, index) => (
                     <VStack key={index} spacing={4} align="stretch">
-                      <Grid templateColumns={{ base: 'repeat(1, 1fr)', sm: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' }} gap={4}>
+                      <Grid
+                        templateColumns={{
+                          base: "repeat(1, 1fr)",
+                          sm: "repeat(1, 1fr)",
+                          md: "repeat(2, 1fr)",
+                        }}
+                        gap={4}
+                      >
                         <FormControl>
                           <FormLabel>Qualification</FormLabel>
                           <Select
                             name="qualification"
                             value={qualification.qualification}
-                            onChange={(e) => handleQualificationChange(index, e)}
+                            onChange={(e) =>
+                              handleQualificationChange(index, e)
+                            }
                             required
                           >
                             <option value="">Select</option>
@@ -906,14 +999,16 @@ export default function Inquiry() {
                             <option value="Other">Other</option>
                           </Select>
                         </FormControl>
-                        {qualification.qualification === 'Other' && (
+                        {qualification.qualification === "Other" && (
                           <FormControl>
                             <FormLabel>Highest Qualification</FormLabel>
                             <Input
                               type="text"
                               name="highestQualification"
                               value={qualification.highestQualification}
-                              onChange={(e) => handleQualificationChange(index, e)}
+                              onChange={(e) =>
+                                handleQualificationChange(index, e)
+                              }
                               required
                             />
                           </FormControl>
@@ -924,7 +1019,9 @@ export default function Inquiry() {
                             type="text"
                             name="collegeName"
                             value={qualification.collegeName}
-                            onChange={(e) => handleQualificationChange(index, e)}
+                            onChange={(e) =>
+                              handleQualificationChange(index, e)
+                            }
                             required
                           />
                         </FormControl>
@@ -934,7 +1031,9 @@ export default function Inquiry() {
                             type="text"
                             name="boardUniversityName"
                             value={qualification.boardUniversityName}
-                            onChange={(e) => handleQualificationChange(index, e)}
+                            onChange={(e) =>
+                              handleQualificationChange(index, e)
+                            }
                             required
                           />
                         </FormControl>
@@ -944,7 +1043,9 @@ export default function Inquiry() {
                             type="date"
                             name="startDate"
                             value={qualification.startDate}
-                            onChange={(e) => handleQualificationChange(index, e)}
+                            onChange={(e) =>
+                              handleQualificationChange(index, e)
+                            }
                             required
                           />
                         </FormControl>
@@ -954,7 +1055,9 @@ export default function Inquiry() {
                             type="date"
                             name="endDate"
                             value={qualification.endDate}
-                            onChange={(e) => handleQualificationChange(index, e)}
+                            onChange={(e) =>
+                              handleQualificationChange(index, e)
+                            }
                             required
                           />
                         </FormControl>
@@ -964,7 +1067,9 @@ export default function Inquiry() {
                             type="text"
                             name="gradeMarks"
                             value={qualification.gradeMarks}
-                            onChange={(e) => handleQualificationChange(index, e)}
+                            onChange={(e) =>
+                              handleQualificationChange(index, e)
+                            }
                             required
                           />
                         </FormControl>
@@ -973,7 +1078,9 @@ export default function Inquiry() {
                           <Checkbox
                             name="hasCertificate"
                             isChecked={qualification.hasCertificate}
-                            onChange={(e) => handleQualificationChange(index, e)}
+                            onChange={(e) =>
+                              handleQualificationChange(index, e)
+                            }
                           />
                         </FormControl>
                         {qualification.hasCertificate && (
@@ -984,7 +1091,9 @@ export default function Inquiry() {
                                 type="text"
                                 name="certificateNo"
                                 value={qualification.certificateNo}
-                                onChange={(e) => handleQualificationChange(index, e)}
+                                onChange={(e) =>
+                                  handleQualificationChange(index, e)
+                                }
                                 required
                               />
                             </FormControl>
@@ -994,7 +1103,9 @@ export default function Inquiry() {
                                 type="text"
                                 name="issuedBy"
                                 value={qualification.issuedBy}
-                                onChange={(e) => handleQualificationChange(index, e)}
+                                onChange={(e) =>
+                                  handleQualificationChange(index, e)
+                                }
                                 required
                               />
                             </FormControl>
@@ -1004,7 +1115,9 @@ export default function Inquiry() {
                                 type="date"
                                 name="issueDate"
                                 value={qualification.issueDate}
-                                onChange={(e) => handleQualificationChange(index, e)}
+                                onChange={(e) =>
+                                  handleQualificationChange(index, e)
+                                }
                                 required
                               />
                             </FormControl>
@@ -1013,7 +1126,10 @@ export default function Inquiry() {
                       </Grid>
                       {formData.qualifications.length > 1 && (
                         <HStack>
-                          <Button colorScheme="red" onClick={() => removeQualification(index)}>
+                          <Button
+                            colorScheme="red"
+                            onClick={() => removeQualification(index)}
+                          >
                             Remove
                           </Button>
                         </HStack>
@@ -1021,7 +1137,11 @@ export default function Inquiry() {
                     </VStack>
                   ))}
                   {formData.qualifications.length < 5 && (
-                    <Button mt={4} colorScheme="green" onClick={addQualification}>
+                    <Button
+                      mt={4}
+                      colorScheme="green"
+                      onClick={addQualification}
+                    >
                       Add Qualification
                     </Button>
                   )}
@@ -1031,7 +1151,12 @@ export default function Inquiry() {
                         Previous
                       </Button>
                     )}
-                    <Button colorScheme="blue" onClick={(e) => { handleUpdate(e); }}>
+                    <Button
+                      colorScheme="blue"
+                      onClick={(e) => {
+                        handleUpdate(e);
+                      }}
+                    >
                       Next
                     </Button>
                   </HStack>
@@ -1039,8 +1164,8 @@ export default function Inquiry() {
               )}
 
               {step === 3 && (
-                <VStack spacing={4} align="stretch" >
-                  <Box position='relative'>
+                <VStack spacing={4} align="stretch">
+                  <Box position="relative">
                     <Input
                       type="text"
                       placeholder="Search by course name"
@@ -1060,7 +1185,7 @@ export default function Inquiry() {
                       base: "repeat(1, 1fr)",
                       sm: "repeat(2, 1fr)",
                       md: "repeat(2, 1fr)",
-                      lg: "repeat(3, 1fr)"
+                      lg: "repeat(3, 1fr)",
                     }}
                     gap={6}
                     mb={4}
@@ -1068,7 +1193,9 @@ export default function Inquiry() {
                     {filteredCourses.length === 0 ? (
                       <Flex justify="center" align="center" height="100%">
                         <Box textAlign="center">
-                          <Text fontSize="xl" fontWeight="bold">No course available</Text>
+                          <Text fontSize="xl" fontWeight="bold">
+                            No course available
+                          </Text>
                         </Box>
                       </Flex>
                     ) : (
@@ -1115,13 +1242,18 @@ export default function Inquiry() {
                             </Text>
                             <Checkbox
                               key={course.courseId}
-                              isChecked={selectedCourses.some(selected => selected.courseId === course.courseId)}
+                              isChecked={selectedCourses.some(
+                                (selected) =>
+                                  selected.courseId === course.courseId
+                              )}
                               onChange={() => {
-                                handleCourseSelection(course.courseId.toString());
-                              }} />
+                                handleCourseSelection(
+                                  course.courseId.toString()
+                                );
+                              }}
+                            />
                           </Box>
-                          <Flex alignItems="center" mt="auto">
-                          </Flex>
+                          <Flex alignItems="center" mt="auto"></Flex>
                         </Box>
                       ))
                     )}
@@ -1132,7 +1264,12 @@ export default function Inquiry() {
                         Previous
                       </Button>
                     )}
-                    <Button colorScheme="blue" onClick={(e) => { handleUpdate(e); }}>
+                    <Button
+                      colorScheme="blue"
+                      onClick={(e) => {
+                        handleUpdate(e);
+                      }}
+                    >
                       Next
                     </Button>
                   </HStack>
@@ -1163,7 +1300,7 @@ export default function Inquiry() {
                         <Th>
                           <Checkbox
                             isChecked={false} // Placeholder for the header checkbox state
-                            onChange={() => { }} // Placeholder for the header checkbox onChange handler
+                            onChange={() => {}} // Placeholder for the header checkbox onChange handler
                           />
                         </Th>
                         <Th>Title</Th>
@@ -1185,8 +1322,12 @@ export default function Inquiry() {
                           <Tr key={index}>
                             <Td>
                               <Checkbox
-                                isChecked={selectedModules.some((m) => m.moduleId === module.moduleId)}
-                                onChange={(e) => handleModuleChange(module, e.target.checked)}
+                                isChecked={selectedModules.some(
+                                  (m) => m.moduleId === module.moduleId
+                                )}
+                                onChange={(e) =>
+                                  handleModuleChange(module, e.target.checked)
+                                }
                               />
                             </Td>
                             <Td>{module.title}</Td>
@@ -1206,7 +1347,13 @@ export default function Inquiry() {
                           Previous
                         </Button>
                       )}
-                      <Button colorScheme="blue" size="lg" onClick={(e) => { handleUpdate(e); }}>
+                      <Button
+                        colorScheme="blue"
+                        size="lg"
+                        onClick={(e) => {
+                          handleUpdate(e);
+                        }}
+                      >
                         Next
                       </Button>
                     </HStack>
@@ -1214,11 +1361,12 @@ export default function Inquiry() {
                 </VStack>
               )}
 
-
               {step === 5 && (
                 <Grid gap={4} templateColumns="repeat(2, 1fr)" overflow="auto">
                   <Box gridColumn="span 2">
-                    <Heading size="lg" mb={4}>Review Details</Heading>
+                    <Heading size="lg" mb={4}>
+                      Review Details
+                    </Heading>
                   </Box>
                   <Box>
                     <Text fontSize="lg">
@@ -1234,31 +1382,40 @@ export default function Inquiry() {
                       <strong>Refer Code:</strong> {formData.referCode}
                     </Text>
                     <Text fontSize="lg">
-                      <strong>Address:</strong> {formData.primaryAddress}, {formData.city}, {formData.state}
+                      <strong>Address:</strong> {formData.primaryAddress},{" "}
+                      {formData.city}, {formData.state}
                     </Text>
                   </Box>
                   <Box>
                     {formData.qualifications.map((qualification, index) => (
                       <div key={index}>
                         <Text fontSize="lg">
-                          <strong>Qualification {index + 1}:</strong> {qualification.qualification === 'Other' ? qualification.highestQualification : qualification.qualification}
+                          <strong>Qualification {index + 1}:</strong>{" "}
+                          {qualification.qualification === "Other"
+                            ? qualification.highestQualification
+                            : qualification.qualification}
                         </Text>
                         <Text fontSize="lg">
-                          <strong>College/School Name:</strong> {qualification.collegeName}
+                          <strong>College/School Name:</strong>{" "}
+                          {qualification.collegeName}
                         </Text>
                         <Text fontSize="lg">
-                          <strong>Board/University Name:</strong> {qualification.boardUniversityName}
+                          <strong>Board/University Name:</strong>{" "}
+                          {qualification.boardUniversityName}
                         </Text>
                         {qualification.hasCertificate && (
                           <>
                             <Text fontSize="lg">
-                              <strong>Certificate No.:</strong> {qualification.certificateNo}
+                              <strong>Certificate No.:</strong>{" "}
+                              {qualification.certificateNo}
                             </Text>
                             <Text fontSize="lg">
-                              <strong>Issued By:</strong> {qualification.issuedBy}
+                              <strong>Issued By:</strong>{" "}
+                              {qualification.issuedBy}
                             </Text>
                             <Text fontSize="lg">
-                              <strong>Issue Date:</strong> {qualification.issueDate}
+                              <strong>Issue Date:</strong>{" "}
+                              {qualification.issueDate}
                             </Text>
                           </>
                         )}
@@ -1271,7 +1428,10 @@ export default function Inquiry() {
                     </Text>
                     <ul>
                       {selectedCourses.map((course) => (
-                        <li key={course.courseId} style={{ fontSize: '1.5rem' }}>
+                        <li
+                          key={course.courseId}
+                          style={{ fontSize: "1.5rem" }}
+                        >
                           <Heading size="md">{course.courseTitle}</Heading>
                           <Text>Rs. {course.price}</Text>
                         </li>
@@ -1285,7 +1445,13 @@ export default function Inquiry() {
                           Previous
                         </Button>
                       )}
-                      <Button colorScheme="blue" size="lg" onClick={(e) => { handleUpdate(e); }}>
+                      <Button
+                        colorScheme="blue"
+                        size="lg"
+                        onClick={(e) => {
+                          handleUpdate(e);
+                        }}
+                      >
                         Next
                       </Button>
                     </HStack>
@@ -1294,22 +1460,27 @@ export default function Inquiry() {
               )}
 
               {step === 6 && (
-                <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={8}>
+                <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={8}>
                   {/* Left Side: Payment Options */}
                   <Stack spacing={4} p={4} borderWidth="1px" borderRadius="md">
                     {paymentMode.map((mode) => (
-                      <Box key={mode} borderRadius="lg" bg="aliceblue" p={2}>
+                      <Box key={mode.id} borderRadius="lg" bg="aliceblue" p={2}>
                         <Checkbox
-                          name={mode}
-                          isChecked={formData.paymentMethods[mode]}
-                          onChange={handlePaymentMethodChange}
+                          name={mode.mode}
+                          isChecked={formData.paymentMethods[mode.mode]}
+                          onChange={(e) =>
+                            handlePaymentMethodChange(
+                              mode.mode,
+                              e.target.checked
+                            )
+                          }
                         >
-                          {mode.charAt(0).toUpperCase() + mode.slice(1).replace(/([A-Z])/g, ' $1')}
+                          {mode.mode.charAt(0).toUpperCase() +
+                            mode.mode.slice(1).replace(/([A-Z])/g, " $1")}
                         </Checkbox>
                       </Box>
                     ))}
                   </Stack>
-
 
                   {/* Right Side: Course Summary Card */}
                   <Card borderWidth="1px" borderRadius="lg" overflow="hidden">
@@ -1317,33 +1488,42 @@ export default function Inquiry() {
                       <Table variant="simple" size="md">
                         <Heading size="md">Course Details</Heading>
                         <Tbody>
-                          {calculateTotalAmount().selectedCourseDetails.map((course) => (
-                            <Tr key={course.courseTitle}>
-                              <Td fontSize="lg">{course.courseTitle}</Td>
-                              <Td textAlign="right" fontSize="lg">
-                                Rs. {course.price}
-                              </Td>
-                            </Tr>
-                          ))}
+                          {calculateTotalAmount().selectedCourseDetails.map(
+                            (course) => (
+                              <Tr key={course.courseTitle}>
+                                <Td fontSize="lg">{course.courseTitle}</Td>
+                                <Td textAlign="right" fontSize="lg">
+                                  Rs. {course.price}
+                                </Td>
+                              </Tr>
+                            )
+                          )}
                           {/* Render Modules heading and details only if there are selected modules */}
-                          {calculateTotalAmount().selectedModuleDetails.length > 0 && (
+                          {calculateTotalAmount().selectedModuleDetails.length >
+                            0 && (
                             <>
-                              <Heading mt={5} size="md">Modules</Heading>
-                              {calculateTotalAmount().selectedModuleDetails.map((module) => (
-                                <Tr key={module.title}>
-                                  <Td fontSize="lg">{module.title}</Td>
-                                  <Td textAlign="right" fontSize="lg">
-                                    Rs. {module.price}
-                                  </Td>
-                                </Tr>
-                              ))}
+                              <Heading mt={5} size="md">
+                                Modules
+                              </Heading>
+                              {calculateTotalAmount().selectedModuleDetails.map(
+                                (module) => (
+                                  <Tr key={module.title}>
+                                    <Td fontSize="lg">{module.title}</Td>
+                                    <Td textAlign="right" fontSize="lg">
+                                      Rs. {module.price}
+                                    </Td>
+                                  </Tr>
+                                )
+                              )}
                             </>
                           )}
                           <Tr>
                             <Td colSpan={2}>
                               <Checkbox
                                 isChecked={kitFeeIncluded}
-                                onChange={() => setKitFeeIncluded(!kitFeeIncluded)}
+                                onChange={() =>
+                                  setKitFeeIncluded(!kitFeeIncluded)
+                                }
                                 size="lg"
                               >
                                 Kit Fee (Rs. {kitFee})
@@ -1354,7 +1534,9 @@ export default function Inquiry() {
                             <Td colSpan={2}>
                               <Checkbox
                                 isChecked={admissionFeeIncluded}
-                                onChange={() => setadmissionFeeIncluded(!admissionFeeIncluded)}
+                                onChange={() =>
+                                  setadmissionFeeIncluded(!admissionFeeIncluded)
+                                }
                                 size="lg"
                               >
                                 Admission Fee (Rs. {admissionFee})
@@ -1383,14 +1565,18 @@ export default function Inquiry() {
                           </Tr>
                           <Tr>
                             <Td colSpan={2} textAlign="center">
-                              <Text fontSize="lg">Additional Discount: {sliderValue}%</Text>
+                              <Text fontSize="lg">
+                                Additional Discount: {sliderValue}%
+                              </Text>
                             </Td>
                           </Tr>
                           <Tr>
                             <Td colSpan={2}>
                               <Checkbox
                                 isChecked={userDiscountIncluded}
-                                onChange={() => setUserDiscountIncluded(!userDiscountIncluded)}
+                                onChange={() =>
+                                  setUserDiscountIncluded(!userDiscountIncluded)
+                                }
                                 size="lg"
                               >
                                 User Discount
@@ -1406,14 +1592,19 @@ export default function Inquiry() {
                                       <Slider
                                         aria-label="user-discount-slider"
                                         value={userDiscountValue}
-                                        onChange={(value) => setUserDiscountValue(value)}
+                                        onChange={(value) =>
+                                          setUserDiscountValue(value)
+                                        }
                                         min={0}
                                         max={discountLimit}
                                       >
                                         <SliderTrack>
                                           <SliderFilledTrack />
                                         </SliderTrack>
-                                        <SliderThumb fontSize="sm" boxSize="32px" />
+                                        <SliderThumb
+                                          fontSize="sm"
+                                          boxSize="32px"
+                                        />
                                       </Slider>
                                     </Box>
                                   </Flex>
@@ -1421,7 +1612,9 @@ export default function Inquiry() {
                               </Tr>
                               <Tr>
                                 <Td colSpan={2} textAlign="center">
-                                  <Text fontSize="lg">User Discount: {userDiscountValue}%</Text>
+                                  <Text fontSize="lg">
+                                    User Discount: {userDiscountValue}%
+                                  </Text>
                                 </Td>
                               </Tr>
                             </>
@@ -1438,7 +1631,6 @@ export default function Inquiry() {
                     </CardBody>
                   </Card>
 
-
                   {/* Buttons for Navigation */}
                   <VStack spacing={4} align="stretch">
                     <HStack mt={8} spacing={4} justify="center">
@@ -1447,14 +1639,18 @@ export default function Inquiry() {
                           Previous
                         </Button>
                       )}
-                      <Button colorScheme="blue" onClick={(e) => { handleUpdate(e); }}>
+                      <Button
+                        colorScheme="blue"
+                        onClick={(e) => {
+                          handleUpdate(e);
+                        }}
+                      >
                         Submit
                       </Button>
                     </HStack>
                   </VStack>
                 </Grid>
               )}
-
 
               {step === 7 && (
                 <VStack spacing={8} alignItems="center">
@@ -1470,7 +1666,7 @@ export default function Inquiry() {
                     </Button>
                   </Flex>
 
-                  <div style={{ display: 'none' }}>
+                  <div style={{ display: "none" }}>
                     <BillComponent
                       ref={billComponentRef}
                       lead_id={formData.lead_id}
@@ -1478,13 +1674,10 @@ export default function Inquiry() {
                   </div>
                 </VStack>
               )}
-
             </CardBody>
           </Card>
-
         </Box>
       </Flex>
     </Box>
   );
 }
-
