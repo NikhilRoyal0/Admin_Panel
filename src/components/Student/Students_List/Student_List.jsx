@@ -78,9 +78,9 @@ export default function Student_List() {
     interestIn: "",
     admissionNo: "",
     profilePhoto: "",
-    courses: "",
-    paymentMethods: "",
-    qualifications: "",
+    courses: "[]",
+    paymentMethods: "[]",
+    qualifications: "[]",
     referredBy: "",
   });
 

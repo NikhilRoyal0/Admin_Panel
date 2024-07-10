@@ -36,7 +36,6 @@ const PaymentPage = ({
   ];
 
   useEffect(() => {
-    console.log("selectedpaymentMode updated:", selectedpaymentMode);
     setNewbranchPlannerData((prevData) => ({
       ...prevData,
       paymentMode: selectedpaymentMode,
@@ -74,10 +73,6 @@ const PaymentPage = ({
     );
   };
 
-  console.log(
-    "Rendering PaymentPage with selectedpaymentMode:",
-    selectedpaymentMode
-  );
 
   return (
     <GridItem colSpan={2}>

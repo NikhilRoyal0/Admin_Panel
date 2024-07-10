@@ -143,7 +143,6 @@ export const checkStudentExistence = (student_id) => async () => {
       }
     );
 
-    console.log("data", response.data)
     return response.data.exists;
   } catch (error) {
     console.error("Error checking student existence:", error);

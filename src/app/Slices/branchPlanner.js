@@ -64,8 +64,6 @@ export const fetchbranchPlannerData = () => async (dispatch) => {
 export const AddbranchPlannerData = (formData) => async (dispatch) => {
   try {
     const apiToken = sessionStorage.getItem("api-token");
-    console.log("data",formData)
-
     const response = await axios.post(
       import.meta.env.VITE_BASE_URL + "branch/plan/add",
       formData,
@@ -77,6 +75,7 @@ export const AddbranchPlannerData = (formData) => async (dispatch) => {
       }
     );
     dispatch(fetchbranchPlannerData());
+    return response.data;
   } catch (error) {
     console.error("Error adding branch plan:", error);
   }

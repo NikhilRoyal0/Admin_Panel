@@ -60,8 +60,8 @@ export default function StudentDashboard() {
         admissionNo: "",
         profilePhoto: "",
         courses: "[]",
-        paymentMethods: "",
-        qualifications: "",
+        paymentMethods: "[]",
+        qualifications: "[]",
         referredBy: "",
     });
 
@@ -283,7 +283,6 @@ export default function StudentDashboard() {
                                             </Tr>
                                         </Thead>
                                         <Tbody>
-                                            {console.log("data", formData.courses)}
                                             {JSON.parse(formData.courses).map((course, index) => (
                                                 <Tr key={index}>
                                                     <Td>{course.courseName}</Td>
