@@ -198,33 +198,38 @@ export default function Inquiry() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
+  
     if (type === "checkbox") {
       setFormData({ ...formData, [name]: checked });
     } else {
       setFormData({ ...formData, [name]: value });
     }
-
+  
     if (name === "referName") {
       setReferName(value);
     } else if (name === "referPhone") {
-      setReferPhone(value);
-
-      const reference = referenceData.find((ref) => ref.referPhone == value);
-
-      if (reference) {
-        setReferName(reference.referName);
-        setAddress(reference.address);
-
-        setFormData((prevData) => ({
-          ...prevData,
-          referredBy: reference.referenceId || "",
-        }));
-      } else {
-        setFormData((prevData) => ({
-          ...prevData,
-          referredBy: "",
-        }));
+      // Check if the phone number has changed
+      if (formData.referPhone !== value) {
+        setReferPhone(value);
+  
+        const reference = referenceData.find((ref) => ref.referPhone == value);
+  
+        if (reference) {
+          setReferName(reference.referName);
+          setAddress(reference.address);
+  
+          setFormData((prevData) => ({
+            ...prevData,
+            referredBy: reference.referenceId || "",
+          }));
+        } else {
+          setReferName("");
+          setAddress("");
+          setFormData((prevData) => ({
+            ...prevData,
+            referredBy: "",
+          }));
+        }
       }
     } else if (name === "address") {
       setAddress(value);
@@ -232,6 +237,7 @@ export default function Inquiry() {
       setFormData({ ...formData, [name]: value });
     }
   };
+  
 
   const handleQualificationChange = (index, e) => {
     const { name, value, type, checked } = e.target;

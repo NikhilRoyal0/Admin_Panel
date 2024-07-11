@@ -145,9 +145,9 @@ export default function Student_List() {
     formData2.append("interestIn", newStudentData.interestIn);
     formData2.append("admissionNo", newStudentData.admissionNo);
     formData2.append("profilePhoto", newStudentData.profilePhoto);
-    formData2.append("courses", newStudentData.courses);
-    formData2.append("paymentMethods", newStudentData.paymentMethods);
-    formData2.append("qualifications", newStudentData.qualifications);
+    formData2.append("courses", "[]");
+    formData2.append("paymentMethods", "[]");
+    formData2.append("qualifications", "[]");
     formData2.append("referredBy", newStudentData.referredBy);
     dispatch(AddStudentData(formData2))
       .then(() => {
