@@ -130,6 +130,7 @@ export default function Course_List() {
     formData.append("createdOn", Date.now());
     formData.append("category", newcourseData.category);
     formData.append("categoryId", newcourseData.categoryId);
+    formData.append("branchId", id);
     formData.append("htmlInfo", newcourseData.htmlInfo);
     formData.append("benefits", newcourseData.benefits);
     dispatch(AddcourseData(formData))
